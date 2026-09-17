@@ -23,13 +23,13 @@ A game in which buy-ins and rebuys fund a prize pool, chips represent tournament
 ## Money and chips
 
 **Chip unit**:
-The mode-independent numeric value assigned to a chip denomination; blind levels and starting stacks are expressed in chip units.
+The mode-independent numeric value assigned to a chip denomination; blind levels and starting stacks are expressed in chip units. In cash games, chip units convert to money through one global game-level value. In tournaments, chip units have no monetary value.
 
 **Buy-in**:
 A player's initial monetary contribution to a game. In a tournament it contributes to the prize pool; in a cash game it helps determine the monetary value of chip units.
 
 **Rebuy**:
-An additional monetary contribution made by a player during a game.
+An additional monetary contribution made by a player during a game. In tournaments, a rebuy increases the prize pool and grants a tournament stack without changing any money-per-chip-unit value.
 _Avoid_: Add-on
 
 **Chip set**:
