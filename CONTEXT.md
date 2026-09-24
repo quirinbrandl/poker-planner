@@ -52,8 +52,17 @@ A reusable definition of chip denominations and quantities from which a game's c
 **Big blind**:
 The chip-unit value used to express blind levels and the intended starting stack size in big blinds.
 
+**Small blind**:
+The smaller forced bet paired with the big blind, expressed in chip units and usually half the big blind.
+
 **Starting stack**:
-The chips distributed to a player when they enter a game; its size is connected to the selected big blind and number of big blinds.
+The chips distributed to a player when they enter a game; its chip-unit value is the initial big blind multiplied by the starting stack depth.
+
+**Stack depth**:
+The size of a stack expressed as a number of big blinds. Starting stack depth is measured against the game's initial big blind.
+
+**Blind-payment coverage**:
+The number of small-blind and big-blind payments a starting stack can fund with separate groups of its own chips, without obtaining change.
 
 **Distribution preference**:
 The host's choice to optimize a starting stack for using as few or as many physical chips as possible. Maximum-chip optimization may reserve a configurable number of buy-ins inside the chip set.
