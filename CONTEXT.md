@@ -20,6 +20,17 @@ A game in which monetary buy-ins determine the value of chip units and a player'
 **Tournament**:
 A game in which buy-ins and rebuys fund a prize pool, chips represent tournament stacks without direct monetary value, and results are determined through elimination and payout rules.
 
+## Game lifecycle
+
+**Planning**:
+The phase of an unfinished game with no recorded rebuys, eliminations, or final results. Initial buy-ins, including those of late-arriving players, are part of setup rather than records that distinguish Planning from In progress.
+
+**In progress**:
+The phase of an unfinished game with at least one recorded rebuy, elimination, or final result.
+
+**Completed**:
+The phase of a game whose final results have been validated and whose final settlement has been calculated and simplified.
+
 ## Money and chips
 
 **Chip unit**:
@@ -33,7 +44,10 @@ An additional monetary contribution made by a player during a game. In tournamen
 _Avoid_: Add-on
 
 **Chip set**:
-A reusable collection of physical chip denominations and available quantities used for a game.
+The physical chip denominations and available quantities configured for one game.
+
+**Chip set template**:
+A reusable definition of chip denominations and quantities from which a game's chip set is copied. A template and the chip sets copied from it are independent.
 
 **Big blind**:
 The chip-unit value used to express blind levels and the intended starting stack size in big blinds.
