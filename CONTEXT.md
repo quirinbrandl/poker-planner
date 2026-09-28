@@ -67,10 +67,27 @@ The number of small-blind and big-blind payments a starting stack can fund with 
 **Distribution preference**:
 The host's choice to optimize a starting stack for using as few or as many physical chips as possible. Maximum-chip optimization may reserve a configurable number of buy-ins inside the chip set.
 
+## Tournament results
+
+**Elimination**:
+A player's recorded final exit from a tournament, rather than a loss of chips followed by a rebuy.
+
+**Finishing place**:
+A player's position in the tournament's finishing order, with first place denoting the winner.
+
+**Prize pool**:
+The money contributed through tournament buy-ins and rebuys that is distributed as prizes.
+
+**Payout schedule**:
+The percentage shares of the prize pool assigned to ordered finishing places.
+
+**Payout**:
+A player's monetary prize, before subtracting that player's buy-in and rebuys.
+
 ## Settlement
 
 **Final result**:
-The end-of-game amount recorded for a player: final chips for a cash game, or the player's tournament outcome for a tournament.
+A player's end-of-game outcome: final chips for a cash game, or finishing place and payout for a tournament.
 
 **Settlement**:
 The debts between players derived from their monetary contributions and final results.
