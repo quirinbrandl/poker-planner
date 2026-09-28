@@ -67,6 +67,11 @@ The number of small-blind and big-blind payments a starting stack can fund with 
 **Distribution preference**:
 The host's choice to optimize a starting stack for using as few or as many physical chips as possible. Maximum-chip optimization may reserve a configurable number of buy-ins inside the chip set.
 
+## Cash-game results
+
+**Final chip count**:
+The quantities of physical chips, recorded separately for each denomination, held by a player when they leave a cash game. Its chip-unit value determines that player's monetary result.
+
 ## Tournament results
 
 **Elimination**:
