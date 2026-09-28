@@ -36,6 +36,9 @@ The phase of a game whose final results have been validated and whose final sett
 **Chip unit**:
 The mode-independent numeric value assigned to a chip denomination; blind levels and starting stacks are expressed in chip units. In cash games, chip units convert to money through one global game-level value. In tournaments, chip units have no monetary value.
 
+**Contribution**:
+A player's recorded monetary stake through buy-ins and rebuys, not a payment collected by a banker.
+
 **Buy-in**:
 A player's initial monetary contribution to a game. In a tournament it contributes to the prize pool; in a cash game it helps determine the monetary value of chip units.
 
@@ -89,8 +92,17 @@ A player's monetary prize, before subtracting that player's buy-in and rebuys.
 **Final result**:
 A player's end-of-game outcome: final chips for a cash game, or finishing place and payout for a tournament.
 
+**Final monetary result**:
+The money a player's final chips or tournament payout entitle them to, after monetary rounding and before subtracting their contributions.
+
+**Player balance**:
+A player's final monetary result minus their total contributions. A positive balance is money the player receives; a negative balance is money the player owes.
+
 **Settlement**:
-The debts between players derived from their monetary contributions and final results.
+The payments owed directly between players to satisfy their player balances, without a banker collecting buy-ins or distributing results.
+
+**Payment instruction**:
+A direction for one player to pay a specified amount to another player as part of settlement, not a record that payment has occurred.
 
 **Debt simplification**:
-Reducing the settlement to a set of payments that satisfies all player balances with as few payments as practical.
+Reducing the number of direct player-to-player payments needed to settle a game without changing any player's balance.
