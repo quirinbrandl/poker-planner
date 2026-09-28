@@ -23,10 +23,10 @@ A game in which buy-ins and rebuys fund a prize pool, chips represent tournament
 ## Game lifecycle
 
 **Planning**:
-The phase of an unfinished game with no recorded rebuys, eliminations, or final results. Initial buy-ins, including those of late-arriving players, are part of setup rather than records that distinguish Planning from In progress.
+The phase of a game whose setup is being prepared and whose initial chip distribution has not yet been issued in the app.
 
 **In progress**:
-The phase of an unfinished game with at least one recorded rebuy, elimination, or final result.
+The phase of an unfinished game that has been explicitly started.
 
 **Completed**:
 The phase of a game whose final results have been validated and whose final settlement has been calculated and simplified.
@@ -43,7 +43,7 @@ A player's recorded monetary stake through buy-ins and rebuys, not a payment col
 A player's initial monetary contribution to a game. In a tournament it contributes to the prize pool; in a cash game it helps determine the monetary value of chip units.
 
 **Rebuy**:
-An additional monetary contribution made by a player during a game. In tournaments, a rebuy increases the prize pool and grants a tournament stack without changing any money-per-chip-unit value.
+An additional monetary contribution equal to the game's initial buy-in, granting the same chip-unit value as a starting stack. In tournaments, it increases the prize pool without assigning chips a monetary value.
 _Avoid_: Add-on
 
 **Chip set**:
@@ -65,10 +65,19 @@ The chips distributed to a player when they enter a game; its chip-unit value is
 The size of a stack expressed as a number of big blinds. Starting stack depth is measured against the game's initial big blind.
 
 **Blind-payment coverage**:
-The number of small-blind and big-blind payments a starting stack can fund with separate groups of its own chips, without obtaining change.
+The number of small-blind and big-blind payments a stack can fund with separate groups of its own chips, without obtaining change.
+
+**Qualifying stack**:
+A stack with exactly the required chip-unit value and at least the configured blind-payment coverage.
 
 **Distribution preference**:
-The host's choice to optimize a starting stack for using as few or as many physical chips as possible. Maximum-chip optimization may reserve a configurable number of buy-ins inside the chip set.
+The host's choice to minimize or maximize the number of physical chips in an allocation, subject to the game's stack and reserve requirements.
+
+**Bank**:
+The chips in a game's chip set available to issue to players, including undistributed chips and chips returned through recorded cash-game final results.
+
+**Chip reserve**:
+The planned capacity of the bank to supply a specified number of additional qualifying stacks, shared by rebuys and late arrivals.
 
 ## Cash-game results
 
