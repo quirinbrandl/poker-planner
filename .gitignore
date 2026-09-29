@@ -1,0 +1,11 @@
+node_modules/
+.expo/
+dist/
+coverage/
+*.tsbuildinfo
+*.db
+*.db-shm
+*.db-wal
+android/
+ios/
+.DS_Store
