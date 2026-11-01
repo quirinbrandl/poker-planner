@@ -1,9 +1,0 @@
-node_modules/
-.expo/
-dist/
-coverage/
-package-lock.json
-CONTEXT.md
-AGENTS.md
-docs/agents/
-docs/research/
