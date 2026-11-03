@@ -1,0 +1,42 @@
+<!doctype html>
+<!-- THROWAWAY: three structurally different Games / Game settings studies, via ?variant=A|B|C. -->
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Poker Planner · visual direction prototype</title>
+  <link rel="stylesheet" href="styles.css">
+  <script src="prototype.js" defer></script>
+</head>
+<body>
+  <a class="skip" href="#app">Skip prototype controls</a>
+  <header class="workshop">
+    <p class="workshop-eyebrow">POKER PLANNER / DESIGN STUDY 01</p>
+    <h1>Find the feel.</h1>
+    <p>Three directions. The same game. Compare Games and Game settings, then try a larger text size or an invalid value.</p>
+    <details class="review-controls" open>
+      <summary>Prototype controls <span>Fixture data · not a working app</span></summary>
+      <div class="control-grid">
+        <label>Screen<select id="screen"><option value="games">Games</option><option value="settings">Game settings</option></select></label>
+        <label>Example state<select id="scenario"><option value="populated">Populated</option><option value="invalid">Invalid buy-in</option><option value="empty">Empty / incomplete</option></select></label>
+        <label>Appearance<select id="theme"><option value="designed">As designed</option><option value="system">System</option><option value="light">Light</option><option value="dark">Dark</option></select></label>
+        <label>App text size<select id="text-size"><option value="1">100%</option><option value="1.5">150%</option><option value="2">200%</option></select></label>
+      </div>
+      <div class="review-buttons"><button id="patterns">Core patterns</button><button id="reset">Reset fixtures</button></div>
+    </details>
+    <p id="direction-note" class="direction-note"></p>
+  </header>
+  <main id="app" tabindex="-1"></main>
+  <aside class="state-panel">
+    <details><summary>Inspect prototype state</summary><pre id="state"></pre></details>
+    <p>Drafts stay in memory while you explore; reload resets them. Layouts and controls are proposals awaiting your approval.</p>
+  </aside>
+  <nav class="prototype-switcher" aria-label="Visual direction">
+    <button id="previous" aria-label="Previous visual direction">←</button>
+    <div><span class="switcher-caption">VISUAL DIRECTION</span><strong id="variant-label" aria-live="polite"></strong></div>
+    <button id="next" aria-label="Next visual direction">→</button>
+  </nav>
+  <div class="sr-only" id="announcement" role="status" aria-live="polite"></div>
+  <dialog id="dialog" aria-labelledby="dialog-title"><div id="dialog-content"></div></dialog>
+</body>
+</html>
