@@ -1,6 +1,8 @@
 # MVP visual direction — throwaway prototype
 
-**Status: awaiting human comparison; no direction or interaction pattern is approved.**
+**Selected: B · Current, always dark, with subtle press feedback and reduced-motion support.**
+
+The human chose Current, explicitly chose always-dark appearance, and approved restrained feedback after clarification. The decision and implementation handoff are recorded in [Choose the MVP visual direction and core interaction patterns](https://github.com/quirinbrandl/poker-planner/issues/32). This archive retains all three alternatives for comparison; the approved reference is **B in dark appearance**.
 
 Question: which visual/layout direction makes a distinctive, legible phone app for a host operating a home poker game?
 
@@ -14,7 +16,7 @@ From the repository root:
 python3 -m http.server 4173 --bind 127.0.0.1 --directory docs/prototypes/visual-direction
 ```
 
-Open <http://localhost:4173/?variant=A>. No packages, build step, external fonts, network calls, or storage are needed. Stop with Ctrl+C. The original HTML file also opens directly for offline review.
+Open <http://localhost:4173/?variant=B>. No packages, build step, external fonts, network calls, or storage are needed. Stop with Ctrl+C. The original HTML file also opens directly for offline review. Opening without a variant now defaults to B.
 
 ## Compare
 
@@ -27,13 +29,13 @@ Open <http://localhost:4173/?variant=A>. No packages, build step, external fonts
 - Try **Empty / incomplete**, 150% / 200% app text, both appearances, keyboard navigation, and **Core patterns**. Cancel deletion, then accept it and reset fixtures to see the difference.
 - The state inspector exposes the relevant in-memory settings. Reload resets fixtures; this prototype does not implement durable autosave.
 
-## Proposed foundations to discuss
+## Foundations illustrated by the study
 
 All directions use persistent labels, 48px-minimum controls, explicit EUR / BB / chip-unit labels, tabular numerals, non-color status text, field-level errors and a retained invalid draft. One primary action per task; outlined secondary actions; destructive actions live behind a menu and confirmation. Blocked actions remain focusable with their reason attached. A confirmed chip result can still have provisional money; only validated Completed Payments are final. These are distinct concepts, never one green check meaning all three.
 
-For light/dark comparison, **As designed** means A/C light and B dark. **System**, **Light**, and **Dark** allow the same composition to be judged under other lighting. This review selector does not approve an in-app appearance setting. The proposed MVP choice is system appearance with both palettes; confirm with the human before handing off.
+For archived light/dark comparison, **As designed** means A/C light and B dark. **System**, **Light**, and **Dark** remain review tools only. The approved MVP uses **Current's dark palette at all times**, including when the device is in light mode. The earlier system-appearance recommendation was not selected; no in-app appearance selector is part of this decision.
 
-Typography is offline system sans; Margin adds an offline serif heading stack. The actual cross-platform production typeface/assets and styling implementation are not selected. Base app text is 16px, supporting copy is approximately 12–14px at default scale, and all app text scales. Margins are 20–24px; content grows and scrolls instead of truncating. No fixed-height fields or status rows. At larger text the compact form becomes stacked. Native labels, fieldsets, radios, dialogs, focus outlines, DOM reading order and validation descriptions provide browser accessibility semantics. Native iOS/Android behavior still needs implementation-time device checks.
+Current uses offline system sans; Margin's serif headings belong to the unselected alternative. Current's reference scale uses 16px base app text, approximately 12–14px supporting copy, and 20px page gutters. All app text scales; content grows and scrolls instead of truncating. Fields and status rows grow with their content. Native labels, fieldsets, radios, dialogs, focus outlines, DOM reading order and validation descriptions provide browser accessibility semantics. Native iOS/Android behavior still needs implementation-time device checks; platform typography and styling must reproduce the selected hierarchy.
 
 Motion is limited to 100ms control-color feedback and a 1px press response; reduced motion removes displacement. No count-up money, celebration, auto-advancing content or motion-dependent meaning.
 
@@ -59,6 +61,6 @@ Chrome smoke checks covered variant navigation, editable-field arrow keys, inval
 - Monetary status examples are separate fixtures, not sequential state mutations of the six-player game. A two-player example with €20 contributions each and results €30/€10 yields Jonas → Maya €10.
 - No prototype control issues chips, persists data, starts/completes a real game or selects a production stack. The switcher belongs only to this standalone throwaway artifact; there is no production build.
 
-## Review still needed
+## Handoff boundary
 
-Choose or combine the direction, density, typography, palette and surface treatment; approve the default appearance strategy and interaction/accessibility/motion foundations. Then refine the selected sample if necessary. Record only the human-approved answer in the decision ticket and shared spec, with workflow-specific references in the affected implementation ticket. Detailed setup/play/Payments workflows belong to later map decisions.
+The shared visual requirements live in [MVP spec: Offline home poker game management](https://github.com/quirinbrandl/poker-planner/issues/10), with the Planning application in [Create and resume local game plans](https://github.com/quirinbrandl/poker-planner/issues/11). Detailed setup/play/Payments workflows belong to later map decisions; use this selected visual foundation for those prototypes. This archive selects neither a production framework nor a component library.

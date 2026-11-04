@@ -7,7 +7,7 @@ const directions = {
 };
 const params = new URLSearchParams(location.search);
 const state = {
-  variant: directions[params.get('variant')] ? params.get('variant') : 'A',
+  variant: directions[params.get('variant')] ? params.get('variant') : 'B',
   screen: params.get('screen') === 'settings' ? 'settings' : 'games',
   scenario: 'populated', appearance: 'designed', scale: 1, buyin: '20.00', depth: '100',
   preference: 'min', coverage: '4', reserve: '3', reserveMode: 'auto', advanced: false,
