@@ -5,7 +5,7 @@
 <title>Cash-game planning · interactive prototype</title>
 <style>
   * { box-sizing: border-box; }
-  :root { --accent: #8ec5ff; --on-accent: #10263d; --tint: #203347; color-scheme: dark; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; background: #0b1117; color: #f1f4f5; }
+  :root { --accent: #c9b5ff; --on-accent: #2b1e45; --tint: #322b45; color-scheme: dark; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; background: #0b1117; color: #f1f4f5; }
   body { margin: 0; padding: 28px 16px 140px; }
   button, input, select { font: inherit; }
   button, summary, label.choice { -webkit-tap-highlight-color: transparent; }
@@ -141,9 +141,9 @@
 </style>
 <div class="workshop">
   <header>
-    <p class="eyebrow">Throwaway interaction study · Current</p>
+    <p class="eyebrow">Approved interaction study · Current / Lavender</p>
     <h1>From a new game to a ready-to-review plan.</h1>
-    <p class="intro">Try the flow and compare accent colors in the bottom bar. Tell me your preferred color and any feedback in chat; nothing is submitted from this page.</p>
+    <p class="intro">The revised flow and Lavender accent are approved. This throwaway archive retains the other colors for reference. All feedback stays in chat; nothing is submitted from this page.</p>
     <details class="review">
       <summary>Review controls &amp; guided walkthroughs</summary>
       <p>All state stays in this page’s memory. Reload resets the demo. “Simulate restart” exercises a proposed resume interaction, not real storage. Chip editing, payout setup and distribution are labelled handoff screens.</p>
@@ -345,8 +345,8 @@ const palettes = {
   coral: {name: 'Coral', accent: '#ffb39c', ink: '#3b2119', tint: '#422f2a'},
   citron: {name: 'Original citron', accent: '#daf587', ink: '#1e2910', tint: '#2c3823'}
 };
-let accent = new URL(location.href).searchParams.get('variant') || 'blue';
-if (!Object.hasOwn(palettes, accent)) accent = 'blue';
+let accent = new URL(location.href).searchParams.get('variant') || 'lavender';
+if (!Object.hasOwn(palettes, accent)) accent = 'lavender';
 const app = document.getElementById('app'), dialog = document.getElementById('dialog');
 const titles = {mode: 'Choose mode', players: 'Players', chips: 'Chip set', settings: 'Game settings', payout: 'Payout schedule', preview: 'Distribution preview'};
 const esc = v => String(v ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;', '<':'&lt;', '>':'&gt;', '"':'&quot;', "'":'&#39;'}[c]));
@@ -502,7 +502,7 @@ function render() {
 }
 function requestModal(modal) { dispatch({type:'MODAL',modal}); }
 function applyAccent(key, updateUrl = true) {
-  accent = Object.hasOwn(palettes,key) ? key : 'blue';
+  accent = Object.hasOwn(palettes,key) ? key : 'lavender';
   const palette=palettes[accent];
   document.documentElement.style.setProperty('--accent',palette.accent);
   document.documentElement.style.setProperty('--on-accent',palette.ink);

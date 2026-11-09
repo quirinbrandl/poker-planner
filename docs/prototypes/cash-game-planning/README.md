@@ -1,10 +1,10 @@
 # Cash-game planning — throwaway interaction prototype
 
-**Status: live-discussion choices incorporated; interactive review and final approval pending.**
+**Approved: the revised Planning flow and Lavender accent.** The human approved the updated prototype with “yeah fine and i like the lavender color.”
 
 Decision: [Design cash-game planning and reusable player selection](https://github.com/quirinbrandl/poker-planner/issues/33). Parent map: [MVP user experience and visual design](https://github.com/quirinbrandl/poker-planner/issues/30).
 
-This single HTML file explores the Planning workflow in **Current's always-dark slate foundation**. Following live feedback, this revision adds a single prefilled reserve field, shorter copy, functional icons, direct return from preview-originated corrections, and an accent-color comparison. The human requested different accent options; no replacement color has been approved yet.
+This single HTML file captures the approved Planning workflow in **Current's always-dark slate foundation with Lavender**. The human approved the single prefilled reserve field, shorter copy, functional icons and direct return from preview-originated corrections, then selected Lavender after comparing the accent options. The decision and implementation handoff live on the linked issue and its affected implementation tickets.
 
 Everything in this directory is throwaway, including the in-memory state model. Do not promote it into the application. It selects no framework, storage approach or production module interface.
 
@@ -20,7 +20,7 @@ python3 -m http.server 4174 --bind 127.0.0.1 --directory docs/prototypes/cash-ga
 
 Open <http://localhost:4174>. All changes are in memory; reloading resets the fixtures. “Simulate restart” only demonstrates the resume contract in memory. It does **not** verify durable local persistence. Inspect the readable state panel to see current raw values and independent saved/captured names.
 
-For the updated settings and accent comparison, open <http://localhost:4174/?screen=settings&variant=blue>. The floating **Accent preview** bar offers Blue, Mint, Lavender, Coral, and Original citron as a reference. Its arrows cycle with wraparound; the dropdown names every option. The URL preserves the selected color. Left/right keyboard shortcuts leave text fields, radios/checkboxes, selects, tab navigation and dialogs alone. Colors change without resetting draft values or navigation. This is an external review control, not a proposed product appearance setting. Feedback is given in chat, not submitted from the page.
+For the selected settings screen, open <http://localhost:4174/?screen=settings&variant=lavender>. Opening without a variant also defaults to Lavender. The floating **Accent preview** bar retains Blue, Mint, Lavender, Coral, and Original citron for archival comparison. Its arrows cycle with wraparound; the dropdown names every option. The URL preserves the selected color. Left/right keyboard shortcuts leave text fields, radios/checkboxes, selects, tab navigation and dialogs alone. Colors change without resetting draft values or navigation. This is an external review control, not a product appearance setting. Feedback is given in chat, not submitted from the page.
 
 ## Review
 
@@ -48,9 +48,9 @@ For the updated settings and accent comparison, open <http://localhost:4174/?scr
 - Restart recovery of unfinished **reusable-player editor text** was declined for now. Explicit Save/discard semantics remain; this exception does not weaken retention of raw Planning fields.
 - Following hands-on review, the host requested less explanation for self-explanatory controls and more symbols. The revision uses consistent inline stroke icons: labelled primary/navigation actions and fields, plus accessible icon-only row edit/remove/delete controls with named confirmations. Short helper text remains for blind-payment coverage, reserve semantics, the 100-BB recommendation and the independence of saved/game names where editing occurs. Errors, required units, save boundaries and prototype handoff labels remain explicit.
 
-## Concrete interaction proposals to judge in the prototype
+## Approved concrete interaction treatment
 
-These details make the flow clickable and remain subject to the live prototype review:
+The final approval covers the revised prototype's interaction treatment:
 
 - Picker selections are staged until Add. An already-added saved player is marked unavailable, even if that saved entry has since been renamed. A collision rejects the entire addition without partially creating records.
 - The picker has ordinary **Edit saved player** controls. These edit reusable entries, never game-captured names. Collision errors do not automatically rename, navigate or add a special recovery workflow.
@@ -58,7 +58,7 @@ These details make the flow clickable and remain subject to the live prototype r
 - Planning roster removal uses a specific confirmation and leaves the reusable player intact. Saved-player/game deletion also names its scope and has Cancel. The fixture reset is an external review tool, not a product undo feature.
 - The step list allows reached steps, preserving the guided first pass. “Complete” describes local input validity, not allocation feasibility or game start. The preview marks earlier edits for renewed review.
 - A preview-originated correction validates its current step before returning and rechecks the whole plan. If switching mode introduces a missing payout step, the preview exposes its correction route even if that step was not previously reached. Back still moves to the preceding setup step; no navigation accepts a distribution or starts a game.
-- The single reserve field replaces the earlier Automatic / Custom selector. The small **Use automatic (N)** reset action and brief automatic/custom status are proposed details of the requested input treatment, retaining the established reserve rules.
+- The single reserve field replaces the earlier Automatic / Custom selector. The small **Use automatic (N)** reset action and brief automatic/custom status retain the established reserve rules.
 - Valid saved names are trimmed at explicit Save while preserving their capitalization. Blank/whitespace-only names are invalid. No arbitrary player/name/count cap is proposed.
 - Money entry supports ungrouped digits with up to two decimal digits after a dot or comma. Grouping separators, scientific notation and currency symbols pasted into the field produce retained invalid input. Canonical production money parsing must use exact cents; this fixture-only UI is not financial calculation code.
 
@@ -70,15 +70,15 @@ The **Distribution preview** is a clearly labelled input-review handoff, with wh
 
 Tournament payouts are a retained `50 / 30 / 20` fixture for exercising mode switching. Their editor and validation belong to [Design tournament payout setup and starting](https://github.com/quirinbrandl/poker-planner/issues/39). The shared two-player and positive-buy-in validation already applies to that mode; no tournament implementation is introduced here.
 
-## Accent options
+## Selected accent and archived alternatives
 
-These are deliberately color comparisons of the same revised layout, as requested by the human. The base slate surfaces and hierarchy stay consistent so the accents can be compared directly. The original citron is retained only as a reference; Blue is the initial review option, not an approved winner.
+**Lavender is selected for the shared MVP visual foundation.** It replaces the original citron accent while retaining Current's slate surfaces, hierarchy and always-dark appearance. These archived alternatives use the same layout so the original comparison remains reproducible. No in-app color selector is part of the MVP.
 
 | URL variant | Accent | Text on primary | Selected surface |
 | --- | --- | --- | --- |
 | [`blue`](previews/settings-blue.png) | `#8EC5FF` | `#10263D` | `#203347` |
 | [`mint`](previews/settings-mint.png) | `#7EE0C3` | `#103126` | `#203B34` |
-| [`lavender`](previews/settings-lavender.png) | `#C9B5FF` | `#2B1E45` | `#322B45` |
+| **[`lavender` — selected](previews/settings-lavender.png)** | `#C9B5FF` | `#2B1E45` | `#322B45` |
 | [`coral`](previews/settings-coral.png) | `#FFB39C` | `#3B2119` | `#422F2A` |
 | [`citron`](previews/settings-citron.png) | `#DAF587` | `#1E2910` | `#2C3823` |
 
@@ -97,7 +97,7 @@ No browser exceptions occurred in these revised checks. Across eight checked sem
 
 At a **320px viewport / 200% app text**, the original revision's Games/settings/step-list/Players/picker/name-editor/error screens had no measured horizontal overflow. The revised settings and color bar were checked in all five palettes, plus invalid reserve, preview, correction footer, removal dialog, picker and saved-name editor; all also had no horizontal overflow. Native text scaling, keyboards, VoiceOver/TalkBack and actual restart persistence remain implementation-time checks.
 
-Captures use a 390px browser viewport, with the app surface isolated from the external review controls:
+The selected captures use Lavender and a 390px browser viewport, with the app surface isolated from the external review controls:
 
 - [Games](previews/games.png)
 - [All-visible game settings](previews/settings.png)
