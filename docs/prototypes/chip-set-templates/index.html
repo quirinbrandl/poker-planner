@@ -1,0 +1,421 @@
+<!doctype html>
+<html lang="en">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Chip sets & templates · throwaway prototype</title>
+<style>
+  * { box-sizing: border-box; }
+  :root { color-scheme: dark; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; background: #0b1117; color: #f1f4f5; --accent: #c9b5ff; --on-accent: #2b1e45; --tint: #322b45; }
+  body { margin: 0; padding: 28px 16px 140px; }
+  button, input, select { font: inherit; }
+  button { min-width: 48px; min-height: 48px; padding: 12px 16px; border: 1px solid #7c90a0; border-radius: 14px; background: #1e2a34; color: #f1f4f5; line-height: 1.35; cursor: pointer; }
+  button:active { background: #364653; }
+  :focus-visible { outline: 3px solid var(--accent); outline-offset: 4px; }
+  h1, h2, h3, p { margin-top: 0; }
+  p { line-height: 1.5; }
+  a { color: var(--accent); }
+  .workshop { max-width: 960px; margin: auto; }
+  .workshop > header { max-width: 740px; margin: 0 auto 24px; }
+  .workshop h1 { font-size: 28px; letter-spacing: -.035em; }
+  .eyebrow { font-size: 12px; letter-spacing: .1em; text-transform: uppercase; color: #b3c0ca; }
+  .intro, .review { font-size: 14px; color: #b3c0ca; }
+  .review { border: 1px solid #364653; border-radius: 18px; padding: 0 16px 16px; }
+  summary { cursor: pointer; min-height: 48px; padding: 14px 0; }
+  .review-controls, .scenario-tabs, .actions { display: flex; flex-wrap: wrap; gap: 8px; }
+  .review button, .review select { font-size: 13px; }
+  select { min-height: 48px; min-width: 0; padding: 8px; border: 1px solid #7c90a0; border-radius: 12px; background: #1e2a34; color: #f1f4f5; }
+  .scenario-tabs { margin: 20px 0 12px; }
+  .scenario-tabs [aria-selected="true"] { border-color: var(--accent); color: var(--accent); background: var(--tint); }
+  .walk-buttons { display: grid; gap: 8px; }
+  .walk-buttons button { text-align: left; }
+  .preview-layout { display: grid; grid-template-columns: minmax(0, 430px) minmax(0, 1fr); gap: 32px; align-items: start; }
+  #app, dialog { --scale: 1; font-size: calc(16px * var(--scale)); line-height: 1.5; color: #f1f4f5; background: #111920; overflow-wrap: anywhere; }
+  #app { min-width: 0; min-height: 760px; border: 1px solid #364653; border-radius: 26px; box-shadow: 0 18px 65px #0004; }
+  .page { padding: 24px 20px 30px; }
+  .topline, .row-heading { display: flex; justify-content: space-between; align-items: center; gap: 8px; flex-wrap: wrap; }
+  .topline { margin-bottom: 14px; }
+  #app h2 { font-size: 2.55em; font-weight: 730; letter-spacing: -.045em; line-height: 1.08; margin-bottom: 16px; }
+  #app h3 { font-size: 1.1em; line-height: 1.35; }
+  .small, .context { font-size: .8em; color: #b3c0ca; }
+  .context { margin-bottom: 16px; }
+  .quiet { background: transparent; border-color: transparent; }
+  .primary { background: var(--accent); border-color: var(--accent); color: var(--on-accent); font-weight: 650; border-radius: 100px; }
+  .primary:active { background: var(--accent); filter: brightness(.92); }
+  .danger { color: #ffb3aa; border-color: #ffb3aa; }
+  .full { width: 100%; }
+  .badge { display: inline-block; font-size: .72em; padding: 5px 10px; border: 1px solid #7c90a0; border-radius: 100px; margin: 0 4px 8px 0; }
+  .step-button { padding: 10px 0; margin-bottom: 18px; text-align: left; font-size: .8em; text-decoration: underline; text-underline-offset: 4px; }
+  .card, .chip-row { background: #1e2a34; border: 1px solid #364653; border-radius: 22px; padding: 18px; margin: 18px 0; min-width: 0; }
+  .game-card { display: block; text-align: left; width: 100%; padding: 18px; border-color: #364653; border-radius: 20px; margin: 12px 0; }
+  .game-card strong { display: block; font-size: 1.1em; margin: 8px 0; }
+  .game-card small { display: block; color: #b3c0ca; }
+  .section-title { margin: 28px 0 12px; display: flex; flex-wrap: wrap; gap: 8px; align-items: center; justify-content: space-between; }
+  .section-title h3 { margin: 0 !important; }
+  .row-heading { margin-bottom: 10px; }
+  .row-heading strong { font-size: .8em; color: #b3c0ca; }
+  .field-pair { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 14px; }
+  .field { display: block; min-width: 0; margin: 16px 0; }
+  .field-pair .field { margin: 0; }
+  .field-title { display: block; font-size: .82em; font-weight: 650; margin-bottom: 8px; }
+  .input-wrap { display: flex; min-width: 0; background: #111920; border: 1px solid #7c90a0; border-radius: 16px; }
+  .input-wrap:focus-within { outline: 3px solid var(--accent); outline-offset: 3px; }
+  input[type="text"] { width: 100%; min-width: 0; min-height: 54px; padding: 12px; background: transparent; border: 0; border-radius: 16px; color: #f1f4f5; font-size: 1.15em; font-variant-numeric: tabular-nums; }
+  .input-wrap input:focus { outline: none; }
+  .input-wrap:has([aria-invalid="true"]) { border: 2px solid #ffb3aa; }
+  .hint { display: block; font-size: .76em; color: #b3c0ca; margin-top: 6px; }
+  .error { display: block; color: #ffb3aa; font-size: .8em; margin-top: 8px; }
+  .error:empty, .hint:empty { display: none; }
+  fieldset { border: 0; padding: 0; margin: 24px 0; min-width: 0; }
+  legend { font-size: .9em; font-weight: 650; margin-bottom: 12px; }
+  .choice { display: flex; align-items: flex-start; gap: 10px; min-height: 54px; padding: 14px; border: 1px solid #7c90a0; background: #1e2a34; border-radius: 18px; cursor: pointer; margin-bottom: 8px; }
+  .choice:has(:checked) { border-color: var(--accent); box-shadow: inset 0 0 0 1px var(--accent); background: var(--tint); }
+  .choice input { width: 20px; height: 20px; flex-shrink: 0; margin: .2em 0 0; accent-color: var(--accent); }
+  .choice strong { display: block; font-size: .88em; }
+  .choice small { display: block; font-size: .76em; margin-top: 4px; color: #b3c0ca; }
+  .notice { border-left: 3px solid #f2d08a; padding: 12px 14px; margin: 16px 0; color: #f2d08a; background: #383020; font-size: .8em; }
+  .notice.info { color: var(--accent); border-color: var(--accent); background: var(--tint); }
+  .notice.failure { color: #ffb3aa; border-color: #ffb3aa; background: #3d2427; }
+  .notice strong { display: block; }
+  .dock { margin: 28px -20px -30px; padding: 20px; border-top: 1px solid #364653; background: #1e2a34; border-radius: 0 0 26px 26px; }
+  .dock p { font-size: .75em; color: #b3c0ca; }
+  .actions .primary { flex: 1; }
+  .stack { display: grid; gap: 10px; }
+  .empty { padding: 24px 18px; border: 1px dashed #7c90a0; border-radius: 20px; margin: 20px 0; }
+  .secondary-nav { border-top: 1px solid #364653; padding-top: 12px; margin-top: 28px; }
+  .secondary-nav button { width: 100%; text-align: left; }
+  .icon { width: 1.25em; height: 1.25em; vertical-align: middle; flex-shrink: 0; }
+  .with-icon { display: inline-flex; align-items: center; justify-content: center; gap: 8px; }
+  .icon-button { display: inline-grid; place-items: center; padding: 12px; }
+  .icon-button .icon { width: 22px; height: 22px; }
+  dl { margin: 0; }
+  .facts > div { padding: 12px 0; border-bottom: 1px solid #364653; }
+  dt { color: #b3c0ca; font-size: .8em; }
+  dd { margin: 4px 0 0; font-weight: 600; font-variant-numeric: tabular-nums; }
+  .read-row { display: flex; flex-wrap: wrap; justify-content: space-between; gap: 8px; padding: 14px 0; border-bottom: 1px solid #364653; }
+  .template-row { padding: 16px 0; border-bottom: 1px solid #364653; }
+  .template-row .row-heading { margin-bottom: 0; }
+  .template-row .name { flex: 1; min-width: 0; }
+  .template-row .small { margin: 6px 0 0; }
+  [data-variant="ledger"] .chip-row { border: 0; border-bottom: 1px solid #7c90a0; border-radius: 0; background: transparent; padding: 14px 0; margin: 0; }
+  [data-variant="ledger"] .row-heading { justify-content: flex-end; }
+  [data-variant="ledger"] .row-heading strong { margin-right: auto; }
+  [data-variant="stacked"] .field-pair { grid-template-columns: minmax(0, 1fr); gap: 16px; }
+  [data-variant="stacked"] .field-quantity { order: -1; }
+  [data-variant="stacked"] .field-quantity input { font-size: 1.9em; font-weight: 700; }
+  [data-variant="stacked"] .chip-row { background: transparent; border-radius: 0; border-width: 0 0 1px; padding: 18px 0 26px; }
+  [data-variant="stacked"] .row-heading strong { color: #f1f4f5; font-size: 1em; }
+  .variant-bar { position: fixed; z-index: 5; bottom: max(14px, env(safe-area-inset-bottom)); left: 50%; transform: translateX(-50%); display: flex; align-items: center; gap: 8px; padding: 8px; width: min(360px, calc(100% - 24px)); border: 1px solid #7c90a0; border-radius: 22px; background: #0b1117; box-shadow: 0 6px 32px #0009; }
+  .variant-bar > div { flex: 1; min-width: 0; }
+  .variant-bar label { display: block; font-size: 10px; letter-spacing: .1em; color: #b3c0ca; margin: 0 8px 2px; }
+  .variant-bar select { width: 100%; border: 0; color: var(--accent); font-weight: 650; font-size: 14px; }
+  .variant-bar button { padding: 10px; }
+  #inspector { min-width: 0; font-size: 13px; color: #b3c0ca; }
+  #inspector h3 { font-size: 14px; color: #f1f4f5; margin-top: 24px; }
+  #inspector dt { margin-top: 10px; }
+  #inspector dd { color: #f1f4f5; font-weight: 400; overflow-wrap: anywhere; }
+  #inspector ul { padding-left: 20px; line-height: 1.7; }
+  dialog { padding: 24px; border: 1px solid #7c90a0; border-radius: 22px; width: min(430px, calc(100% - 24px)); max-width: calc(100vw - 24px); max-height: 88dvh; overflow-y: auto; }
+  dialog::backdrop { background: #050b10c9; }
+  dialog h2 { font-size: 1.5em; line-height: 1.2; }
+  dialog p { font-size: .9em; }
+  .step-link { display: block; text-align: left; width: 100%; margin: 8px 0; }
+  .step-link small { display: block; color: #b3c0ca; }
+  .sr-only { position: absolute; width: 1px; height: 1px; padding: 0; overflow: hidden; clip-path: inset(50%); white-space: nowrap; }
+  [hidden] { display: none !important; }
+  [data-large="true"] .field-pair { grid-template-columns: minmax(0, 1fr); }
+  [data-large="true"] .actions { flex-direction: column; }
+  @media (max-width: 760px) { .preview-layout { display: block; max-width: 430px; margin: auto; } #inspector { margin-top: 24px; } .workshop > header { max-width: 430px; } }
+  @media (max-width: 420px) { body { padding: 16px 8px 140px; } #app { border-radius: 18px; } .workshop h1 { font-size: 24px; } }
+  @media (prefers-reduced-motion: no-preference) { #app button { transition: background-color 100ms; } #app button:active { transform: translateY(1px); } }
+</style>
+<div class="workshop">
+  <header>
+    <p class="eyebrow">Throwaway interaction study · #34 · Current / Lavender</p>
+    <h1>One physical chip set. Clear editing boundaries.</h1>
+    <p class="intro">Can the host enter chips quickly, reuse a template, and tell exactly what will change? The behavior was agreed in conversation; these interactive screens and three inline layouts still need your review. Nothing here is production code.</p>
+    <details class="review">
+      <summary>Review controls &amp; guided walkthroughs</summary>
+      <p>In-memory fixtures only. Reload resets everything. “Simulate restart” demonstrates retention boundaries, not real storage. Other setup steps, distribution and lifecycle actions are labelled handoffs.</p>
+      <div class="review-controls">
+        <button data-review="reset">Populated fixtures</button><button data-review="empty">No templates</button><button data-review="dense">12 denominations</button><button data-review="restart">Simulate restart</button><button data-review="delete-source">Delete source template…</button>
+        <label class="sr-only" for="scale">App text size</label><select id="scale"><option value="1">100% text</option><option value="1.5">150% text</option><option value="2">200% text</option></select>
+      </div>
+      <div class="scenario-tabs" role="tablist" aria-label="Guided walkthroughs"></div>
+      <div id="walkthrough" role="tabpanel"></div>
+    </details>
+  </header>
+  <div class="preview-layout"><main id="app" aria-label="Phone prototype"></main><aside id="inspector" aria-label="Prototype state"></aside></div>
+</div>
+<nav class="variant-bar" aria-label="Prototype row-layout comparison">
+  <button id="previous-variant" aria-label="Previous layout">←</button>
+  <div><label for="variant">ROW LAYOUT · REVIEW ONLY</label><select id="variant"><option value="paired">A · Paired rows</option><option value="ledger">B · Open ledger</option><option value="stacked">C · Quantity first</option></select></div>
+  <button id="next-variant" aria-label="Next layout">→</button>
+</nav>
+<dialog id="dialog" aria-labelledby="dialog-title"></dialog>
+<div class="sr-only" id="announcement" role="status" aria-live="polite"></div>
+<script>
+/* THROWAWAY ONLY. In-memory interaction fixtures, not a solver, durable store,
+   application API or code to promote into production. All layout variants share behavior. */
+const ChipDemo = (() => {
+  const copy = x => structuredClone(x);
+  const key = x => x.trim().toLocaleLowerCase('en');
+  const whole = (raw, min) => /^\d+$/.test(raw) && BigInt(raw) >= BigInt(min);
+  const row = (id, value = '', quantity = '') => ({id, value, quantity});
+  const mix = prefix => [row(prefix+'1','1','200'), row(prefix+'2','5','150'), row(prefix+'3','25','100'), row(prefix+'4','100','50')];
+  const game = s => s.games.find(g => g.id === s.location.gameId);
+  const source = (s, g) => s.templates.find(t => t.id === g?.sourceId);
+  const hasData = rows => rows.some(r => r.value !== '' || r.quantity !== '');
+  function fieldError(rows, id, field) {
+    const r = rows.find(r => r.id === id); if (!r) return '';
+    if (field === 'value') {
+      if (!whole(r.value, 1)) return r.value === '' ? 'Enter a chip-unit value.' : 'Use a positive whole-number value.';
+      if (rows.some(other => other.id !== id && whole(other.value, 1) && BigInt(other.value) === BigInt(r.value))) return `Value ${BigInt(r.value)} already exists. Combine quantities in one row.`;
+    }
+    if (field === 'quantity' && !whole(r.quantity, 0)) return r.quantity === '' ? 'Enter a quantity; use 0 for none.' : 'Use a whole-number quantity, including 0.';
+    return '';
+  }
+  const validRows = rows => rows.length > 0 && rows.every(r => !fieldError(rows,r.id,'value') && !fieldError(rows,r.id,'quantity'));
+  function totals(rows) {
+    if (!validRows(rows)) return null;
+    return {chips: rows.reduce((n,r) => n + BigInt(r.quantity),0n).toString(), units: rows.reduce((n,r) => n + BigInt(r.value)*BigInt(r.quantity),0n).toString()};
+  }
+  function nameError(s, raw, id) {
+    if (!raw.trim()) return 'Enter a template name.';
+    if (s.templates.some(t => t.id !== id && key(t.name) === key(raw))) return 'That template name already exists. Use a different name.';
+    return '';
+  }
+  function seed(empty = false, dense = false) {
+    const templates = empty ? [] : [{id:'t1',name:'Weeknight set',rows:mix('t')},{id:'t2',name:'Travel set',rows:[row('u1','1','100'),row('u2','5','100'),row('u3','25','60')]}];
+    const make = (id, mode, phase, names, day) => ({id,mode,phase,names,created:`${day} Nov 2026 · 19:30`,rows:mix(id),sourceId:empty?null:'t1',last:'chips',returnToPreview:false,show:{},edited:{},failed:false,revision:0,fields:{buyin:'20',depth:'100',coverage:'4',preference:'Fewer chips',reserve:String(Math.ceil(names.length/2))}});
+    const games = [make('g1','cash','Planning',['Maya','Jonas','Lena','Sam','Alex','Noor'],10),make('g2','tournament','Planning',['Chris','Robin'],9),make('g3','cash','In progress',['Alice','Bob','Eli'],8),make('g4','tournament','Completed',['Taylor','Jamie'],7)];
+    if (empty) games[0].rows = [];
+    if (dense) games[0].rows = ['1','2','5','10','25','50','100','500','1000','5000','25000','100000'].map((v,i)=>row('d'+i,v,String(100+i*10)));
+    return {templates,games,location:{page:'chips',gameId:'g1'},picker:null,editor:null,scope:'game',newName:'',nameShown:false,nameEdited:false,modal:null,message:'',next:100};
+  }
+  const editorDirty = e => e && (e.name !== e.baseName || JSON.stringify(e.rows) !== JSON.stringify(e.baseRows));
+  const target = s => s.location.page === 'editor' ? s.editor : game(s);
+  function clearScope(s) { s.scope='game'; s.newName=''; s.nameShown=false; s.nameEdited=false; }
+  function navigate(s, destination) {
+    clearScope(s); s.location=copy(destination); s.modal=null; s.message='';
+    const g=game(s); if(g && ['chips','settings','players','preview'].includes(destination.page)) g.last=destination.page;
+  }
+  function go(s, destination) {
+    if (s.location.page==='editor') {
+      if(editorDirty(s.editor)) {s.modal={type:'discard',destination};return;}
+      s.editor=null;
+    }
+    if(s.location.page==='chips' && s.newName!=='') {s.modal={type:'leave-name',destination};return;}
+    navigate(s,destination);
+  }
+  function useTemplate(s,id) {
+    const t=s.templates.find(t=>t.id===id),g=game(s); if(!t || !g || g.phase!=='Planning') return;
+    g.rows=t.rows.map(r=>({...r,id:'r'+s.next++})); g.sourceId=t.id; g.show={}; g.edited={}; g.failed=false; g.revision++;
+    s.picker=null; navigate(s,{page:'chips',gameId:g.id}); s.message=`Copied “${t.name}” into this game.`;
+  }
+  function saveEditor(s) {
+    const e=s.editor; let t=s.templates.find(t=>t.id===e.id);
+    if(t) {t.name=e.name.trim();t.rows=copy(e.rows);} else {t={id:'t'+s.next++,name:e.name.trim(),rows:copy(e.rows)};s.templates.push(t);}
+    s.editor=null;
+    if(e.origin==='picker') {useTemplate(s,t.id);s.message=`Saved “${t.name}” and copied it into this game.`;}
+    else {navigate(s,{page:'templates'});s.message=`Saved “${t.name}”. Existing games are unchanged.`;}
+  }
+  function finish(s) {
+    const g=game(s); if(!g || g.phase!=='Planning') return;
+    if(s.scope!=='new' && s.newName!=='') {s.modal={type:'leave-name',finish:true};return;}
+    g.failed=true; s.nameShown=true;
+    if(!validRows(g.rows) || (s.scope==='new' && nameError(s,s.newName))) {s.message='Check the highlighted fields.';return;}
+    if(s.scope==='update') {
+      const t=source(s,g);
+      if(!t) {clearScope(s);s.message='The source template is gone. Choose Save as new template if you want another reusable copy.';return;}
+      t.rows=copy(g.rows);s.message=`Updated “${t.name}” for future games. Other games are unchanged.`;
+    }
+    if(s.scope==='new') {const t={id:'t'+s.next++,name:s.newName.trim(),rows:copy(g.rows)};s.templates.push(t);g.sourceId=t.id;s.message=`Saved “${t.name}” as a new template.`;}
+    const message=s.message || 'Chip inputs checked. No chips have been issued.';
+    const page=g.returnToPreview?'preview':'settings';g.returnToPreview=false;g.failed=false;
+    navigate(s,{page,gameId:g.id});s.message=message;
+  }
+  function reduce(previous,a) {
+    const s=copy(previous),g=game(s);s.message='';
+    switch(a.type) {
+      case 'NAV': go(s,a.to);break;
+      case 'RESUME': {const target=s.games.find(g=>g.id===a.id);if(target) navigate(s,{page:target.phase==='Planning'?target.last:'details',gameId:target.id});break;}
+      case 'EDIT_CHIPS': if(g?.phase==='Planning') {g.returnToPreview=true;navigate(s,{page:'chips',gameId:g.id});}break;
+      case 'FIELD': {const t=target(s);if(!t || (s.location.page!=='editor' && t.phase!=='Planning')) break;const r=t.rows.find(r=>r.id===a.id);if(r){r[a.field]=a.value;t.edited[a.id+'-'+a.field]=true;if(s.location.page!=='editor')t.revision++;}break;}
+      case 'BLUR': {const t=target(s);if(t?.edited[a.id+'-'+a.field])t.show[a.id+'-'+a.field]=true;break;}
+      case 'NAME': if(s.editor){s.editor.name=a.value;s.editor.edited.name=true;}else {s.newName=a.value;s.nameEdited=true;}break;
+      case 'NAME_BLUR': if(s.editor?.edited.name)s.editor.show.name=true;else if(!s.editor && s.nameEdited)s.nameShown=true;break;
+      case 'SCOPE': s.scope=a.value;break;
+      case 'ADD': {const t=target(s);if(t && (s.editor || t.phase==='Planning')){t.rows.push(row('r'+s.next++));if(!s.editor)t.revision++;}break;}
+      case 'REMOVE': {const t=target(s),r=t?.rows.find(r=>r.id===a.id);if(r && (s.editor || t.phase==='Planning')){if(hasData([r]))s.modal={type:'remove',id:r.id,value:r.value,quantity:r.quantity};else {t.rows=t.rows.filter(r=>r.id!==a.id);if(!s.editor)t.revision++;}}break;}
+      case 'PICKER': if(g?.phase==='Planning'){s.picker={selected:null};go(s,{page:'picker',gameId:g.id});}break;
+      case 'SELECT': if(s.picker)s.picker.selected=a.id;break;
+      case 'USE': if(s.picker?.selected){if(hasData(g.rows))s.modal={type:'replace',id:s.picker.selected};else useTemplate(s,s.picker.selected);}else s.message='Choose a template first.';break;
+      case 'EDITOR': {
+        const t=s.templates.find(t=>t.id===a.id),origin=s.location.page==='picker'?'picker':'templates';
+        const rows=t?copy(t.rows):[];
+        s.editor={id:t?.id||null,name:t?.name||'',rows,baseName:t?.name||'',baseRows:copy(rows),origin,show:{},edited:{},failed:false};
+        s.location={page:'editor',...(g?{gameId:g.id}:{})};break;
+      }
+      case 'SAVE': if(s.editor){const e=s.editor;e.failed=true;if(nameError(s,e.name,e.id)||!validRows(e.rows)){s.message='Check the highlighted fields.';break;}if(e.origin==='picker' && hasData(g.rows))s.modal={type:'save-use'};else saveEditor(s);}break;
+      case 'EDITOR_BACK': go(s,{page:s.editor.origin==='picker'?'picker':'templates',...(g?{gameId:g.id}:{})});break;
+      case 'CONTINUE': finish(s);break;
+      case 'DELETE': {const t=s.templates.find(t=>t.id===a.id);if(t)s.modal={type:'delete',id:t.id,name:t.name};break;}
+      case 'CONFIRM': {
+        const m=s.modal;s.modal=null;if(!m)break;
+        if(m.type==='remove'){const t=target(s);t.rows=t.rows.filter(r=>r.id!==m.id);if(!s.editor)t.revision++;s.message='Denomination removed.';}
+        if(m.type==='replace')useTemplate(s,m.id);
+        if(m.type==='save-use')saveEditor(s);
+        if(m.type==='delete'){s.templates=s.templates.filter(t=>t.id!==m.id);if(s.scope==='update')clearScope(s);s.message=`Deleted “${m.name}”. Existing game chip sets are unchanged.`;}
+        if(m.type==='discard'){s.editor=null;navigate(s,m.destination);}
+        if(m.type==='leave-name'){if(m.finish){clearScope(s);finish(s);}else navigate(s,m.destination);}
+        break;
+      }
+      case 'CANCEL': s.modal=null;break;
+      case 'STEPS': s.modal={type:'steps'};break;
+      case 'LOCK': s.modal={type:'lock'};break;
+      case 'START': s.modal={type:'start'};break;
+      case 'RESTART': {
+        const wasEditor=s.editor;
+        if(wasEditor){s.location={page:wasEditor.origin==='picker'?'picker':'templates',...(g?{gameId:g.id}:{})};s.editor=null;}
+        s.modal=null;clearScope(s);s.message='Simulated restart: game inputs and saved templates retained; unsaved reusable edits were not applied.';break;
+      }
+    }
+    return s;
+  }
+  return {seed,reduce,game,source,target,fieldError,validRows,totals,nameError,editorDirty,hasData};
+})();
+
+const $=s=>document.querySelector(s),esc=x=>String(x??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const number=x=>BigInt(x).toLocaleString('en');
+const mode=g=>g.mode==='cash'?'Cash game':'Tournament';
+const variants=['paired','ledger','stacked'];
+let variant=new URLSearchParams(location.search).get('variant')||'paired';if(!variants.includes(variant))variant='paired';
+let state=ChipDemo.seed(),scale=1,dialogTrigger=null,scenario='independence',walkStep=0;
+const paths={back:'m15 18-6-6 6-6',arrow:'m9 18 6-6-6-6',plus:'M12 5v14M5 12h14',trash:'M4 7h16M9 7V4h6v3M7 7l1 13h8l1-13M10 10v7M14 10v7',edit:'m4 16 11-11 4 4-11 11H4zM13 7l4 4',layers:'m3 8 9-5 9 5-9 5zM3 12l9 5 9-5M3 16l9 5 9-5',home:'m3 11 9-8 9 8M6 9v12h12V9M10 21v-7h4v7',lock:'M6 10h12v11H6zM8 10V6a4 4 0 0 1 8 0v4',check:'m5 12 4 4L19 6',more:'M5 12h.01M12 12h.01M19 12h.01'};
+const icon=name=>`<svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="${paths[name]||paths.layers}"/></svg>`;
+const b=(label,action,cls='',extra='',symbol='')=>`<button type="button" data-action="${action}" class="${cls}${symbol?' with-icon':''}" ${extra}>${symbol?icon(symbol):''}<span>${esc(label)}</span></button>`;
+const ib=(label,action,symbol,extra='')=>`<button type="button" data-action="${action}" class="icon-button" aria-label="${esc(label)}" ${extra}>${icon(symbol)}</button>`;
+const notice=(text,type='info')=>`<div class="notice ${type}" role="status">${esc(text)}</div>`;
+function context(g){return g?`<p class="context"><span class="badge">${mode(g)}</span><span class="badge">${g.phase}</span><br>${g.created}</p>`:'';}
+function header(title,g,back='games') {return `<div class="topline">${b(back==='games'?'Games':'Back',back,'quiet','',back==='games'?'home':'back')}${g?ib('Game actions and setup lock','lock','more'):''}</div>${context(g)}<h2 tabindex="-1">${esc(title)}</h2>`;}
+function summary(rows){const totals=ChipDemo.totals(rows);return totals?`${rows.length} denomination${rows.length===1?'':'s'} · ${number(totals.chips)} chips · ${number(totals.units)} chip units`:(rows.length?'Incomplete chip set':'No denominations yet');}
+function field(r,field,target){const id=target+'-'+r.id+'-'+field;return `<label class="field field-${field}" for="${id}"><span class="field-title">${field==='value'?'Value (chip units)':'Quantity (chips)'}</span><span class="input-wrap"><input type="text" inputmode="numeric" enterkeyhint="next" autocomplete="off" spellcheck="false" id="${id}" data-row="${r.id}" data-field="${field}" value="${esc(r[field])}" aria-describedby="${id}-error" aria-invalid="false"></span><span class="error" id="${id}-error"></span></label>`;}
+function rowsEditor(t){return `${t.rows.length?t.rows.map((r,i)=>`<section class="chip-row" aria-label="Denomination ${i+1}"><div class="row-heading"><strong>${variant==='stacked'?`Inventory ${i+1}`:`Denomination ${i+1}`}</strong>${ib(`Remove denomination ${i+1}${r.value?' (value '+r.value+')':''}`,'remove','trash',`data-id="${r.id}"`)}</div><div class="field-pair">${(variant==='stacked'?['quantity','value']:['value','quantity']).map(f=>field(r,f,state.editor?'e':'g')).join('')}</div></section>`).join(''):`<div class="empty"><strong>No denominations yet</strong><p class="small">Enter the values and quantities in your physical chip set.</p></div>`}<span class="error" id="rows-error">${t.failed&&!t.rows.length?'Add at least one denomination.':''}</span>${b('Add denomination','add','full','','plus')}`;}
+function nameField(raw){return `<label class="field" for="template-name"><span class="field-title">Template name</span><span class="input-wrap"><input type="text" id="template-name" autocomplete="off" value="${esc(raw)}" aria-invalid="false" aria-describedby="template-name-error" enterkeyhint="${state.editor?'done':'next'}"></span><span class="error" id="template-name-error"></span></label>`;}
+function footer(g){return `<footer class="dock"><p>Draft retained in this demo · no chips issued</p><div class="actions">${b('Back','players','','','back')}${b(g.returnToPreview?'Return to preview':'Continue','continue','primary','id="step-action"','arrow')}</div></footer>`;}
+function chipScreen(g){const t=ChipDemo.source(state,g);return `${header('Chip set',g)}${b('Step 3 of '+(g.mode==='cash'?'5':'6')+' · Setup steps','steps','quiet step-button')}<div id="chip-summary" class="small">${esc(summary(g.rows))}</div>${b('Choose template','picker','full','','layers')}${g.sourceId?`<p class="small">${t?`Copied from “${esc(t.name)}” · this game’s copy`:'Source template deleted · this game’s copy is kept'}</p>`:''}${rowsEditor(g)}<fieldset><legend>When you finish this edit</legend><label class="choice"><input type="radio" name="scope" value="game" ${state.scope==='game'?'checked':''}><span><strong>Only this game</strong></span></label>${t?`<label class="choice"><input type="radio" name="scope" value="update" ${state.scope==='update'?'checked':''}><span><strong>Also update chip set template</strong><small>Update “${esc(t.name)}” for future games. Existing games stay unchanged.</small></span></label>`:`<label class="choice"><input type="radio" name="scope" value="new" ${state.scope==='new'?'checked':''}><span><strong>Save as new template</strong><small>Create a reusable copy when you continue.</small></span></label>`}</fieldset>${state.scope==='new'?nameField(state.newName):''}${footer(g)}`;}
+function gamesScreen(){return `${header('Games')}${b('New game','handoff','primary full','','plus')}<div class="section-title"><h3>In progress</h3></div>${state.games.filter(g=>g.phase==='In progress').map(gameCard).join('')}<div class="section-title"><h3>Planning</h3></div>${state.games.filter(g=>g.phase==='Planning').map(gameCard).join('')}<nav class="secondary-nav">${b('Chip set templates','templates','quiet','','layers')}${b('Completed setup fixture','completed','quiet','','lock')}</nav>`;}
+function gameCard(g){return `<button data-action="resume" data-id="${g.id}" class="game-card"><small>${mode(g)} · ${g.phase} · ${g.created}</small><strong>${esc(g.names.join(', '))}</strong><small>${g.phase==='Planning'?'Resume setup':'Inspect locked setup'} →</small></button>`;}
+function templateList(picker){const sorted=[...state.templates].sort((a,b)=>a.name.localeCompare(b.name));return sorted.length?sorted.map(t=>picker?`<label class="choice"><input type="radio" name="template" value="${t.id}" ${state.picker?.selected===t.id?'checked':''}><span><strong>${esc(t.name)}</strong><small>${esc(summary(t.rows))}</small><small>${t.rows.map(r=>esc(r.value)).join(' / ')} chip units</small></span></label>`:`<div class="template-row"><div class="row-heading"><strong class="name">${esc(t.name)}</strong>${ib('Edit '+t.name,'edit-template','edit',`data-id="${t.id}"`)}${ib('Delete '+t.name,'delete-template','trash',`data-id="${t.id}"`)}</div><p class="small">${esc(summary(t.rows))}</p></div>`).join(''):`<div class="empty"><strong>No templates yet</strong><p class="small">${picker?'Create one here, or go back and enter chips only for this game.':'Save a chip set for future games.'}</p></div>`;}
+function pickerScreen(g){return `${header('Choose template',g,'chips')}<p class="small">Selecting here doesn’t change the game until Use template.</p>${b('New template','new-template','full','','plus')}${templateList(true)}<footer class="dock"><div class="actions">${b('Back','chips','','','back')}${b('Use template','use-template','primary','id="step-action"','check')}</div></footer>`;}
+function templatesScreen(){return `${header('Chip set templates')}${b('New template','new-template','primary full','','plus')}<p class="small" style="margin-top:16px">Changes here affect future selections, not existing games.</p>${templateList(false)}`;}
+function editorScreen(g){const e=state.editor;return `${header(e.id?'Edit template':'New template',g,'editor-back')}${notice('Reusable template · changes apply only after Save. Existing games stay unchanged.')}${nameField(e.name)}<div id="chip-summary" class="small">${esc(summary(e.rows))}</div>${rowsEditor(e)}<footer class="dock"><p id="editor-status">${ChipDemo.editorDirty(e)?'Unsaved changes':'Not changed'}</p><div class="actions">${b('Cancel','editor-back','','','back')}${b(e.origin==='picker'?'Save and use':'Save','save','primary','id="step-action"','check')}</div></footer>`;}
+function readRows(rows){return `<div class="card">${rows.map(r=>`<div class="read-row"><strong>${esc(r.value)} chip units</strong><span>${esc(r.quantity)} chips</span></div>`).join('')}</div>`;}
+function neighborScreen(g,page){if(page==='preview'){const valid=ChipDemo.validRows(g.rows),totals=ChipDemo.totals(g.rows);return `${header('Distribution preview',g)}${notice('Handoff to #35 · no allocation or feasibility solver runs in this prototype.')}<div class="card"><h3>Chip set</h3><p>${esc(summary(g.rows))}</p>${!valid?notice('Chip set needs attention.','failure'):totals.chips==='0'?notice('There are no chips available. A distribution cannot be formed.','failure'):''}${b('Edit chip set','edit-chips','','','edit')}</div><dl class="facts"><div><dt>Players</dt><dd>${esc(g.names.join(', '))}</dd></div><div><dt>Retained settings</dt><dd>EUR ${g.fields.buyin} · ${g.fields.depth} BB · coverage ${g.fields.coverage} · reserve ${g.fields.reserve}</dd></div></dl>${b('Start unavailable · distribution not implemented','start','full','aria-disabled="true"')}`;}
+  return `${header(page==='players'?'Players':'Game settings',g)}${notice('Neighboring-step handoff · detailed Planning interactions are in the approved #33 prototype.')}<dl class="facts"><div><dt>Players</dt><dd>${esc(g.names.join(', '))}</dd></div>${Object.entries(g.fields).map(([k,v])=>`<div><dt>${esc({buyin:'Buy-in (EUR)',depth:'Starting stack (BB)',coverage:'Blind-payment coverage',reserve:'Chip reserve (stacks)',preference:'Distribution preference'}[k])}</dt><dd>${esc(v)}</dd></div>`).join('')}</dl><footer class="dock"><div class="actions">${b(page==='players'?'Chip set':'Back to chip set','chips','','','back')}${page==='settings'?b('Review inputs','preview','primary','','arrow'):''}</div></footer>`;}
+function detailsScreen(g){return `${header('Game details',g)}<p class="badge">${icon('lock')} Setup locked</p>${notice(g.phase==='Completed'?'Completed setup is read-only. Reopen first; Return to Planning is a separate reset.':'To change this chip set, use the separately confirmed Return to Planning action. Gather and redistribute physical chips.')}<h3>Chip set</h3><p class="small">${esc(summary(g.rows))}</p>${readRows(g.rows)}${b('Why can’t I edit?','lock','full','','lock')}<p class="small" style="margin-top:16px">Template management can change future selections, never this game’s copy. Lifecycle actions are not implemented in this study.</p>`;}
+function handoffScreen(){return `${header('New game')}${notice('Mode and Players belong to the approved #33 setup prototype. These buttons load clearly named prepared fixtures at the Chip set boundary.')}<div class="stack">${b('Open six-player cash fixture','cash-fixture','primary')}${b('Open two-player tournament fixture','tournament-fixture')}</div>`;}
+function render(focus=null){const g=ChipDemo.game(state),p=state.location.page;let html='';
+  if(p==='chips')html=chipScreen(g);if(p==='games')html=gamesScreen();if(p==='picker')html=pickerScreen(g);if(p==='templates')html=templatesScreen();if(p==='editor')html=editorScreen(g);if(['settings','players','preview'].includes(p))html=neighborScreen(g,p);if(p==='details')html=detailsScreen(g);if(p==='handoff')html=handoffScreen();
+  $('#app').innerHTML=`<div class="page">${state.message?notice(state.message):''}${html}</div>`;
+  $('#app').dataset.variant=variant;$('#app').style.setProperty('--scale',scale);$('#app').dataset.large=String(scale>=1.5);
+  updateFields();renderInspector();renderDialog();$('#variant').value=variant;
+  if(focus){const node=focus==='heading'?$('#app h2'):document.getElementById(focus);node?.focus({preventScroll:focus!=='heading'});}
+}
+function updateFields(){const t=ChipDemo.target(state);if(t && ['chips','editor'].includes(state.location.page)){
+  for(const input of document.querySelectorAll('#app input[data-row]')){const error=ChipDemo.fieldError(t.rows,input.dataset.row,input.dataset.field),shown=t.failed||t.show[input.dataset.row+'-'+input.dataset.field];input.setAttribute('aria-invalid',String(!!error&&!!shown));document.getElementById(input.id+'-error').textContent=shown?error:'';}
+  const summaryNode=$('#chip-summary');if(summaryNode)summaryNode.textContent=summary(t.rows);
+  const status=$('#editor-status');if(status)status.textContent=ChipDemo.editorDirty(state.editor)?'Unsaved changes':'Not changed';
+  const name=$('#template-name');if(name){const shown=state.editor?(state.editor.failed||state.editor.show.name):state.nameShown;const error=ChipDemo.nameError(state,state.editor?state.editor.name:state.newName,state.editor?.id);name.setAttribute('aria-invalid',String(!!error&&!!shown));$('#template-name-error').textContent=shown?error:'';}
+}}
+function renderInspector(){const g=ChipDemo.game(state);$('#inspector').innerHTML=`<details open><summary>Live state · review only</summary><dl><dt>Location</dt><dd>${esc(state.location.page)}${g?' · '+g.id:''}</dd><dt>Optional template operation</dt><dd>${esc({game:'Only this game',update:'Update source on Continue',new:'Create template on Continue'}[state.scope])}</dd><dt>Proposed new-template name</dt><dd>${esc(state.newName||'None')}</dd></dl><h3>Independent game copies</h3>${state.games.map(game=>`<details ${g?.id===game.id?'open':''}><summary>${game.id} · ${mode(game)} · ${game.phase}</summary><dl><dt>Captured chip fields</dt><dd>${game.rows.length?game.rows.map(r=>`[${esc(r.value||'blank')}] × [${esc(r.quantity||'blank')}]`).join(' · '):'Empty'}</dd><dt>Source</dt><dd>${esc(ChipDemo.source(state,game)?.name||(game.sourceId?'Deleted':'None'))}</dd><dt>Resume / correction return</dt><dd>${game.last} / ${game.returnToPreview?'Return to preview':'Sequential Continue'}</dd><dt>Later settings retained</dt><dd>EUR ${game.fields.buyin} · ${game.fields.depth} BB · coverage ${game.fields.coverage} · ${game.fields.preference} · reserve ${game.fields.reserve}</dd></dl></details>`).join('')}<h3>Accepted reusable templates</h3>${state.templates.length?state.templates.map(t=>`<p><strong>${esc(t.name)}</strong><br>${t.rows.map(r=>`${esc(r.value)} × ${esc(r.quantity)}`).join(' · ')}</p>`).join(''):'<p>None</p>'}<h3>Unaccepted reusable editor</h3><p>${state.editor?`${esc(state.editor.name||'(blank name)')} · ${esc(summary(state.editor.rows))} · ${ChipDemo.editorDirty(state.editor)?'dirty':'unchanged'}`:'None'}</p><h3>Inventory / lifecycle</h3><p>No chips issued, returned or moved by any action in this prototype. No distribution, reset, reopen or settlement is executed.</p></details>`;}
+function modalContent(){const m=state.modal,g=ChipDemo.game(state);if(!m)return null;
+  if(m.type==='remove')return {title:'Remove denomination?',text:`Remove value “${m.value||'not entered'}” with quantity “${m.quantity||'not entered'}” from ${state.editor?'this unsaved template edit':'this game’s chip set'}?`,confirm:'Remove denomination'};
+  if(m.type==='replace'||m.type==='save-use')return {title:'Replace this game’s chip set?',text:`Replace this game’s entered chip data with “${m.type==='save-use'?state.editor.name:state.templates.find(t=>t.id===m.id)?.name}”? Other settings, templates and game copies stay unchanged.${m.type==='save-use'?' The new template is saved only if you accept.':''}`,confirm:m.type==='save-use'?'Save and replace':'Replace chip set'};
+  if(m.type==='delete')return {title:'Delete template?',text:`Permanently delete “${m.name}”? Every existing game keeps its chip set. Future games can no longer select this template.`,confirm:'Delete template'};
+  if(m.type==='discard')return {title:'Discard template changes?',text:'The reusable template has not been saved. Discarding leaves the previous saved template and every game unchanged.',confirm:'Discard changes',cancel:'Keep editing'};
+  if(m.type==='leave-name')return {title:'Leave without saving a template?',text:'The entered new-template name will be discarded. This game’s chip changes remain retained as a draft; no reusable template will be created.',confirm:'Leave without template',cancel:'Keep editing'};
+  if(m.type==='lock')return {title:'Setup locks and game actions',text:g?.phase==='Completed'?'This game is Completed. Reopen preserves records but withdraws final Payments. Return to Planning is a separate subsequent reset that clears play records and requires gathering and redistributing chips. These lifecycle actions are handoffs, not working controls here.':g?.phase==='In progress'?'Chip setup is locked after Start, even with no play events. Return to Planning requires a separate confirmation: play and chip-issuance records are cleared, roster/setup retained, and physical chips must be gathered and redistributed. This study only explains the route.':'This Planning draft is editable. Reset, reopen and game deletion are separate lifecycle workflows, not chip-template operations.',cancel:'Close'};
+  if(m.type==='start')return {title:'Distribution handoff',text:'No solver runs here. Start belongs to the next design decision (#35), after complete setup, feasible allocations/reserve and any explicit alternative-depth approval. Checking these chip fields never issues chips.',cancel:'Close'};
+  if(m.type==='steps')return {title:'Setup steps',steps:true,cancel:'Close'};
+}
+function renderDialog(){const dialog=$('#dialog'),m=modalContent();if(!m){if(dialog.open)dialog.close();return;}
+  dialog.style.setProperty('--scale',scale);dialog.innerHTML=`<h2 id="dialog-title">${esc(m.title)}</h2>${m.text?`<p>${esc(m.text)}</p>`:''}${m.steps?['players','chips','settings','preview'].map(p=>`<button class="step-link" data-step="${p}">${esc({players:'Players',chips:'Chip set',settings:'Game settings',preview:'Distribution preview'}[p])}<small>${p==='chips'?(ChipDemo.validRows(ChipDemo.game(state).rows)?'Complete inputs · not feasibility':'Needs attention'):'Neighboring workflow handoff'}</small></button>`).join(''):''}<div class="actions">${b(m.cancel||'Cancel','cancel-modal')}${m.confirm?b(m.confirm,'confirm-modal','danger'):''}</div>`;
+  if(!dialog.open)dialog.showModal();dialog.querySelector('[data-action="cancel-modal"]').focus();
+}
+function send(action,{partial=false,focus=null}={}){const beforeModal=!!state.modal;state=ChipDemo.reduce(state,action);
+  if(!beforeModal && state.modal){const active=document.activeElement;dialogTrigger={id:active?.id,action:active?.dataset.action,dataId:active?.dataset.id};}
+  if(partial){updateFields();renderInspector();}else render(focus);
+  if(state.message)$('#announcement').textContent=state.message;
+  if(beforeModal&&!state.modal){const trigger=(dialogTrigger?.id&&document.getElementById(dialogTrigger.id))||[...document.querySelectorAll('#app [data-action]')].find(x=>dialogTrigger?.action&&x.dataset.action===dialogTrigger.action&&x.dataset.id===dialogTrigger.dataId);(trigger||$('#app h2'))?.focus({preventScroll:true});dialogTrigger=null;}
+}
+function focusFirstError(){const node=$('#app input[aria-invalid="true"]')||$('#app [data-action="add"]');node?.focus();}
+function navigation(page){return {type:'NAV',to:{page,...(ChipDemo.game(state)&&page!=='games'&&page!=='templates'&&page!=='handoff'?{gameId:ChipDemo.game(state).id}:{})}};}
+document.addEventListener('click',e=>{const button=e.target.closest('[data-action]');if(!button)return;const action=button.dataset.action,id=button.dataset.id;
+  if(['games','chips','templates','players','settings','preview','handoff'].includes(action)){send(navigation(action),{focus:'heading'});return;}
+  if(action==='resume'){send({type:'RESUME',id},{focus:'heading'});return;}
+  if(action==='completed'){send({type:'RESUME',id:'g4'},{focus:'heading'});return;}
+  if(action==='cash-fixture'||action==='tournament-fixture'){send({type:'RESUME',id:action==='cash-fixture'?'g1':'g2'},{focus:'heading'});return;}
+  const map={picker:'PICKER','use-template':'USE','new-template':'EDITOR','edit-template':'EDITOR','delete-template':'DELETE','editor-back':'EDITOR_BACK',add:'ADD',remove:'REMOVE',continue:'CONTINUE',save:'SAVE','edit-chips':'EDIT_CHIPS',steps:'STEPS',lock:'LOCK',start:'START','cancel-modal':'CANCEL','confirm-modal':'CONFIRM'};
+  if(map[action]){const oldPage=state.location.page;send({type:map[action],id});if(action==='add'){const r=ChipDemo.target(state).rows.at(-1);document.getElementById((state.editor?'e':'g')+'-'+r.id+'-'+(variant==='stacked'?'quantity':'value'))?.focus();}else if((action==='save'&&state.editor?.failed)||(action==='continue'&&ChipDemo.game(state)?.failed))focusFirstError();else if(state.location.page!==oldPage)$('#app h2')?.focus();}
+});
+document.addEventListener('input',e=>{const input=e.target;if(input.dataset.row)send({type:'FIELD',id:input.dataset.row,field:input.dataset.field,value:input.value},{partial:true});if(input.id==='template-name')send({type:'NAME',value:input.value},{partial:true});});
+document.addEventListener('focusout',e=>{if(e.target.dataset.row)send({type:'BLUR',id:e.target.dataset.row,field:e.target.dataset.field},{partial:true});if(e.target.id==='template-name')send({type:'NAME_BLUR'},{partial:true});});
+document.addEventListener('change',e=>{if(e.target.name==='scope'){const value=e.target.value;send({type:'SCOPE',value});document.querySelector(`#app [name="scope"][value="${value}"]`)?.focus({preventScroll:true});}if(e.target.name==='template')send({type:'SELECT',id:e.target.value},{partial:true});});
+$('#dialog').addEventListener('cancel',e=>{e.preventDefault();send({type:'CANCEL'});});
+$('#dialog').addEventListener('click',e=>{const button=e.target.closest('[data-step]');if(!button)return;const p=button.dataset.step;state.modal=null;$('#dialog').close();send(navigation(p),{focus:'heading'});});
+document.addEventListener('keydown',e=>{if(e.key==='Enter'&&e.target.closest('#app')&&e.target.matches('input[type="text"]')){e.preventDefault();if(e.target.id==='template-name'&&state.editor){send({type:'SAVE'});if(state.editor?.failed)focusFirstError();return;}const fields=[...document.querySelectorAll('#app input[type="text"]')];const next=fields[fields.indexOf(e.target)+1]||$('#step-action');next?.focus();}
+  if((e.key==='ArrowLeft'||e.key==='ArrowRight')&&!e.target.closest('input,textarea,select,[contenteditable],dialog,[role="tablist"]')){e.preventDefault();setVariant(variants[(variants.indexOf(variant)+(e.key==='ArrowLeft'?2:1))%3]);}
+});
+function setVariant(value){const active=document.activeElement?.id;variant=value;const url=new URL(location.href);url.searchParams.set('variant',variant);history.replaceState(null,'',url);render(active);}
+$('#variant').addEventListener('change',e=>setVariant(e.target.value));$('#previous-variant').addEventListener('click',()=>setVariant(variants[(variants.indexOf(variant)+2)%3]));$('#next-variant').addEventListener('click',()=>setVariant(variants[(variants.indexOf(variant)+1)%3]));
+$('#scale').addEventListener('change',e=>{scale=Number(e.target.value);render();});
+document.querySelectorAll('[data-review]').forEach(button=>button.addEventListener('click',()=>{const action=button.dataset.review;if(['reset','empty','dense'].includes(action)){state=ChipDemo.seed(action==='empty',action==='dense');walkStep=0;render();renderWalkthrough();}if(action==='restart')send({type:'RESTART'},{focus:'heading'});if(action==='delete-source'){const g=ChipDemo.game(state);if(g&&ChipDemo.source(state,g))send({type:'DELETE',id:g.sourceId});else {state.message='Open a game with an existing source template first.';render();}}}));
+
+const scenarios={
+  independence:{label:'Game vs template',description:'Change a game, then explicitly update the template. Other captured game copies never change.',steps:[
+    ['Edit this game’s 1-unit quantity to 240',()=>{send({type:'FIELD',id:ChipDemo.game(state).rows[0].id,field:'quantity',value:'240'});}],
+    ['Continue with Only this game',()=>send({type:'CONTINUE'})],
+    ['Return to chip set; choose explicit template update',()=>{send(navigation('chips'));send({type:'SCOPE',value:'update'});}],
+    ['Continue and inspect unchanged g2 / g3 / g4',()=>send({type:'CONTINUE'})]
+  ]},
+  invalid:{label:'Invalid & resumed',description:'Blank, duplicate and malformed inputs remain editable drafts. Restart does not validate or coerce them.',steps:[
+    ['Enter duplicate value 5 in the first row',()=>{const id=ChipDemo.game(state).rows[0].id;send({type:'FIELD',id,field:'value',value:'5'});send({type:'BLUR',id,field:'value'});}],
+    ['Try Continue; no template changes',()=>send({type:'CONTINUE'})],
+    ['Leave for Games, then simulate restart',()=>{send(navigation('games'));send({type:'RESTART'});}],
+    ['Resume the raw invalid chip set',()=>send({type:'RESUME',id:'g1'})],
+    ['Correct the value and explicitly set quantity 0',()=>{const id=ChipDemo.game(state).rows[0].id;send({type:'FIELD',id,field:'value',value:'1'});send({type:'FIELD',id,field:'quantity',value:'0'});send({type:'CONTINUE'});}]
+  ]},
+  deleted:{label:'Deleted source',description:'Deleting a reusable template keeps all game copies. A new template requires a fresh explicit choice and name.',steps:[
+    ['Delete Weeknight set and accept its confirmation',()=>{send({type:'DELETE',id:'t1'});send({type:'CONFIRM'});}],
+    ['Choose Save as new template; enter a new name',()=>{send({type:'SCOPE',value:'new'});send({type:'NAME',value:'Weeknight replacement'});}],
+    ['Continue to create the reusable copy explicitly',()=>send({type:'CONTINUE'})]
+  ]},
+  creation:{label:'Create & replace',description:'Save and use replaces the game only after acceptance. Cancelling the replacement saves neither record.',steps:[
+    ['Open picker and create a template',()=>{send({type:'PICKER'});send({type:'EDITOR'});}],
+    ['Enter Pocket set: 5-unit chips, quantity 80',()=>{send({type:'NAME',value:'Pocket set'});send({type:'ADD'});const id=state.editor.rows[0].id;send({type:'FIELD',id,field:'value',value:'5'});send({type:'FIELD',id,field:'quantity',value:'80'});}],
+    ['Try Save and use, then cancel replacement: neither record changes',()=>{send({type:'SAVE'});send({type:'CANCEL'});}],
+    ['Save and use, then accept the replacement',()=>{send({type:'SAVE'});send({type:'CONFIRM'});}]
+  ]},
+  interruption:{label:'Unsaved editor',description:'Reusable editing is explicit-save; game drafts are retained separately.',steps:[
+    ['Open Weeknight set in separate management',()=>{send(navigation('templates'));send({type:'EDITOR',id:'t1'});}],
+    ['Change its name and first quantity without saving',()=>{send({type:'NAME',value:'Unaccepted change'});send({type:'FIELD',id:state.editor.rows[0].id,field:'quantity',value:'999'});}],
+    ['Cancel, then Keep editing',()=>{send({type:'EDITOR_BACK'});send({type:'CANCEL'});}],
+    ['Simulate restart; old accepted template remains',()=>send({type:'RESTART'})]
+  ]},
+  correction:{label:'Correction & locks',description:'Return straight to preview after correction. Started setup stays readable but locked.',steps:[
+    ['Open preview, then edit chip set',()=>{send(navigation('preview'));send({type:'EDIT_CHIPS'});}],
+    ['Change quantity, leave and simulate restart',()=>{send({type:'FIELD',id:ChipDemo.game(state).rows[0].id,field:'quantity',value:'210'});send(navigation('games'));send({type:'RESTART'});}],
+    ['Resume and Return to preview',()=>{send({type:'RESUME',id:'g1'});send({type:'CONTINUE'});}],
+    ['Inspect locked cash-game chip set',()=>send({type:'RESUME',id:'g3'})],
+    ['Read the explicit reset guidance',()=>send({type:'LOCK'})]
+  ]}
+};
+function renderWalkthrough(){const keys=Object.keys(scenarios);$('.scenario-tabs').innerHTML=keys.map(k=>`<button role="tab" id="tab-${k}" data-scenario="${k}" aria-selected="${k===scenario}" tabindex="${k===scenario?'0':'-1'}" aria-controls="walkthrough">${scenarios[k].label}</button>`).join('');const selected=scenarios[scenario];$('#walkthrough').setAttribute('aria-labelledby','tab-'+scenario);$('#walkthrough').innerHTML=`<p>${selected.description}</p><div class="walk-buttons">${selected.steps.map(([label],i)=>`<button data-walk="${i}" ${i>walkStep?'disabled':''}>${i<walkStep?'✓':i+1} · ${label}</button>`).join('')}</div>`;}
+$('.scenario-tabs').addEventListener('click',e=>{const tab=e.target.closest('[data-scenario]');if(tab){scenario=tab.dataset.scenario;walkStep=0;state=ChipDemo.seed();render();renderWalkthrough();$('#tab-'+scenario).focus();}});
+$('.scenario-tabs').addEventListener('keydown',e=>{if(!['ArrowLeft','ArrowRight','Home','End'].includes(e.key))return;e.preventDefault();const keys=Object.keys(scenarios),i=keys.indexOf(scenario);const next=e.key==='Home'?keys[0]:e.key==='End'?keys.at(-1):keys[(i+(e.key==='ArrowLeft'?keys.length-1:1))%keys.length];document.getElementById('tab-'+next).click();});
+$('#walkthrough').addEventListener('click',e=>{const button=e.target.closest('[data-walk]');if(!button)return;const i=Number(button.dataset.walk);if(i<walkStep){state=ChipDemo.seed();for(let n=0;n<i;n++)scenarios[scenario].steps[n][1]();}scenarios[scenario].steps[i][1]();walkStep=i+1;renderWalkthrough();});
+const screen=new URLSearchParams(location.search).get('screen');if(['games','templates','picker','preview','details'].includes(screen)){state.location={page:screen,...(screen==='games'||screen==='templates'?{}:{gameId:screen==='details'?'g3':'g1'})};if(screen==='picker')state.picker={selected:null};}
+render();renderWalkthrough();
+</script>
+</html>
