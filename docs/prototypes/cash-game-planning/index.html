@@ -5,17 +5,17 @@
 <title>Cash-game planning · interactive prototype</title>
 <style>
   * { box-sizing: border-box; }
-  :root { color-scheme: dark; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; background: #0b1117; color: #f1f4f5; }
-  body { margin: 0; padding: 28px 16px 60px; }
+  :root { --accent: #8ec5ff; --on-accent: #10263d; --tint: #203347; color-scheme: dark; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; background: #0b1117; color: #f1f4f5; }
+  body { margin: 0; padding: 28px 16px 140px; }
   button, input, select { font: inherit; }
   button, summary, label.choice { -webkit-tap-highlight-color: transparent; }
   button, select, summary { cursor: pointer; }
   button { min-width: 48px; min-height: 48px; padding: 12px 16px; border: 1px solid #7c90a0; border-radius: 14px; background: #1e2a34; color: #f1f4f5; line-height: 1.35; }
   button:active { background: #364653; }
-  :focus-visible { outline: 3px solid #daf587; outline-offset: 4px; }
+  :focus-visible { outline: 3px solid var(--accent); outline-offset: 4px; }
   h1, h2, h3, p { margin-top: 0; }
   p { line-height: 1.55; }
-  a { color: #daf587; text-underline-offset: 3px; }
+  a { color: var(--accent); text-underline-offset: 3px; }
   .workshop { max-width: 920px; margin: auto; }
   .workshop > header { max-width: 690px; margin: 0 auto 24px; }
   .workshop h1 { font-size: 28px; letter-spacing: -.035em; margin-bottom: 12px; }
@@ -27,7 +27,7 @@
   .review button, .review select { font-size: 13px; }
   .review select { min-height: 48px; padding: 8px; border-radius: 12px; background: #1e2a34; border: 1px solid #7c90a0; color: #f1f4f5; }
   .scenario-tabs { margin: 18px 0 12px; }
-  .scenario-tabs [aria-selected="true"] { border-color: #daf587; color: #daf587; background: #2c3823; }
+  .scenario-tabs [aria-selected="true"] { border-color: var(--accent); color: var(--accent); background: var(--tint); }
   .walk-buttons { flex-direction: column; }
   .walk-buttons button { text-align: left; }
   #walkthrough h3 { font-size: 16px; margin-top: 16px; }
@@ -42,8 +42,8 @@
   .context { margin-bottom: 16px; }
   .muted { color: #b3c0ca; }
   .quiet { background: transparent; border-color: transparent; }
-  .primary { background: #daf587; border-color: #daf587; color: #1e2910; font-weight: 650; border-radius: 100px; }
-  .primary:active { background: #c5de77; }
+  .primary { background: var(--accent); border-color: var(--accent); color: var(--on-accent); font-weight: 650; border-radius: 100px; }
+  .primary:active { background: var(--accent); filter: brightness(.92); }
   .danger { color: #ffb3aa; border-color: #ffb3aa; }
   .full { width: 100%; }
   .badge { display: inline-block; font-size: .72em; line-height: 1.4; font-weight: 600; padding: 5px 10px; border: 1px solid #7c90a0; border-radius: 100px; }
@@ -59,31 +59,34 @@
   .roster, .saved-list { list-style: none; padding: 0; margin: 20px 0; }
   .player { display: flex; align-items: center; flex-wrap: wrap; gap: 10px; border-bottom: 1px solid #364653; padding: 12px 0; }
   .player-name { min-width: 0; flex: 1; font-weight: 600; }
-  .initial { width: 40px; height: 40px; flex-shrink: 0; border-radius: 50%; display: grid; place-items: center; font-size: .8em; background: #2c3823; color: #daf587; }
+  .initial { width: 40px; height: 40px; flex-shrink: 0; border-radius: 50%; display: grid; place-items: center; font-size: .8em; background: var(--tint); color: var(--accent); }
   .player button { font-size: .8em; }
   .player .choice { margin: 0; flex: 1; min-width: 0; }
   .field { display: block; min-width: 0; margin: 24px 0; }
-  .field-title { display: block; font-size: .9em; font-weight: 650; margin-bottom: 8px; }
+  .field-title { display: flex; align-items: center; gap: 8px; font-size: .9em; font-weight: 650; margin-bottom: 8px; }
   .input-wrap { display: flex; align-items: center; border: 1px solid #7c90a0; border-radius: 16px; overflow: hidden; background: #111920; }
-  .input-wrap:focus-within { outline: 3px solid #daf587; outline-offset: 3px; }
+  .input-wrap:focus-within { outline: 3px solid var(--accent); outline-offset: 3px; }
   input[type="text"], input[type="search"] { min-height: 54px; min-width: 0; width: 100%; padding: 12px; background: transparent; border: 0; color: #f1f4f5; font-size: 1.15em; border-radius: 0; font-variant-numeric: tabular-nums; }
   .input-wrap input:focus { outline: none; }
   .input-wrap > span { padding: 0 12px; font-size: .8em; color: #b3c0ca; flex-shrink: 0; }
   .input-wrap:has([aria-invalid="true"]) { border: 2px solid #ffb3aa; }
   .hint { display: block; font-size: .78em; color: #b3c0ca; margin-top: 7px; }
+  .hint:empty { display: none; }
+  .reserve-reset { margin: -12px 0 16px; padding-left: 0; font-size: .8em; color: var(--accent); }
   .error { color: #ffb3aa; font-size: .8em; display: block; margin-top: 8px; }
   .error:empty { display: none; }
   fieldset { border: 0; min-width: 0; margin: 24px 0; padding: 0; }
   legend { font-size: .9em; font-weight: 650; margin-bottom: 12px; }
   .choice { display: flex; align-items: flex-start; gap: 10px; min-height: 54px; padding: 14px; margin-bottom: 8px; border: 1px solid #7c90a0; background: #1e2a34; border-radius: 18px; cursor: pointer; }
-  .choice:has(:checked) { border-color: #daf587; box-shadow: inset 0 0 0 1px #daf587; background: #2c3823; }
+  .choice:has(:checked) { border-color: var(--accent); box-shadow: inset 0 0 0 1px var(--accent); background: var(--tint); }
   .choice:has(:disabled) { cursor: default; }
-  .choice input { width: 20px; height: 20px; margin: .2em 0 0; flex-shrink: 0; accent-color: #daf587; }
+  .choice input { width: 20px; height: 20px; margin: .2em 0 0; flex-shrink: 0; accent-color: var(--accent); }
   .choice strong { display: block; font-size: .88em; }
   .choice small { display: block; color: #b3c0ca; font-size: .76em; margin-top: 4px; }
+  .choice small:empty { display: none; }
   .notice { border-left: 3px solid #f2d08a; padding: 12px 14px; margin: 16px 0; color: #f2d08a; background: #383020; font-size: .8em; }
   .notice strong { display: block; margin-bottom: 4px; }
-  .notice.info { color: #daf587; border-color: #daf587; background: #2c3823; }
+  .notice.info { color: var(--accent); border-color: var(--accent); background: var(--tint); }
   .notice.failure { color: #ffb3aa; border-color: #ffb3aa; background: #3d2427; }
   .dock { margin: 28px -20px -30px; padding: 20px; border-top: 1px solid #364653; background: #1e2a34; }
   .dock p { font-size: .75em; color: #b3c0ca; margin-bottom: 12px; }
@@ -98,7 +101,18 @@
   .number { font-size: 2em; font-weight: 700; font-variant-numeric: tabular-nums; line-height: 1.25; }
   .empty { padding: 24px 18px; border: 1px dashed #7c90a0; border-radius: 20px; margin: 20px 0; }
   .secondary-nav { border-top: 1px solid #364653; margin-top: 28px; padding-top: 12px; }
-  .secondary-nav button { display: block; text-align: left; width: 100%; }
+  .secondary-nav button { display: flex; justify-content: flex-start; text-align: left; width: 100%; }
+  .icon { width: 1.25em; height: 1.25em; flex-shrink: 0; vertical-align: middle; }
+  .field-title .icon { color: #b3c0ca; }
+  .with-icon { display: inline-flex; justify-content: center; align-items: center; gap: 8px; }
+  .button-label { min-width: 0; }
+  .icon-button { display: inline-grid; place-items: center; padding: 12px; }
+  .icon-button .icon { width: 22px; height: 22px; }
+  .palette-bar { position: fixed; z-index: 5; bottom: max(14px, env(safe-area-inset-bottom)); left: 50%; transform: translateX(-50%); display: flex; align-items: center; gap: 8px; padding: 8px; width: min(350px, calc(100% - 24px)); border: 1px solid #7c90a0; border-radius: 22px; background: #0b1117; box-shadow: 0 6px 32px #0009; }
+  .palette-bar > div { flex: 1; min-width: 0; }
+  .palette-bar label { display: block; font-size: 10px; letter-spacing: .09em; color: #b3c0ca; margin: 0 8px 2px; }
+  .palette-bar select { width: 100%; min-height: 48px; border: 0; border-radius: 10px; padding: 8px; background: #1e2a34; color: var(--accent); font-size: 14px; font-weight: 600; }
+  .palette-bar button { padding: 10px; }
   #inspector { font-size: 13px; color: #b3c0ca; }
   #inspector summary { min-height: 48px; padding: 12px 0; color: #f1f4f5; cursor: pointer; }
   #inspector h3 { font-size: 14px; margin: 20px 0 8px; color: #f1f4f5; }
@@ -119,7 +133,7 @@
     #inspector { margin-top: 24px; }
     .workshop > header { max-width: 430px; }
   }
-  @media (max-width: 420px) { body { padding: 16px 8px 40px; } #app { border-radius: 18px; } .workshop h1 { font-size: 24px; } }
+  @media (max-width: 420px) { body { padding: 16px 8px 140px; } #app { border-radius: 18px; } .workshop h1 { font-size: 24px; } }
   [data-large="true"] .actions { flex-direction: column; }
   [data-large="true"] .player { align-items: flex-start; }
   [data-large="true"] .player .choice { flex-basis: 100%; }
@@ -129,7 +143,7 @@
   <header>
     <p class="eyebrow">Throwaway interaction study · Current</p>
     <h1>From a new game to a ready-to-review plan.</h1>
-    <p class="intro">Try the roster, all-visible settings, saved players and correction path. Does the flow keep your work understandable when you leave, change your mind or enter an invalid value?</p>
+    <p class="intro">Try the flow and compare accent colors in the bottom bar. Tell me your preferred color and any feedback in chat; nothing is submitted from this page.</p>
     <details class="review">
       <summary>Review controls &amp; guided walkthroughs</summary>
       <p>All state stays in this page’s memory. Reload resets the demo. “Simulate restart” exercises a proposed resume interaction, not real storage. Chip editing, payout setup and distribution are labelled handoff screens.</p>
@@ -142,12 +156,18 @@
         <button role="tab" id="tab-invalid" data-scenario="invalid" aria-controls="walkthrough" aria-selected="false" tabindex="-1">Invalid &amp; resumed</button>
         <button role="tab" id="tab-names" data-scenario="names" aria-controls="walkthrough" aria-selected="false" tabindex="-1">Independent names</button>
         <button role="tab" id="tab-mode" data-scenario="mode" aria-controls="walkthrough" aria-selected="false" tabindex="-1">Mode &amp; reserve</button>
+        <button role="tab" id="tab-correction" data-scenario="correction" aria-controls="walkthrough" aria-selected="false" tabindex="-1">Return to preview</button>
       </div>
       <div id="walkthrough" role="tabpanel" aria-labelledby="tab-first"></div>
     </details>
   </header>
   <div class="preview-layout"><main id="app" aria-label="Phone prototype"></main><aside id="inspector" aria-label="Prototype state"></aside></div>
 </div>
+<nav class="palette-bar" aria-label="Prototype accent comparison">
+  <button id="previous-accent" type="button" aria-label="Previous accent">←</button>
+  <div><label for="accent-select">ACCENT PREVIEW</label><select id="accent-select"><option value="blue">Blue</option><option value="mint">Mint</option><option value="lavender">Lavender</option><option value="coral">Coral</option><option value="citron">Original citron</option></select></div>
+  <button id="next-accent" type="button" aria-label="Next accent">→</button>
+</nav>
 <dialog id="dialog" aria-labelledby="dialog-title"></dialog>
 <div id="announcement" class="sr-only" role="status" aria-live="polite"></div>
 <script>
@@ -161,7 +181,7 @@ const PlanningDemo = (() => {
     const [units, fraction = ''] = raw.replace(',', '.').split('.');
     return BigInt(units) * 100n + BigInt(fraction.padEnd(2, '0')) >= 1n;
   };
-  const makeGame = (id, mode) => ({id, mode, created: '9 Nov 2026 · 19:30', participants: [], chips: '', fields: {buyin: '', depth: '100', preference: 'fewer', coverage: '4', reserveMode: 'automatic', reserve: ''}, payout: '', last: 'mode', visited: ['mode'], edited: {}, touched: {}, failed: false, revision: 0, previewRevision: -1});
+  const makeGame = (id, mode) => ({id, mode, created: '9 Nov 2026 · 19:30', participants: [], chips: '', fields: {buyin: '', depth: '100', preference: 'fewer', coverage: '4', reserveMode: 'automatic', reserve: ''}, payout: '', last: 'mode', visited: ['mode'], edited: {}, touched: {}, failed: false, returnToPreview: false, revision: 0, previewRevision: -1});
   function seed(empty = false) {
     const names = ['Maya', 'Jonas', 'Lena', 'Sam', 'Alex', 'Noor', 'Chris', 'Robin'];
     const library = empty ? [] : names.map((name, i) => ({id: `p${i + 1}`, name}));
@@ -195,7 +215,7 @@ const PlanningDemo = (() => {
   function visit(s, g, step) {
     g.last = step; if (!g.visited.includes(step)) g.visited.push(step);
     s.location = {page: 'wizard', gameId: g.id}; g.failed = false; s.message = ''; s.modal = null;
-    if (step === 'preview') g.previewRevision = g.revision;
+    if (step === 'preview') {g.previewRevision = g.revision; g.returnToPreview = false;}
   }
   function collision(s, g, ids, extraName) {
     const seen = new Set(g.participants.map(p => key(p.name)));
@@ -236,18 +256,24 @@ const PlanningDemo = (() => {
         if (!g) {s.message = 'Choose a game mode to continue.'; break;}
         if (g.last === 'settings') ['buyin', 'depth', 'coverage', 'reserve'].forEach(f => g.touched[f] = true);
         if (stepError(g, g.last)) {g.failed = true; break;}
+        if (g.returnToPreview) {visit(s, g, 'preview'); break;}
         const route = steps(g), next = route[route.indexOf(g.last) + 1]; if (next) visit(s, g, next); break;
       }
       case 'BACK': {
         if (!g || g.last === 'mode') s.location = {page: 'games'};
-        else visit(s, g, steps(g)[steps(g).indexOf(g.last) - 1]); break;
+        else {if (g.last === 'preview') g.returnToPreview = true; visit(s, g, steps(g)[steps(g).indexOf(g.last) - 1]);} break;
       }
-      case 'VISIT': if (g && g.visited.includes(action.step) && steps(g).includes(action.step)) visit(s, g, action.step); break;
-      case 'FIELD': g.fields[action.field] = action.value; g.edited[action.field] = true; g.revision++; break;
+      case 'VISIT':
+        if (g && (g.visited.includes(action.step) || g.last === 'preview') && steps(g).includes(action.step)) {
+          if (g.last === 'preview' && action.step !== 'preview') g.returnToPreview = true;
+          visit(s, g, action.step);
+        } break;
+      case 'FIELD':
+        g.fields[action.field] = action.value; g.edited[action.field] = true; g.revision++;
+        if (action.field === 'reserve') g.fields.reserveMode = 'custom'; break;
       case 'TOUCH': if (g.edited[action.field]) g.touched[action.field] = true; break;
-      case 'RESERVE_MODE':
-        if (action.value === 'custom' && g.fields.reserve === '') g.fields.reserve = reserve(g);
-        g.fields.reserveMode = action.value; g.revision++; break;
+      case 'RESET_RESERVE':
+        g.fields.reserveMode = 'automatic'; g.fields.reserve = ''; g.edited.reserve = false; g.touched.reserve = false; g.revision++; break;
       case 'CHIPS': g.chips = action.value; g.revision++; break;
       case 'PAYOUT_FIXTURE': g.payout = '50% / 30% / 20%'; g.revision++; break;
       case 'PICKER': s.picker = {selected: [], search: '', error: ''}; s.location = {page: 'picker', gameId: g.id}; break;
@@ -312,11 +338,45 @@ const PlanningDemo = (() => {
 <script>
 const M = PlanningDemo;
 let state = M.seed(), scale = 1, focusReturn = null;
+const palettes = {
+  blue: {name: 'Blue', accent: '#8ec5ff', ink: '#10263d', tint: '#203347'},
+  mint: {name: 'Mint', accent: '#7ee0c3', ink: '#103126', tint: '#203b34'},
+  lavender: {name: 'Lavender', accent: '#c9b5ff', ink: '#2b1e45', tint: '#322b45'},
+  coral: {name: 'Coral', accent: '#ffb39c', ink: '#3b2119', tint: '#422f2a'},
+  citron: {name: 'Original citron', accent: '#daf587', ink: '#1e2910', tint: '#2c3823'}
+};
+let accent = new URL(location.href).searchParams.get('variant') || 'blue';
+if (!Object.hasOwn(palettes, accent)) accent = 'blue';
 const app = document.getElementById('app'), dialog = document.getElementById('dialog');
 const titles = {mode: 'Choose mode', players: 'Players', chips: 'Chip set', settings: 'Game settings', payout: 'Payout schedule', preview: 'Distribution preview'};
 const esc = v => String(v ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;', '<':'&lt;', '>':'&gt;', '"':'&quot;', "'":'&#39;'}[c]));
 const modeName = g => g.mode === 'cash' ? 'Cash game' : 'Tournament';
-const button = (text, action, cls = '', attrs = '') => `<button type="button" data-action="${action}" class="${cls}" ${attrs}>${text}</button>`;
+const icons = {
+  left: '<path d="m14 6-6 6 6 6"/>', right: '<path d="m10 6 6 6-6 6"/>',
+  plus: '<path d="M12 5v14M5 12h14"/>', check: '<path d="m5 12 4 4L19 6"/>',
+  more: '<circle cx="5" cy="12" r="1"/><circle cx="12" cy="12" r="1"/><circle cx="19" cy="12" r="1"/>',
+  list: '<path d="M9 6h11M9 12h11M9 18h11M4 6h.01M4 12h.01M4 18h.01"/>',
+  user: '<circle cx="12" cy="7" r="4"/><path d="M4 21v-2a8 8 0 0 1 16 0v2"/>',
+  users: '<circle cx="9" cy="7" r="3"/><path d="M2 21v-3a7 7 0 0 1 14 0v3M16 4a3 3 0 0 1 0 6M22 21v-3a7 7 0 0 0-4-6"/>',
+  userPlus: '<circle cx="8" cy="7" r="3"/><path d="M2 21v-3a6 6 0 0 1 12 0v3M19 7v8M15 11h8"/>',
+  pencil: '<path d="m15 5 4 4M4 20l4-1L20 7a2.8 2.8 0 0 0-4-4L4 15z"/>',
+  trash: '<path d="M3 6h18M9 6V3h6v3M5 6l1 15h12l1-15M10 10v7M14 10v7"/>',
+  minus: '<circle cx="12" cy="12" r="9"/><path d="M8 12h8"/>',
+  reset: '<path d="M3 5v5h5M3.5 10a8.5 8.5 0 1 1 .5 6"/>',
+  wallet: '<path d="M20 8V5H4a2 2 0 0 0 0 4h17v11H4a2 2 0 0 1-2-2V7M21 12h-5v5h5"/>',
+  layers: '<path d="m12 3 10 5-10 5L2 8zM2 12l10 5 10-5M2 16l10 5 10-5"/>',
+  shield: '<path d="m12 3 8 3v6c0 5-8 9-8 9s-8-4-8-9V6zM8 12l3 3 5-6"/>',
+  reserve: '<path d="M3 8h18v13H3zM2 3h20v5H2zM9 12h6"/>'
+};
+const icon = name => `<svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false">${icons[name] || icons.plus}</svg>`;
+const actionIcons = {new:'plus',games:'left',back:'left',continue:'right',picker:'userPlus','new-in-game':'userPlus','new-saved':'userPlus',library:'users',templates:'layers',steps:'list','game-actions':'more','ask-remove':'minus','edit-saved':'pencil','ask-delete-saved':'trash','ask-delete-game':'trash','delete-game':'trash','delete-saved':'trash',remove:'minus','save-name':'check','add-selected':'check','close-picker':'left','cancel-edit':'left','reset-reserve':'reset'};
+function button(text, action, cls = '', attrs = '') {
+  const glyph = actionIcons[action];
+  if (['ask-remove','edit-saved','ask-delete-saved','game-actions'].includes(action)) return `<button type="button" data-action="${action}" class="${cls} icon-button" ${attrs} title="${attrs.match(/aria-label="([^"]+)"/)?.[1] || text}">${icon(glyph)}</button>`;
+  if (!glyph) return `<button type="button" data-action="${action}" class="${cls}" ${attrs}>${text}</button>`;
+  const label = `<span class="button-label">${text.replace(/^‹ /,'').replace(/ →$/,'')}</span>`;
+  return `<button type="button" data-action="${action}" class="${cls} with-icon" ${attrs}>${action === 'continue' ? label + icon(glyph) : icon(glyph) + label}</button>`;
+}
 const note = (text, cls = '') => `<div class="notice ${cls}">${text}</div>`;
 const current = () => M.game(state);
 function dispatch(action, focusId) {
@@ -337,31 +397,33 @@ function announce(text) { document.getElementById('announcement').textContent = 
 function gameContext(g) { return `<div class="status-line"><span class="badge">${modeName(g)}</span><span class="badge">Planning</span></div><p class="context">${esc(g.created)} · ${g.participants.length} players</p>`; }
 function shell(title, content, top, context = '') { return `<div class="page"><nav class="topline" aria-label="Page navigation">${top}</nav>${context}<h2 tabindex="-1">${title}</h2>${state.message ? note(esc(state.message), 'info') : ''}${content}</div>`; }
 function wizardTop(g) { return button('‹ Games', 'games', 'quiet', 'id="games-nav"') + (g ? button('•••', 'game-actions', 'quiet', 'id="game-actions" aria-label="Game actions"') : ''); }
-function footer(g, label = 'Continue') { return `<footer class="dock"><p>Draft retained in this demo · Not started</p><div class="actions">${button(!g || g.last === 'mode' ? 'Games' : 'Back', 'back')}${button(label, 'continue', 'primary', 'id="continue"')}</div></footer>`; }
+function footer(g) { return `<footer class="dock"><p>Draft · Retained in this demo</p><div class="actions">${button(!g || g.last === 'mode' ? 'Games' : 'Back', 'back')}${button(g?.returnToPreview ? 'Return to preview' : 'Continue', 'continue', 'primary', 'id="continue"')}</div></footer>`; }
 function field(id, title, value, unit, hint, keyboard = 'numeric') {
-  return `<div class="field"><label class="field-title" for="field-${id}">${title}${unit ? ` (${unit})` : ''}</label><span class="input-wrap"><input id="field-${id}" type="text" inputmode="${keyboard}" autocomplete="off" spellcheck="false" value="${esc(value)}" data-field="${id}" aria-describedby="hint-${id} error-${id}" aria-invalid="false">${unit ? `<span aria-hidden="true">${unit}</span>` : ''}</span><span class="hint" id="hint-${id}">${hint}</span><span class="error" id="error-${id}" aria-live="polite"></span></div>`;
+  const glyph = {buyin:'wallet',depth:'layers',coverage:'shield',reserve:'reserve',name:'user'}[id];
+  return `<div class="field"><label class="field-title" for="field-${id}">${glyph ? icon(glyph) : ''}<span>${title}${unit ? `<span class="sr-only"> (${unit})</span>` : ''}</span></label><span class="input-wrap"><input id="field-${id}" type="text" inputmode="${keyboard}" autocomplete="off" spellcheck="false" value="${esc(value)}" data-field="${id}" aria-describedby="hint-${id} error-${id}" aria-invalid="false">${unit ? `<span aria-hidden="true">${unit}</span>` : ''}</span><span class="hint" id="hint-${id}">${hint}</span><span class="error" id="error-${id}" aria-live="polite"></span></div>`;
 }
 function radio(name, value, checked, title, hint) {
   return `<label class="choice"><input type="radio" name="${name}" id="${name}-${value}" value="${value}" ${checked ? 'checked' : ''}><span><strong>${title}</strong><small>${hint}</small></span></label>`;
 }
 function gamesView() {
   const games = state.games.map(g => `<button class="game-card" data-action="open" data-id="${g.id}"><span class="badge">Planning · ${modeName(g)}</span><strong>${esc(g.participants.length ? g.participants.map(p => p.name).join(', ') : 'No players yet')}</strong><small>${esc(g.created)}</small><small>Resume ${titles[g.last].toLowerCase()} →</small></button>`).join('');
-  return shell('Games', `<p class="muted">Your table, ready when you are.</p>${button('New game', 'new', 'primary full')}<div class="section-title"><h3>Planning</h3><span class="small">${state.games.length} saved drafts</span></div>${games || '<div class="empty"><h3>Make your first plan</h3><p class="small">Start with the game mode. Add your players and chip set along the way.</p></div>'}<nav class="secondary-nav" aria-label="Reusable records">${button('Saved players →', 'library', 'quiet')}${button('Chip set templates →', 'templates', 'quiet')}</nav>`, '<span class="eyebrow">POKER PLANNER</span>');
+  return shell('Games', `${button('New game', 'new', 'primary full')}<div class="section-title"><h3>Planning</h3><span class="small">${state.games.length} drafts</span></div>${games || '<div class="empty"><h3>Your first game starts here</h3></div>'}<nav class="secondary-nav" aria-label="Reusable records">${button('Saved players', 'library', 'quiet')}${button('Chip set templates', 'templates', 'quiet')}</nav>`, '<span class="eyebrow">POKER PLANNER</span>');
 }
 function modeView(g) {
-  return `<p class="muted">Choose how this game works.</p><fieldset><legend class="sr-only">Game mode</legend>${radio('mode','cash',g?.mode==='cash','Cash game','Players’ final chips determine their monetary result.')}${radio('mode','tournament',g?.mode==='tournament','Tournament','Finishing places determine shares of the prize pool.')}</fieldset>${g ? '<p class="small">Changing mode keeps your players and shared setup.</p>' : ''}${footer(g)}`;
+  return `<fieldset><legend class="sr-only">Game mode</legend>${radio('mode','cash',g?.mode==='cash','Cash game','Final chips determine results.')}${radio('mode','tournament',g?.mode==='tournament','Tournament','Finishing places determine payouts.')}</fieldset>${footer(g)}`;
 }
 function playersView(g) {
   const rows = g.participants.map(p => `<li class="player"><span class="initial" aria-hidden="true">${esc(p.name.slice(0,1))}</span><span class="player-name">${esc(p.name)}</span>${button('Remove', 'ask-remove', 'quiet', `data-id="${p.id}" aria-label="Remove ${esc(p.name)} from this game"`)}</li>`).join('');
-  return `<p class="muted">Who’s playing this game?</p>${rows ? `<ul class="roster" aria-label="Players in this game">${rows}</ul>` : '<div class="empty"><h3>No players yet</h3><p class="small">Choose saved players or add someone new. You’ll need at least two.</p></div>'}${g.failed ? note(M.stepError(g,'players'), 'failure') : ''}${button('Add players', 'picker', 'full')}<p class="hint">Names are captured when added. Editing Saved players later keeps this game’s names intact.</p>${footer(g)}`;
+  return `${rows ? `<ul class="roster" aria-label="Players in this game">${rows}</ul>` : '<div class="empty"><h3>No players yet</h3><p class="small">Add at least two to continue.</p></div>'}${g.failed ? note(M.stepError(g,'players'), 'failure') : ''}${button('Add players', 'picker', 'full')}${footer(g)}`;
 }
 function chipsView(g) {
   return `${note('<strong>Chip-set editor handoff</strong>This screen stands in for the separate chip-editing prototype. The controls below simulate its return states.')}<div class="card"><h3>${g.chips === 'fixture' ? 'Example chip set' : g.chips === 'incomplete' ? 'Unfinished chip set' : 'Choose or create a chip set'}</h3>${g.chips === 'fixture' ? '<p class="small">3 denominations · 180 × 1, 80 × 5, 100 × 25 chip units</p><p class="small">An independent copy for this game.</p>' : '<p class="small">The actual editor will support game-specific chip quantities and template reuse.</p>'}<div class="stack">${button('Use example chip set', 'chip-fixture')}${button('Simulate incomplete edit', 'chip-incomplete', 'quiet')}</div></div>${g.failed ? note(M.stepError(g,'chips'), 'failure') : ''}<p class="small">Returning from the editor keeps the same game and setup step. Later values remain filled in.</p>${footer(g)}`;
 }
 function settingsView(g) {
   const f = g.fields;
-  return `<p class="muted">One set of starting terms for everyone.</p><div id="form-summary" class="notice failure" role="alert" hidden>Check the highlighted fields before continuing.</div><div class="field-group">${field('buyin','Buy-in',f.buyin,'EUR','The initial contribution per player. At least €0.01.','decimal')}${field('depth','Starting stack',f.depth,'BB','100 BB is the recommended starting point.')}</div><fieldset><legend>Distribution preference</legend>${radio('preference','fewer',f.preference==='fewer','Fewer chips','Minimize physical chips while meeting the stack and reserve requirements.')}${radio('preference','more',f.preference==='more','More chips','Maximize physical chips while meeting the same requirements.')}</fieldset><div class="field-group">${field('coverage','Blind-payment coverage',f.coverage,'payments','Default 4: four small-blind payments plus four big-blind payments, using separate chips. Minimum 1.')}</div><fieldset><legend>Chip reserve</legend><p class="small">Additional qualifying stacks, shared by rebuys and late arrivals.</p>${radio('reserveMode','automatic',f.reserveMode==='automatic','Automatic',`${g.participants.length} players → ${Math.ceil(g.participants.length / 2)} reserve stacks. Half the roster, rounded up.`)}${radio('reserveMode','custom',f.reserveMode==='custom','Custom','Choose a whole number of additional stacks, including zero.')}${f.reserveMode === 'custom' ? field('reserve','Reserve stacks',f.reserve,'stacks','This value stays fixed when the player count changes.') : '<p class="hint">The automatic count updates as you add or remove players.</p>'}</fieldset><p class="small">The distribution preview calculates the blinds and checks whether your chip set can meet these settings.</p>${footer(g)}`;
+  return `<div id="form-summary" class="notice failure" role="alert" hidden>Check the highlighted fields.</div><div class="field-group">${field('buyin','Buy-in per player',f.buyin,'EUR','','decimal')}${field('depth','Starting stack',f.depth,'BB','Recommended: 100 BB.')}</div><fieldset><legend>Distribution preference</legend>${radio('preference','fewer',f.preference==='fewer','Fewer chips','')}${radio('preference','more',f.preference==='more','More chips','')}</fieldset><div class="field-group">${field('coverage','Blind-payment coverage',f.coverage,'payments','Payments of each blind without needing change.')}${field('reserve','Chip reserve',M.reserve(g),'stacks',reserveHint(g))}${button(`Use automatic (${Math.ceil(g.participants.length / 2)})`,'reset-reserve','quiet reserve-reset',`id="reset-reserve" ${f.reserveMode==='automatic'?'hidden':''}`)}</div>${footer(g)}`;
 }
+function reserveHint(g) { return `For rebuys and late arrivals. ${g.fields.reserveMode === 'automatic' ? `Automatic for ${g.participants.length} players.` : 'Custom amount.'}`; }
 function payoutView(g) {
   return `${note('<strong>Tournament payout handoff</strong>This is a retained fixture, not the payout editor. Tournament setup is designed separately.')}<div class="card"><h3>${g.payout ? 'Saved payout fixture' : 'No payout fixture selected'}</h3><p>${esc(g.payout || 'Choose a fixture to exercise the mode-switch boundary.')}</p>${button('Use 50 / 30 / 20 fixture','payout-fixture','full')}</div>${g.failed ? note(M.stepError(g,'payout'),'failure') : ''}${footer(g)}`;
 }
@@ -378,7 +440,7 @@ function wizardView() {
 }
 function pickerView() {
   const g=current(), pick=state.picker;
-  return shell('Add players', `<p class="muted">Choose everyone joining this game.</p><label class="field" for="search"><span class="field-title">Search saved names</span><span class="input-wrap"><input type="search" id="search" value="${esc(pick.search)}" autocomplete="off"></span></label><div id="picker-results">${pickerRows()}</div><div id="picker-error" class="notice failure" role="alert" ${pick.error ? '' : 'hidden'}>${esc(pick.error)}</div>${button('New player','new-in-game','full')}<footer class="dock"><p>${pick.selected.length} selected · ${g.participants.length} already in this game</p><div class="actions">${button('Cancel','close-picker')}${button(`Add ${pick.selected.length || ''} ${pick.selected.length === 1 ? 'player' : 'players'}`,'add-selected','primary')}</div></footer>`,button('‹ Players','close-picker','quiet'),gameContext(g));
+  return shell('Add players', `<label class="field" for="search"><span class="field-title">Search saved names</span><span class="input-wrap"><input type="search" id="search" value="${esc(pick.search)}" autocomplete="off"></span></label><div id="picker-results">${pickerRows()}</div><div id="picker-error" class="notice failure" role="alert" ${pick.error ? '' : 'hidden'}>${esc(pick.error)}</div>${button('New player','new-in-game','full')}<footer class="dock"><p>${pick.selected.length} selected · ${g.participants.length} in this game</p><div class="actions">${button('Cancel','close-picker')}${button(`Add ${pick.selected.length || ''} ${pick.selected.length === 1 ? 'player' : 'players'}`,'add-selected','primary')}</div></footer>`,button('‹ Players','close-picker','quiet'),gameContext(g));
 }
 function pickerRows() {
   const g=current(), pick=state.picker, list=state.library.filter(p=>M.key(p.name).includes(M.key(pick.search)));
@@ -386,11 +448,11 @@ function pickerRows() {
   return `<ul class="saved-list">${list.map(p=>{const member=g.participants.find(m=>m.sourceId===p.id);return `<li class="player"><label class="choice"><input type="checkbox" data-pick="${p.id}" ${pick.selected.includes(p.id)?'checked':''} ${member?'disabled':''}><span><strong>${esc(p.name)}</strong>${member?`<small>Already in this game${member.name!==p.name?` as ${esc(member.name)}`:''}</small>`:''}</span></label>${button('Edit','edit-saved','quiet',`data-id="${p.id}" aria-label="Edit saved player ${esc(p.name)}"`)}</li>`;}).join('')}</ul>`;
 }
 function libraryView() {
-  return shell('Saved players',`<p class="muted">Names ready for your next game.</p><p class="small">Renaming or deleting a saved player keeps existing games unchanged.</p>${button('New player','new-saved','primary full')}${state.library.length?`<ul class="saved-list">${state.library.map(p=>`<li class="player"><span class="player-name">${esc(p.name)}</span>${button('Edit','edit-saved','quiet',`data-id="${p.id}" aria-label="Edit saved player ${esc(p.name)}"`)}${button('Delete','ask-delete-saved','quiet',`data-id="${p.id}" aria-label="Delete saved player ${esc(p.name)}"`)}</li>`).join('')}</ul>`:'<div class="empty"><h3>No saved players yet</h3><p class="small">You can also create players while setting up a game.</p></div>'}`,button('‹ Games','games','quiet'));
+  return shell('Saved players',`<p class="small">Changes apply to future selections. Existing games keep their names.</p>${button('New player','new-saved','primary full')}${state.library.length?`<ul class="saved-list">${state.library.map(p=>`<li class="player"><span class="player-name">${esc(p.name)}</span>${button('Edit','edit-saved','quiet',`data-id="${p.id}" aria-label="Edit saved player ${esc(p.name)}"`)}${button('Delete','ask-delete-saved','quiet',`data-id="${p.id}" aria-label="Delete saved player ${esc(p.name)}"`)}</li>`).join('')}</ul>`:'<div class="empty"><h3>No saved players yet</h3></div>'}`,button('‹ Games','games','quiet'));
 }
 function editorView() {
   const e=state.editor, n=(state.picker?.selected.length||0)+1;
-  return shell(e.id?'Edit saved player':'New player',`<p class="muted">${e.add?'Save a name for future games and add them now.':'This name is used when adding the player to future games.'}</p>${field('name','Player name',e.text,'','Use a distinct name, such as Alex B.','text')}${e.id?'<p class="small">Names already captured in games stay unchanged.</p>':''}${e.add&&n>1?note(`Also adding ${state.picker.selected.map(id=>esc(state.library.find(p=>p.id===id).name)).join(', ')}. The button adds all ${n} players together.`,'info'):''}<div class="actions">${button('Cancel','cancel-edit')}${button(e.add?(n>1?`Save and add ${n} players`:'Save and add'):'Save','save-name','primary','id="save-name"')}</div><p class="hint">An explicit save is required. Unfinished name edits aren’t restored after restart.</p>`,button('‹ Back','cancel-edit','quiet'),e.add?gameContext(current()):'');
+  return shell(e.id?'Edit saved player':'New player',`${field('name','Player name',e.text,'','','text')}<p class="small">${e.id?'Existing games keep their captured names.':'Saved for future games.'}</p>${e.add&&n>1?note(`Also adding ${state.picker.selected.map(id=>esc(state.library.find(p=>p.id===id).name)).join(', ')}.`,'info'):''}<div class="actions">${button('Cancel','cancel-edit')}${button(e.add?(n>1?`Save and add ${n} players`:'Save and add'):'Save','save-name','primary','id="save-name"')}</div>`,button('‹ Back','cancel-edit','quiet'),e.add?gameContext(current()):'');
 }
 function stepStatus(g, step) {
   if (!g.visited.includes(step)) return 'Not filled in';
@@ -404,9 +466,9 @@ function renderModal() {
   let html='';
   if (m.kind==='steps') {
     const g=current();
-    html=`<h2 id="dialog-title">Setup steps</h2><p>Revisit a reached step. Continue still follows the usual sequence, with your values retained.</p><div class="stack">${M.steps(g).map((step,i)=>button(`${i+1}. ${titles[step]}<small>${step===g.last?'Current step · ':''}${stepStatus(g,step)}</small>`,'visit','step-link',`data-step="${step}" ${g.visited.includes(step)?'':'disabled'}`)).join('')}${button('Close','dismiss')}</div>`;
+    html=`<h2 id="dialog-title">Setup steps</h2><div class="stack">${M.steps(g).map((step,i)=>button(`${i+1}. ${titles[step]}<small>${step===g.last?'Current step · ':''}${stepStatus(g,step)}</small>`,'visit','step-link',`data-step="${step}" ${g.visited.includes(step)?'':'disabled'}`)).join('')}${button('Close','dismiss')}</div>`;
   } else if (m.kind==='discard') html=`<h2 id="dialog-title">Discard this name edit?</h2><p>Your saved players and game roster haven’t changed.</p><div class="stack">${button('Keep editing','dismiss','','autofocus')}${button('Discard changes','discard-edit','danger')}</div>`;
-  else if (m.kind==='remove') html=`<h2 id="dialog-title">Remove ${esc(m.name)}?</h2><p>Remove this player from the Planning roster. Their saved player entry stays available. Your other setup values remain filled in.</p><div class="stack">${button('Cancel','dismiss','','autofocus')}${button('Remove from this game','remove','danger',`data-id="${m.id}"`)}</div>`;
+  else if (m.kind==='remove') html=`<h2 id="dialog-title">Remove ${esc(m.name)}?</h2><p>Remove from this game. The saved player stays available.</p><div class="stack">${button('Cancel','dismiss','','autofocus')}${button('Remove from this game','remove','danger',`data-id="${m.id}"`)}</div>`;
   else if (m.kind==='delete-saved') html=`<h2 id="dialog-title">Delete ${esc(m.name)}?</h2><p>Delete this saved-player entry. Existing games keep their captured player and name.</p><div class="stack">${button('Cancel','dismiss','','autofocus')}${button('Delete saved player','delete-saved','danger',`data-id="${m.id}"`)}</div>`;
   else if (m.kind==='game-actions') html=`<h2 id="dialog-title">Game actions</h2><p>${modeName(current())} · ${esc(current().created)} · Planning</p><div class="stack">${button('Delete game','ask-delete-game','danger')}${button('Close','dismiss')}</div>`;
   else if (m.kind==='delete-game') html=`<h2 id="dialog-title">Delete this game?</h2><p>${modeName(current())} · ${esc(current().created)}</p><p>Permanently delete this plan and its captured setup. Saved players and other games stay available.</p><div class="stack">${button('Cancel','dismiss','','autofocus')}${button('Delete game','delete-game','danger')}</div>`;
@@ -424,10 +486,13 @@ function updateErrors() {
   }
   const summary=document.getElementById('form-summary');
   if (summary) summary.hidden=!(g.failed && M.stepError(g,'settings'));
+  const reset=document.getElementById('reset-reserve');
+  if (reset) {reset.hidden=g.fields.reserveMode==='automatic'; document.getElementById('hint-reserve').textContent=reserveHint(g);}
 }
 function inspect() {
   const g=current() || state.games[0];
   document.getElementById('inspector').innerHTML=`<details open><summary>What this demo has retained</summary><p>In-memory state, updated after each action. These are prototype facts, not a calculation result.</p><dl><dt>Current destination</dt><dd>${esc(state.location.page==='wizard'?titles[current()?.last||'mode']:state.location.page)}</dd><dt>Saved-player entries</dt><dd>${state.library.length}</dd><dt>Separate Planning games</dt><dd>${state.games.length}</dd></dl>${g?`<h3>${modeName(g)} · ${esc(g.created)}</h3><dl><dt>Captured roster</dt><dd>${esc(g.participants.map(p=>p.name).join(', ')||'Empty')}</dd><dt>Last setup step</dt><dd>${titles[g.last]}</dd><dt>Buy-in text / depth text</dt><dd>“${esc(g.fields.buyin)}” EUR / “${esc(g.fields.depth)}” BB</dd><dt>Preference / coverage text</dt><dd>${g.fields.preference} / “${esc(g.fields.coverage)}”</dd><dt>Reserve</dt><dd>${esc(M.reserve(g))||'Empty'} · ${g.fields.reserveMode}</dd><dt>Tournament payout fixture retained</dt><dd>${esc(g.payout||'None')}</dd><dt>Last preview reflects current inputs</dt><dd>${g.previewRevision===g.revision?'Yes, handoff only':'No; review needed'}</dd></dl>`:''}<h3>Saved names</h3><ul>${state.library.map(p=>`<li>${esc(p.name)}</li>`).join('')||'<li>None</li>'}</ul>${state.editor?`<h3>Uncommitted name edit</h3><p>“${esc(state.editor.text)}” — existing saved records are still effective.</p>`:''}<p>No chips have been issued. Reloading this HTML resets every fixture.</p></details>`;
+  document.getElementById('inspector').insertAdjacentHTML('afterbegin',`<p><strong>Accent preview:</strong> ${palettes[accent].name}</p>${g?.returnToPreview ? '<p><strong>Correction return:</strong> Distribution preview</p>' : ''}`);
 }
 function render() {
   const views={games:gamesView,wizard:wizardView,picker:pickerView,library:libraryView,editor:editorView};
@@ -436,6 +501,30 @@ function render() {
   updateErrors(); inspect(); renderModal();
 }
 function requestModal(modal) { dispatch({type:'MODAL',modal}); }
+function applyAccent(key, updateUrl = true) {
+  accent = Object.hasOwn(palettes,key) ? key : 'blue';
+  const palette=palettes[accent];
+  document.documentElement.style.setProperty('--accent',palette.accent);
+  document.documentElement.style.setProperty('--on-accent',palette.ink);
+  document.documentElement.style.setProperty('--tint',palette.tint);
+  document.getElementById('accent-select').value=accent;
+  document.getElementById('previous-accent').innerHTML=icon('left');
+  document.getElementById('next-accent').innerHTML=icon('right');
+  if (updateUrl) {const url=new URL(location.href);url.searchParams.set('variant',accent);history.replaceState(null,'',url);}
+  inspect();
+  announce(`${palette.name} accent preview. Share your preference in chat.`);
+}
+function cycleAccent(direction) {
+  const keys=Object.keys(palettes), next=(keys.indexOf(accent)+direction+keys.length)%keys.length;
+  applyAccent(keys[next]);
+}
+document.getElementById('accent-select').addEventListener('change',event=>applyAccent(event.target.value));
+document.getElementById('previous-accent').addEventListener('click',()=>cycleAccent(-1));
+document.getElementById('next-accent').addEventListener('click',()=>cycleAccent(1));
+document.addEventListener('keydown',event=>{
+  if (!['ArrowLeft','ArrowRight'].includes(event.key) || event.altKey || event.ctrlKey || event.metaKey || event.defaultPrevented || dialog.open || event.target.closest('input,textarea,select,[contenteditable],[role="tablist"]')) return;
+  event.preventDefault();cycleAccent(event.key==='ArrowRight'?1:-1);
+});
 document.addEventListener('click', event=>{
   const el=event.target.closest('[data-action]'); if (!el) return;
   const a=el.dataset.action, id=el.dataset.id;
@@ -455,6 +544,7 @@ document.addEventListener('click', event=>{
   if (a==='edit-saved') return dispatch({type:'EDIT_NAME',id},'field-name');
   if (a==='chip-fixture'||a==='chip-incomplete') return dispatch({type:'CHIPS',value:a==='chip-fixture'?'fixture':'incomplete'});
   if (a==='payout-fixture') return dispatch({type:'PAYOUT_FIXTURE'});
+  if (a==='reset-reserve') return dispatch({type:'RESET_RESERVE'},'field-reserve');
   if (a==='dismiss') {dispatch({type:'DISMISS'}); document.getElementById(focusReturn)?.focus(); return;}
   if (a==='templates') return requestModal({kind:'boundary',title:'Chip set templates',text:'Template management belongs to the chip-set design. This prototype covers its entry and return boundary through setup.'});
   if (a==='start-boundary') announce('Start is unavailable in this prototype; no distribution has been calculated.');
@@ -464,7 +554,6 @@ app.addEventListener('change',event=>{
   if (el.dataset.pick) return dispatch({type:'PICK',id:el.dataset.pick});
   if (el.name==='mode') return dispatch({type:'MODE',value:el.value},el.id);
   if (el.name==='preference') return dispatch({type:'FIELD',field:'preference',value:el.value},el.id);
-  if (el.name==='reserveMode') return dispatch({type:'RESERVE_MODE',value:el.value},el.id);
 });
 app.addEventListener('input',event=>{
   const el=event.target;
@@ -512,10 +601,17 @@ const walkthroughs = {
     ['Use the distinct name Maya K and add',()=>run({type:'NAME',value:'Maya K'},{type:'SAVE_NAME'})]
   ]},
   mode:{title:'Shared settings survive a mode change',description:'Zero is an explicit reserve override. A retained payout fixture demonstrates the tournament handoff only.',steps:[
-    ['Open settings and set a custom reserve of zero',()=>run({type:'OPEN',id:'g1'},{type:'RESERVE_MODE',value:'custom'},{type:'FIELD',field:'reserve',value:'0'})],
+    ['Open settings and type zero in Chip reserve',()=>run({type:'OPEN',id:'g1'},{type:'FIELD',field:'reserve',value:'0'})],
     ['Switch to tournament and retain a payout fixture',()=>run({type:'MODE',value:'tournament'},{type:'CONTINUE'},{type:'CONTINUE'},{type:'CONTINUE'},{type:'CONTINUE'},{type:'PAYOUT_FIXTURE'})],
     ['Switch back to cash game',()=>run({type:'MODE',value:'cash'})],
     ['Switch to tournament again and revisit payout',()=>run({type:'MODE',value:'tournament'},{type:'CONTINUE'},{type:'CONTINUE'},{type:'CONTINUE'},{type:'CONTINUE'})]
+  ]},
+  correction:{title:'Edit the roster and return straight to preview',description:'First-time setup stays sequential. A correction opened from preview gets a direct return after validating the edited step.',steps:[
+    ['Open the cash game and continue to preview',()=>run({type:'OPEN',id:'g1'},{type:'CONTINUE'})],
+    ['Edit players',()=>run({type:'VISIT',step:'players'})],
+    ['Add Chris to this game',()=>run({type:'PICKER'},{type:'PICK',id:'p7'},{type:'ADD_SELECTED'})],
+    ['Leave for Games and resume the correction',()=>run({type:'GAMES'},{type:'OPEN',id:'g1'})],
+    ['Return directly to preview',()=>run({type:'CONTINUE'})]
   ]}
 };
 let scenario='first', walkIndex=-1;
@@ -539,6 +635,7 @@ document.querySelector('.scenario-tabs').addEventListener('keydown',event=>{
   const n=event.key==='Home'?0:event.key==='End'?tabs.length-1:(i+(event.key==='ArrowRight'?1:-1)+tabs.length)%tabs.length;
   tabs[n].click();tabs[n].focus();
 });
-render(); renderWalkthrough();
+if (new URL(location.href).searchParams.get('screen') === 'settings') state=M.reduce(state,{type:'OPEN',id:'g1'});
+render(); renderWalkthrough(); applyAccent(accent,false);
 </script>
 </html>
