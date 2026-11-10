@@ -2,7 +2,7 @@
 <html lang="en">
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Chip sets · Review v5 · Open chip case</title>
+<title>Chip sets · Review v6 · Compact chip case</title>
 <style>
   * { box-sizing: border-box; }
   :root { color-scheme: dark; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; background: #0b1117; color: #f1f4f5; --accent: #c9b5ff; --on-accent: #2b1e45; --tint: #322b45; }
@@ -98,17 +98,17 @@
   .case-lid::before { content: ''; position: absolute; inset: 6px; border: 1px solid #29343b; border-radius: 7px; background: repeating-linear-gradient(35deg, #121b22 0 3px, #0d151b 3px 7px); box-shadow: inset 0 0 18px #000; }
   .case-lid::after { content: ''; position: absolute; left: 26%; right: 26%; top: -9px; height: 3px; border-radius: 5px; background: #d2d9de; opacity: .6; }
   .case-base { position: relative; height: 258px; border: 10px solid #7d8d99; border-top-color: #9aa8b2; border-left-color: #a3afb8; border-right-color: #4b5e6c; border-bottom-color: #667b8b; border-radius: 10px 10px 17px 17px; background: radial-gradient(ellipse at top, #1b252d, #0c151c 75%); box-shadow: inset 0 0 0 2px #040b10, inset 0 0 20px #000a, 0 10px 12px #0005; }
-  .case-base::before, .case-base::after { content: ''; position: absolute; top: -17px; width: 18px; height: 15px; border: 1px solid #344650; border-radius: 3px; background: linear-gradient(90deg, #556773, #b6c2ca, #617583); }
+  .case-base::before, .case-base::after { content: ''; position: absolute; top: -17px; width: min(18px, 16%); height: 15px; border: 1px solid #344650; border-radius: 3px; background: linear-gradient(90deg, #556773, #b6c2ca, #617583); }
   .case-base::before { left: 19%; }
   .case-base::after { right: 19%; }
   .case-channels { position: absolute; left: 50%; top: 8px; display: flex; gap: 10px; transform: translateX(-50%); }
-  .case-channel { position: relative; flex: 0 0 44px; width: 44px; height: 212px; border-radius: 20px 20px 13px 13px; background: #050d13; box-shadow: inset 3px 0 6px #000, inset -2px 0 0 #33414b, 2px 0 2px #26343e; }
-  .case-channel svg { display: block; width: 44px; height: 212px; }
+  .case-channel { position: relative; flex: 0 0 32px; width: 32px; height: 212px; border-radius: 16px 16px 13px 13px; background: #050d13; box-shadow: inset 3px 0 6px #000, inset -2px 0 0 #33414b, 2px 0 2px #26343e; }
+  .case-channel svg { display: block; width: 32px; height: 212px; }
   .case-channel-more::after { content: '•••'; position: absolute; inset: auto 0 0; padding: 14px 0 3px; background: linear-gradient(transparent, #081118); color: #f1f4f5; text-align: center; font-size: 12px; letter-spacing: 2px; }
-  .case-clasp { position: absolute; width: 22px; height: 17px; bottom: -16px; border: 1px solid #30414b; border-radius: 3px; background: linear-gradient(#c6d0d7, #657b8c 45%, #aebdc7 50%, #4f6677); box-shadow: 0 2px 3px #0007; }
+  .case-clasp { position: absolute; width: min(22px, 18%); height: 17px; bottom: -16px; border: 1px solid #30414b; border-radius: 3px; background: linear-gradient(#c6d0d7, #657b8c 45%, #aebdc7 50%, #4f6677); box-shadow: 0 2px 3px #0007; }
   .case-clasp.left { left: 17%; }
   .case-clasp.right { right: 17%; }
-  .case-handle { position: absolute; width: 72px; height: 18px; border: 6px solid #516979; border-top: 0; border-radius: 0 0 12px 12px; left: 50%; bottom: -26px; transform: translateX(-50%); box-shadow: inset 0 -1px #bdc8d0; }
+  .case-handle { position: absolute; width: min(72px, 46%); height: 18px; border: 6px solid #516979; border-top: 0; border-radius: 0 0 12px 12px; left: 50%; bottom: -26px; transform: translateX(-50%); box-shadow: inset 0 -1px #bdc8d0; }
   .case-caption { color: #b3c0ca; font-size: .75em; line-height: 1.5; margin-top: 6px; }
   .case-caption:empty { display: none; }
   #chip-summary { margin: 12px 0 0; }
@@ -178,7 +178,7 @@
 <div class="workshop">
   <header>
     <p class="eyebrow">Throwaway interaction study · #34 · Current / Lavender</p>
-    <p class="revision" id="review-revision">Review v5 · Open chip case</p>
+    <p class="revision" id="review-revision">Review v6 · Compact chip case</p>
     <h1>One physical chip set. Clear editing boundaries.</h1>
     <p class="intro">An open chip case grows as you fill its storage channels. Change quantities or colors below, then scroll sideways to explore the case. Exact records stay in the form—not in the illustration. Throwaway setup study, not the bank during play.</p>
     <details class="review">
@@ -387,11 +387,11 @@ const CaseView = {
       if(needed>32n)schematic=true;
       for(let i=0;i<shown;i++)channels.push({id:r.id,color:r.color,count:Number(quantity-BigInt(i)*100n>=100n?100n:quantity%100n),continues:needed>32n&&i===shown-1});
     }
-    return {channels,schematic,incomplete,width:Math.max(184,channels.length*54+130)};
+    return {channels,schematic,incomplete,width:Math.max(88,channels.length*42+46)};
   }
 };
 const caseKey=rows=>JSON.stringify(rows.map(r=>[r.id,r.quantity,r.color]));
-function caseChannel(channel,index){const color=chipColor(channel.color),top=204-channel.count*1.9,pattern='case-edge-'+index;return `<div class="case-channel${channel.continues?' case-channel-more':''}" data-denomination="${channel.id}" data-chips="${channel.count}" data-color="${color.id}"><svg viewBox="0 0 44 212" focusable="false"><defs><pattern id="${pattern}" x="0" y="${top}" width="44" height="1.9" patternUnits="userSpaceOnUse"><rect x="5" width="34" height="1.9" fill="${color.fill}"/><path d="M5 .5h34" stroke="${color.ink}" stroke-opacity=".5" stroke-width=".55"/><path d="M9 0v1.9m26-1.9v1.9" stroke="${color.ink}" stroke-opacity=".6" stroke-width="2"/></pattern></defs><rect x="5" y="${top}" width="34" height="${channel.count*1.9}" rx="3" fill="url(#${pattern})"/><ellipse cx="22" cy="204" rx="17" ry="3" fill="${color.fill}" stroke="${color.ink}" stroke-opacity=".5"/><ellipse cx="22" cy="${top}" rx="17" ry="3" fill="${color.fill}" stroke="${color.ink}" stroke-opacity=".65"/><ellipse cx="22" cy="${top}" rx="11" ry="1.7" fill="none" stroke="${color.ink}" stroke-opacity=".4"/></svg></div>`;}
+function caseChannel(channel,index){const color=chipColor(channel.color),top=204-channel.count*1.9,pattern='case-edge-'+index;return `<div class="case-channel${channel.continues?' case-channel-more':''}" data-denomination="${channel.id}" data-chips="${channel.count}" data-color="${color.id}"><svg viewBox="0 0 44 212" preserveAspectRatio="none" focusable="false"><defs><pattern id="${pattern}" x="0" y="${top}" width="44" height="1.9" patternUnits="userSpaceOnUse"><rect x="5" width="34" height="1.9" fill="${color.fill}"/><path d="M5 .5h34" stroke="${color.ink}" stroke-opacity=".5" stroke-width=".55"/><path d="M9 0v1.9m26-1.9v1.9" stroke="${color.ink}" stroke-opacity=".6" stroke-width="2"/></pattern></defs><rect x="5" y="${top}" width="34" height="${channel.count*1.9}" rx="3" fill="url(#${pattern})"/><ellipse cx="22" cy="204" rx="17" ry="3" fill="${color.fill}" stroke="${color.ink}" stroke-opacity=".5"/><ellipse cx="22" cy="${top}" rx="17" ry="3" fill="${color.fill}" stroke="${color.ink}" stroke-opacity=".65"/><ellipse cx="22" cy="${top}" rx="11" ry="1.7" fill="none" stroke="${color.ink}" stroke-opacity=".4"/></svg></div>`;}
 function caseArt(plan){return `<div class="case-scene" style="width:${plan.width}px" aria-hidden="true"><div class="case-lid"></div><div class="case-base"><div class="case-channels">${plan.channels.map(caseChannel).join('')}</div><span class="case-clasp left"></span><span class="case-clasp right"></span><span class="case-handle"></span></div></div>`;}
 function caseContext(){return state.editor?`editor:${state.editor.id||'new'}:${state.editor.origin}`:`game:${ChipDemo.game(state)?.id}`;}
 function chipCase(rows){return `<figure class="case-preview"><div id="case-scroll" class="case-scroll" role="region" tabindex="0" data-context="${caseContext()}" aria-label="Chip case illustration. Scroll horizontally to explore it. Exact chip values and quantities are in the fields below." aria-describedby="case-caption"><div id="case-content" data-preview-key="${esc(caseKey(rows))}">${caseArt(CaseView.plan(rows))}</div></div><figcaption class="case-caption" id="case-caption"></figcaption></figure>`;}
