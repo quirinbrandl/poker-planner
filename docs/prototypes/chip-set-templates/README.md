@@ -1,6 +1,6 @@
 # Chip sets and templates — throwaway interaction prototype
 
-**Status: Review v4 — v3 liked; live whole-set quantity visualization requested; new visualization pending review.** Paired rows, optional colors and the Continue scope popup are retained. Do not treat unseen refinements as final design approval or production code.
+**Status: Review v5 — open physical chip case requested instead of pile charts; revised illustration pending review.** Paired rows, optional colors and the Continue scope popup are retained. Do not treat unseen refinements as final design approval or production code.
 
 Decision: [#34 — Design chip-set editing and template reuse](https://github.com/quirinbrandl/poker-planner/issues/34). Parent: [#30 — MVP UX/design map](https://github.com/quirinbrandl/poker-planner/issues/30). Affected implementation tickets: [#11](https://github.com/quirinbrandl/poker-planner/issues/11) and [#13](https://github.com/quirinbrandl/poker-planner/issues/13).
 
@@ -14,7 +14,7 @@ For a live review, from this branch’s repository root:
 python3 docs/prototypes/chip-set-templates/serve.py
 ```
 
-Open <http://127.0.0.1:4186/?review=v4>. The visible page badge and browser title identify **Review v4 · Live chip stacks**. Default: a six-player cash-game Planning fixture at Chip set. For the human’s concrete example, open <http://127.0.0.1:4186/?review=v4&fixture=forty>: one denomination with **40 White chips**. Use `?screen=games`, `?screen=templates`, `?screen=picker`, `?screen=preview`, or `?screen=details` for other review shortcuts.
+Open <http://127.0.0.1:4186/?review=v5>. The visible page badge and browser title identify **Review v5 · Open chip case**. Default: a populated, mixed-color cash-game Planning fixture. Scroll the case sideways to reveal its right-hand side. For a single-denomination example, open <http://127.0.0.1:4186/?review=v5&fixture=forty>, then change quantity 40 → 100 → 101 → 240 to fill/add storage channels. Use `?screen=games`, `?screen=templates`, `?screen=picker`, `?screen=preview`, or `?screen=details` for other review shortcuts.
 
 The small review server always serves its own absolute artifact directory and sends no-store/no-cache headers. Port 4186 is a fresh origin rather than relying on the earlier 4175 page. When the human reported the old screen, the agent verified that 4175’s response matched the revised on-disk file, but could not reproduce or establish the cause of the human’s stale view. A fresh origin, explicit revision badge and cache-disabled serving make the current version verifiable; they are not a claim that a particular browser-cache fault was proven. `--port N` selects another local port if required.
 
@@ -31,20 +31,20 @@ The archived comparison bar changes the URL and retains draft state. Its left/ri
 
 Expand **Review controls & guided walkthroughs** for populated/40-White/empty/dense/seven-color fixtures, text scaling, a simulated restart, source-template deletion and nine repeatable scenarios. The readable state panel shows accepted reusable templates, independent game copies/colors, raw inputs and unaccepted optional operations.
 
-## Live physical-quantity visualization — for review
+## Open physical chip case — for review
 
-The human liked v3, then asked for a more tangible view of the complete chip set as quantities change, using 40 White chips as the example. This revision proposes:
+The human clarified that the earlier pile charts were not the intended direction. They want an **open poker-chip case** at the top, with storage channels holding one denomination each, roughly 100 chips per channel, multiple channels for larger quantities, a growing width and horizontal scrolling. They explicitly prefer a cool-looking overall impression rather than numeric labels in the graphic.
 
-- A **Your chip set** overview in game-specific and reusable-template editing, with all denomination/color/quantity groups represented together. Collapse it to make room for entry; disclosure state is only a transient prototype view preference, not a product setting.
-- A small quantity visualization under each row’s inputs, so typing is immediately visible even when the whole-set overview has scrolled away. Both views derive from the same current raw fields; they never write back into the records.
-- **10 physical chips per full pile.** Forty chips produces four full piles. Forty-three produces four full piles plus a visibly shorter pile of three. These are physical visual groupings, not player starting stacks, reserve capacity or an allocation recommendation.
-- To keep the phone view and DOM bounded, the overview draws at most **24 piles per denomination** (240 chips); the smaller row preview draws at most **eight** (80 chips). Common quantities such as 40, 100 or 200 are fully represented in the overview. Above the drawing limit, show an exact **+N more chips, not drawn** label. For example 1,000 draws 240 and labels 760 more in the overview, or draws 80 and labels 920 more in the compact row. These are drawing limits, not input/quantity/denomination caps. No silent truncation, rounding, rescaling or abbreviation of the stored quantity.
-- Explicit zero draws no piles and says 0 chips. Missing/malformed quantities draw no stale/guessed chips and say Quantity not entered / Quantity preview unavailable. Invalid values remain editable; local previews can show a valid quantity while the overall set remains labelled Incomplete rather than claiming valid setup.
-- Keep exact textual quantities, denomination values and color names, including repeated colors and No color. Large values/counts wrap rather than changing the meaning. Do not rely on color or graphic height alone.
-- Updating quantities, values, colors, template selection, row additions/removals, or resumed drafts updates the view. No new field, calculation rule, saved chip record, inventory movement, solver, animation or persistence behavior is introduced. App state remains in memory.
-- This explores **setup editing only**. It does not yet visualize the evolving bank, chips held by players, physical returns or rebuys during play; those belong to their existing later workflow decisions.
+- Replace both the v4 chart-like overview and per-row pile views with **one open case illustration** in game-specific and reusable-template editing. The case has a padded lid, hinges, metallic rim, recessed storage channels, clasps and handle, using restrained dark materials rather than casino decoration.
+- A channel holds up to **100 physical chips of one denomination**. Forty occupies part of one channel; 100 fills it; 101 adds a second; 240 uses two full channels plus part of a third. Never mix denominations in a channel or merge entries just because they share a color. These are illustration groupings, not player starting stacks, reserve capacity, actual prepackaging rules or a new chip-set constraint.
+- Add channels side by side as quantities grow, keeping the case height stable and expanding its width. Only the illustration scrolls horizontally; the form/page retains narrow-screen vertical reflow. The focusable scroll region supports native touch/trackpad/scrollbar/keyboard movement; an overflow hint appears when needed. Archived-layout arrow shortcuts leave it alone.
+- No quantities, denomination values, legends or labelled chart tiles appear **inside** the case. Exact editable values, quantities and names remain below, including the already-approved row chip symbols and optional color picker. Assistive technology gets a labelled illustration scroll region and the exact form fields, not hundreds of decorative shapes.
+- Quantities/colors, template selection, row changes and resumed drafts redraw the case from existing records. Partial input, zero and malformed quantities never produce guessed/stale chips or accepted records. Unfinished numeric work stays in the form under the existing validation rules. New rows/colors remain optional as before.
+- Preserve horizontal position while changing a quantity or accepting a color in the same editing context; clamp naturally when the case shrinks. Input focus/caret and all save/update/return boundaries stay unchanged.
+- For enormous quantities, render at most **32 channels per denomination**, mark continuation visually and say the preview is schematic. This is an illustration/performance bound only: no input cap, changed numeric quantity, new field or physical inventory rule. Ordinary home sets are represented directly; large exact values remain available below.
+- This is a **setup illustration**, not an evolving bank/player-holdings view. There is no solver, inventory movement, animation, durable store or production implementation behind it.
 
-This is a concrete visualization proposal, not an approved choice of pile size, drawing threshold, disclosure placement or final visual treatment. Review the 40 → 43 → 0 → blank → 1,000 cases using the new Live chip stacks walkthrough or free entry.
+The direction and channel-based interaction come from the human’s correction. Material treatment, exact dimensions, scroll presentation and the large-quantity guard are still concrete proposals for hands-on review. The superseded v4 pile proposal remains archived in commit history and its captures below, not in the current interactive UI.
 
 ## Continue popup refinement
 
@@ -87,7 +87,7 @@ This explicitly supersedes the earlier “no chip metadata/customization added�
 
 ## Review-specific details, not yet approved by hands-on review
 
-The human liked v3’s paired rows, colors and Continue popup. The new whole-set/per-row pile visualization, counting scale, overflow treatment, density and placement are proposals for hands-on review. Do not silently interpret a request to explore this visualization as approval of its unseen revised screens.
+The human liked v3’s paired rows, colors and Continue popup and corrected v4 toward an open physical case with sideways-growing, denomination-specific storage channels. The new case artwork, proportions, scrolling, density and guard behavior remain proposals for hands-on review. Do not silently interpret that direction as approval of an unseen implementation.
 
 ## Fixtures and boundaries
 
@@ -129,7 +129,7 @@ Review v3 was checked at the **fresh 127.0.0.1:4186 origin**, not just against a
 - All color options, staged palette cancellation, numeric invariance, repeated/no-color behavior, colored atomic Save and use, dirty reusable interruption, correction-return context, and started/completed locks.
 - Scope, new-template-name and color popups, chip rows, picker, management and locked details had no horizontal overflow at 320px / 200% app text. Offline color editing plus the Continue popup also worked.
 
-Review v4 was verified against the actual no-cache URL and passed all **nine** guided walkthroughs plus the existing validation, scope-popup, color, reusable-save, correction and lock checks. Additional quantity-view checks covered:
+The **superseded v4 pile proposal** was verified against the actual no-cache URL and passed its nine walkthroughs plus the existing workflow checks. These are historical checks of that proposal, not requirements to retain its charts. Its additional checks covered:
 
 - 40 White chips → four piles of ten in both views; 43 → four full piles plus a visibly shorter pile of three. Input focus/caret remained in place while typing.
 - Explicit zero, blank, malformed and resumed invalid quantities; old piles disappear immediately rather than representing a stale or guessed count. Invalid denomination values keep the whole-set total marked incomplete.
@@ -137,6 +137,14 @@ Review v4 was verified against the actual no-cache URL and passed all **nine** g
 - All **500** physical chips in the ordinary fixture are represented in the overview. Repeated colors remain distinct denomination groups. Unaccepted palette choices do not recolor the accepted view; accepted colors do.
 - Collapsing/reopening the overall view changes no game/template state, and its disclosure choice survives numeric/color edits. Merely deriving/drawing piles does not mutate records or make a reusable editor dirty. Only actual input edits do; unsaved template previews never rewrite games/source records.
 - The row view remains available while the overview is collapsed. Empty, partial, zero, huge, seven-color and dense views had no horizontal overflow at 320px / 200% app text. The live visualization worked offline without browser exceptions.
+
+Review v5 was verified at the actual no-cache URL, with a matching file response and the visible **Open chip case** revision. All nine current walkthroughs and the existing validation/scope/color/reusable-save/correction/lock checks passed. New case-specific browser checks covered:
+
+- 40 / 100 / 101 / 240 chips occupy `[40]`, `[100]`, `[100, 1]` and `[100, 100, 40]` within channels of the same denomination. Width grows with added channels; all 500 ordinary-fixture chips are represented. No numeric chart labels or per-row pile views remain.
+- Same-color denominations never mix. Exact channel accounting was checked for quantities 0–3,200, and drawing bounds for 0–5,000 plus very large integer text. Schematic guards never change an input value or accepted record.
+- Zero/blank/invalid/resumed quantities do not leave stale chips. Accepted colors recolor the case, staged/cancelled palette choices do not. Input focus/caret and horizontal position survive edits; reducing the width naturally clamps scrolling.
+- Native keyboard and horizontal wheel/trackpad scrolling work, including in archive-comparison mode without hijacked arrow keys. Scrolling and deriving artwork change no game/template data. Reusable editor previews leave accepted templates/games intact until Save.
+- At 320px / 200% text, the **case intentionally scrolls horizontally**, while the page, fields and other workflows do not overflow. Empty, dense, huge and seven-color views and offline operation passed with no browser exceptions.
 
 These are browser-reference checks, not native certification. Native keyboards, native text scaling, VoiceOver/TalkBack, real durable restart, actual allocations and production integration remain implementation checks.
 
@@ -147,6 +155,7 @@ Captures isolate the phone surface at a 390px browser viewport. The selected pai
 - **Selected:** [Paired rows with chip symbols](previews/chips-paired.png), [named color palette](previews/color-palette.png), [seven-color example](previews/seven-colors.png). Archived alternatives: [B · Open ledger](previews/chips-ledger.png), [C · Quantity first](previews/chips-stacked.png).
 - **Review v3:** [visible revision badge and chip symbol in the browser](previews/review-v3.png), [Continue scope popup](previews/continue-popup.png), [no-source choice](previews/no-source-popup.png), [Save as new template popup](previews/new-template-popup.png).
 - **Review v4:** [visible revision badge](previews/review-v4.png), [complete 500-chip set](previews/whole-set.png), [40 White chips](previews/forty-white.png), [43 with a partial pile](previews/partial-pile.png), [live row preview](previews/live-row-preview.png), [large-count labelled remainder](previews/large-count.png).
+- **Review v5:** [visible revision badge](previews/review-v5.png), [open case](previews/open-case.png), [scrolled to its right-hand side](previews/open-case-scrolled.png), [unclipped illustration](previews/open-case-full.png), [40 White chips](previews/case-40-white.png), [240 White chips in three channels](previews/case-240-white.png). The unclipped illustration capture temporarily widens the review surface to show the same artwork without its phone viewport; it is not a separate desktop layout.
 - [Picker](previews/picker.png), [separate template management](previews/templates.png), [explicit-save editor](previews/template-editor.png).
 - [No chip rows/templates](previews/empty.png), [invalid raw input](previews/invalid.png), [deleted source / Save as new template](previews/deleted-source.png), [12-denomination list](previews/dense.png).
 - [Games](previews/games.png), [locked setup](previews/details.png), [preview handoff](previews/preview.png).
