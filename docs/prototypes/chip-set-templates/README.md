@@ -1,6 +1,6 @@
 # Chip sets and templates — throwaway interaction prototype
 
-**Status: Paired rows selected; optional chip-color policy approved; refined visual review pending.** Do not treat the unseen refinements as final design approval or production code.
+**Status: Review v3 — Paired rows and optional colors selected; Continue-triggered scope popup requested; revised review pending.** Do not treat the unseen refinements as final design approval or production code.
 
 Decision: [#34 — Design chip-set editing and template reuse](https://github.com/quirinbrandl/poker-planner/issues/34). Parent: [#30 — MVP UX/design map](https://github.com/quirinbrandl/poker-planner/issues/30). Affected implementation tickets: [#11](https://github.com/quirinbrandl/poker-planner/issues/11) and [#13](https://github.com/quirinbrandl/poker-planner/issues/13).
 
@@ -8,13 +8,15 @@ Decision: [#34 — Design chip-set editing and template reuse](https://github.co
 
 Open `index.html` directly. No build, packages, network, or installation needed.
 
-Alternatively, from this branch’s repository root:
+For a live review, from this branch’s repository root:
 
 ```sh
-python3 -m http.server 4175 --bind 127.0.0.1 --directory docs/prototypes/chip-set-templates
+python3 docs/prototypes/chip-set-templates/serve.py
 ```
 
-Open <http://localhost:4175>. Default: a six-player cash-game Planning fixture at Chip set. Use `?screen=games`, `?screen=templates`, `?screen=picker`, `?screen=preview`, or `?screen=details` for review shortcuts.
+Open <http://127.0.0.1:4186/?review=v3>. The visible page badge and browser title identify **Review v3 · Chip colors + Continue popup**. Default: a six-player cash-game Planning fixture at Chip set. Use `?screen=games`, `?screen=templates`, `?screen=picker`, `?screen=preview`, or `?screen=details` for review shortcuts.
+
+The small review server always serves its own absolute artifact directory and sends no-store/no-cache headers. Port 4186 is a fresh origin rather than relying on the earlier 4175 page. When the human reported the old screen, the agent verified that 4175’s response matched the revised on-disk file, but could not reproduce or establish the cause of the human’s stale view. A fresh origin, explicit revision badge and cache-disabled serving make the current version verifiable; they are not a claim that a particular browser-cache fault was proven. `--port N` selects another local port if required.
 
 Everything, including the state model, is throwaway and in memory. Reload resets all fixtures. “Simulate restart” shows the agreed retention boundary in memory; it does **not** prove real local persistence. No application framework, persistence technology or production API is selected. Nothing should be promoted into the app.
 
@@ -27,7 +29,18 @@ The human chose **A · Paired rows**, then requested functional chip symbols and
 
 The archived comparison bar changes the URL and retains draft state. Its left/right shortcuts leave inputs, native radios/selects, dialogs and walkthrough tabs alone; they are inactive outside comparison mode. The **app accent** stays Lavender. Choosing a physical chip color does not change the app theme. Feedback stays in chat.
 
-Expand **Review controls & guided walkthroughs** for populated/empty/dense/seven-color fixtures, text scaling, a simulated restart, source-template deletion and seven repeatable scenarios. The readable state panel shows accepted reusable templates, independent game copies/colors, raw inputs and unaccepted optional operations.
+Expand **Review controls & guided walkthroughs** for populated/empty/dense/seven-color fixtures, text scaling, a simulated restart, source-template deletion and eight repeatable scenarios. The readable state panel shows accepted reusable templates, independent game copies/colors, raw inputs and unaccepted optional operations.
+
+## Continue popup refinement
+
+After reviewing the earlier approach, the human explicitly requested that game/template scope **not remain a selector on the editing screen**, but instead appear as a popup when Continue is pressed. This supersedes the earlier agreed on-screen placement, not the underlying independence/save rules.
+
+- Continue / Return to preview first validates the chip rows. Invalid/incomplete rows retain their raw text and receive field feedback; do not open the scope popup until these inputs are valid.
+- The popup offers direct actions: **Only this game** (visually primary and initially focused), **Also update template** when the source exists, and **Cancel**. Name the source and explain that updating affects future games only. There is no scope radio selector on the step or in the popup.
+- Cancel/Escape stays on Chip set with the game draft retained, restores Continue focus, and updates no template. Explicitly choosing an action applies that one finishing operation, then follows the normal Continue or direct preview-correction return. No optional update is remembered or replayed after restart.
+- With no source or a deleted source, replace Update with **Save as new template**. That opens name entry using the current rows/colors. Validate the required unique name; **Save template and continue** (or Save and return to preview) explicitly creates it and navigates. No new template exists before acceptance.
+- Back from the name popup preserves entered name text and returns to the scope choice. Trying to cancel or continue game-only with that name pending offers Keep editing / Leave without template. Discarding the name never discards the game’s chip draft. Simulated restart discards unaccepted popup/name work without applying it.
+- Separate template management’s explicit Save and setup creation’s atomic Save and use remain unchanged. Scope is prompted when finishing the game chip-set step, not when saving a reusable editor that already has explicit scope.
 
 ## Approved color refinement
 
@@ -51,7 +64,7 @@ This explicitly supersedes the earlier “no chip metadata/customization added�
 - Keep raw invalid game fields and correction-return context across Back/Games/simulated restart. Validate edited fields on leaving them, untouched requirements on Continue/Save, and update displayed errors during correction. Native implementation still needs durable persistence and keyboard checks.
 - Add appends a row and focuses its first field (Value in A/B, Quantity in C). Rows do not sort themselves during entry. Remove an entirely blank row immediately; removing populated data requires a named confirmation. An empty result is a retained incomplete game draft.
 - Require a template name, trim outer spaces, preserve capitalization and reject case-insensitive duplicate names. Picker summaries identify denominations and physical quantity with functional chip symbols and explicit values/color names.
-- Game changes are retained as drafts. **Only this game** is the default. **Also update chip set template** is explicit and takes effect on successful Continue/Return to preview only; other games keep their copies. The optional operation resets on leaving/completing the step and never replays after restart.
+- Game changes are retained as drafts. After valid Continue/Return to preview, the popup defaults to **Only this game**. **Also update template** is an explicit finishing action; other games keep their copies. The optional operation resets on dismissal/completion and never replays after restart.
 - If there is no source, or it has been deleted, offer **Save as new template**, using the current rows plus an explicit name. Never automatically recreate a deleted source. Leaving an entered new-template name warns that the name is being discarded but game changes remain retained.
 - Reusable editors require valid name/rows to Save, but not feasible stacks. **Save** in management; **Save and use** from the setup picker. Existing accepted templates/game copies stay effective until explicit acceptance. A populated game’s replacement is confirmed *before* either the new template or game is changed.
 - Deliberate dirty reusable-editor dismissal offers Keep editing / Discard changes. Unsaved reusable-editor text need not survive a full restart; accepted templates and raw game draft fields do. Cancellation never partially applies operations.
@@ -59,7 +72,7 @@ This explicitly supersedes the earlier “no chip metadata/customization added�
 
 ## Review-specific details, not yet approved by hands-on review
 
-Paired rows and the color policy are selected. The refined symbols, palette placement/appearance, set previews, precise copy and responsive treatment are concrete proposals for hands-on review. Do not silently interpret agreement to refine the prototype as approval of its unseen revised screens.
+Paired rows and the color policy are selected; the human requested the Continue popup rather than the inline scope selector. The refined symbols, palette and scope-popup appearance, set previews, precise copy and responsive treatment remain concrete proposals for hands-on review. Do not silently interpret agreement to refine the prototype as approval of its unseen revised screens.
 
 ## Fixtures and boundaries
 
@@ -93,6 +106,14 @@ The refined color version also passed those original checks, plus its new **Colo
 - At 320px / 200% app text, the palette, chip previews and locked details had no measured horizontal overflow; palette option labels provide at least 48×48 targets. Long values remain exact in adjacent text instead of clipping/abbreviating into another number. Offline color selection worked with no browser exceptions.
 - Native palette-radio arrows stage the choice without applying it; Escape restores focus to the invoking chip. All twelve chip-face numeral/background pairs measured at least **5.65:1** contrast; the surrounding labels retain the shared slate/Lavender text roles.
 
+Review v3 was checked at the **fresh 127.0.0.1:4186 origin**, not just against a local file. The HTTP response matched `index.html` byte-for-byte, included no-store headers, and rendered the v3 badge/title plus four visible chip symbols. Reload retained the current version. All eight walkthroughs and targeted free-play checks passed with no browser exceptions, including:
+
+- Absence of the old inline scope selector; valid Continue opening the popup without updating a template; safe default focus/Enter on Only this game; Cancel/Escape retaining the game draft and restoring Continue focus; explicit source update affecting no other captured game.
+- Invalid rows blocking before the popup; malformed raw input/resume, duplicate values and explicit/all-zero quantities retaining their existing semantics.
+- Deleted/no-source popup, required/duplicate new-template-name errors, Back preserving the name, Keep editing/discard recovery, keyboard name submission, and Save as new template copying colors explicitly. Cancelling/restarting never applies a pending choice.
+- All color options, staged palette cancellation, numeric invariance, repeated/no-color behavior, colored atomic Save and use, dirty reusable interruption, correction-return context, and started/completed locks.
+- Scope, new-template-name and color popups, chip rows, picker, management and locked details had no horizontal overflow at 320px / 200% app text. Offline color editing plus the Continue popup also worked.
+
 These are browser-reference checks, not native certification. Native keyboards, native text scaling, VoiceOver/TalkBack, real durable restart, actual allocations and production integration remain implementation checks.
 
 ## Captured screens
@@ -100,6 +121,7 @@ These are browser-reference checks, not native certification. Native keyboards, 
 Captures isolate the phone surface at a 390px browser viewport. The selected paired layout has no switcher by default; the archived comparison bar is hidden in comparison captures.
 
 - **Selected:** [Paired rows with chip symbols](previews/chips-paired.png), [named color palette](previews/color-palette.png), [seven-color example](previews/seven-colors.png). Archived alternatives: [B · Open ledger](previews/chips-ledger.png), [C · Quantity first](previews/chips-stacked.png).
+- **Review v3:** [visible revision badge and chip symbol in the browser](previews/review-v3.png), [Continue scope popup](previews/continue-popup.png), [no-source choice](previews/no-source-popup.png), [Save as new template popup](previews/new-template-popup.png).
 - [Picker](previews/picker.png), [separate template management](previews/templates.png), [explicit-save editor](previews/template-editor.png).
 - [No chip rows/templates](previews/empty.png), [invalid raw input](previews/invalid.png), [deleted source / Save as new template](previews/deleted-source.png), [12-denomination list](previews/dense.png).
 - [Games](previews/games.png), [locked setup](previews/details.png), [preview handoff](previews/preview.png).
