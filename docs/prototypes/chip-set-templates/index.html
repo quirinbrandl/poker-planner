@@ -2,7 +2,7 @@
 <html lang="en">
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Chip sets · Review v3 · Colors + Continue popup</title>
+<title>Chip sets · Review v4 · Live chip stacks</title>
 <style>
   * { box-sizing: border-box; }
   :root { color-scheme: dark; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; background: #0b1117; color: #f1f4f5; --accent: #c9b5ff; --on-accent: #2b1e45; --tint: #322b45; }
@@ -87,6 +87,27 @@
   .chip-preview-color { font-size: .7em; color: #b3c0ca; }
   .read-chip { display: flex; flex-wrap: wrap; align-items: center; gap: 12px; min-width: 0; }
   .read-chip .small { display: block; }
+  .set-overview { margin: 18px 0 24px; border: 1px solid #7c90a0; border-radius: 22px; background: #17232d; padding: 0 14px 14px; }
+  .set-overview > summary { display: flex; align-items: center; justify-content: space-between; gap: 10px; font-size: .9em; }
+  .set-overview > summary::after { content: '+'; color: #c9b5ff; font-size: 1.4em; }
+  .set-overview[open] > summary::after { content: '−'; }
+  .set-overview > summary strong, .set-overview > summary small { display: block; }
+  .set-overview > summary small { font-size: .85em; font-weight: 400; color: #b3c0ca; margin-top: 2px; }
+  .set-key { font-size: .72em; color: #b3c0ca; line-height: 1.5; margin: 0 0 12px; }
+  .set-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; }
+  .set-group { min-width: 0; padding: 12px; border: 1px solid #364653; border-radius: 16px; background: #111920; }
+  .set-group:only-child { grid-column: 1 / -1; }
+  .set-group-heading { display: block; font-size: .78em; color: #b3c0ca; line-height: 1.4; }
+  .set-group-count { display: block; font-size: .95em; font-weight: 700; margin: 4px 0 2px; font-variant-numeric: tabular-nums; }
+  .pile-tray { display: flex; flex-wrap: wrap; align-items: flex-end; gap: 4px 3px; padding: 6px 0; min-width: 0; }
+  .chip-pile { width: 24px; height: 48px; flex-shrink: 0; }
+  .pile-caption { display: block; font-size: .7em; color: #b3c0ca; line-height: 1.45; }
+  .pile-remainder { display: inline-block; font-size: .7em; color: #c9b5ff; border: 1px solid #7c90a0; border-radius: 8px; padding: 3px 6px; margin: 4px 0; max-width: 100%; }
+  .pile-empty { min-height: 54px; display: grid; align-items: center; font-size: .8em; color: #b3c0ca; }
+  .quantity-preview { margin-top: 14px; padding-top: 10px; border-top: 1px solid #364653; }
+  .quantity-preview .chip-pile { width: 30px; height: 60px; }
+  .quantity-preview .pile-tray { gap: 4px; }
+  .quantity-preview .pile-caption, .quantity-preview .pile-remainder { font-size: .72em; }
   .palette-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 5.7em), 1fr)); gap: 8px; margin: 16px 0 24px; }
   .color-option { position: relative; display: grid; justify-items: center; gap: 6px; padding: 22px 8px 12px; min-width: 0; min-height: 112px; border: 1px solid #7c90a0; border-radius: 16px; background: #1e2a34; cursor: pointer; text-align: center; }
   .color-option:has(:checked) { border-color: var(--accent); box-shadow: inset 0 0 0 1px var(--accent); background: var(--tint); }
@@ -145,6 +166,7 @@
   .sr-only { position: absolute; width: 1px; height: 1px; padding: 0; overflow: hidden; clip-path: inset(50%); white-space: nowrap; }
   [hidden] { display: none !important; }
   [data-large="true"] .field-pair { grid-template-columns: minmax(0, 1fr); }
+  [data-large="true"] .set-grid { grid-template-columns: minmax(0, 1fr); }
   [data-large="true"] .actions { flex-direction: column; }
   @media (max-width: 760px) { .preview-layout { display: block; max-width: 430px; margin: auto; } #inspector { margin-top: 24px; } .workshop > header { max-width: 430px; } }
   @media (max-width: 420px) { body { padding: 16px 8px 140px; } #app { border-radius: 18px; } .workshop h1 { font-size: 24px; } }
@@ -153,14 +175,14 @@
 <div class="workshop">
   <header>
     <p class="eyebrow">Throwaway interaction study · #34 · Current / Lavender</p>
-    <p class="revision" id="review-revision">Review v3 · Chip colors + Continue popup</p>
+    <p class="revision" id="review-revision">Review v4 · Live chip stacks</p>
     <h1>One physical chip set. Clear editing boundaries.</h1>
-    <p class="intro">Paired rows is selected. Tap a chip to choose its optional color; visual previews help match the app to your physical set. Color never sets a value. This refined treatment still needs your review. Nothing here is production code.</p>
+    <p class="intro">Watch the complete chip set grow as you edit quantities. A full stack represents 10 physical chips; partial stacks and exact counts stay explicit. This is a live setup view, not the bank during play. Nothing here is production code.</p>
     <details class="review">
       <summary>Review controls &amp; guided walkthroughs</summary>
       <p>In-memory fixtures only. Reload resets everything. “Simulate restart” demonstrates retention boundaries, not real storage. Other setup steps, distribution and lifecycle actions are labelled handoffs.</p>
       <div class="review-controls">
-        <button data-review="reset">Populated fixtures</button><button data-review="empty">No templates</button><button data-review="seven">Seven-color example</button><button data-review="dense">12 denominations</button><button data-review="restart">Simulate restart</button><button data-review="delete-source">Delete source template…</button>
+        <button data-review="reset">Populated fixtures</button><button data-review="forty">40 white chips</button><button data-review="empty">No templates</button><button data-review="seven">Seven-color example</button><button data-review="dense">12 denominations</button><button data-review="restart">Simulate restart</button><button data-review="delete-source">Delete source template…</button>
         <label class="sr-only" for="scale">App text size</label><select id="scale"><option value="1">100% text</option><option value="1.5">150% text</option><option value="2">200% text</option></select>
       </div>
       <div class="scenario-tabs" role="tablist" aria-label="Guided walkthroughs"></div>
@@ -222,13 +244,14 @@ const ChipDemo = (() => {
     if (s.templates.some(t => t.id !== id && key(t.name) === key(raw))) return 'That template name already exists. Use a different name.';
     return '';
   }
-  function seed(empty = false, dense = false, seven = false) {
+  function seed(empty = false, dense = false, seven = false, forty = false) {
     const templates = empty ? [] : [{id:'t1',name:'Weeknight set',rows:mix('t')},{id:'t2',name:'Travel set',rows:[row('u1','1','100'),row('u2','5','100'),row('u3','25','60')]}];
     const make = (id, mode, phase, names, day) => ({id,mode,phase,names,created:`${day} Nov 2026 · 19:30`,rows:mix(id),sourceId:empty?null:'t1',last:'chips',returnToPreview:false,show:{},edited:{},failed:false,revision:0,fields:{buyin:'20',depth:'100',coverage:'4',preference:'Fewer chips',reserve:String(Math.ceil(names.length/2))}});
     const games = [make('g1','cash','Planning',['Maya','Jonas','Lena','Sam','Alex','Noor'],10),make('g2','tournament','Planning',['Chris','Robin'],9),make('g3','cash','In progress',['Alice','Bob','Eli'],8),make('g4','tournament','Completed',['Taylor','Jamie'],7)];
     if (empty) games[0].rows = [];
     if (dense) games[0].rows = ['1','2','5','10','25','50','100','500','1000','5000','25000','100000'].map((v,i)=>row('d'+i,v,String(100+i*10),CHIP_COLORS[i].id==='none'?null:CHIP_COLORS[i].id));
     if (seven) {games[0].rows=['1','5','25','100','500','1000','5000'].map((v,i)=>row('seven'+i,v,'100',['grey','red','blue','green','yellow','purple','black'][i]));games[0].sourceId=null;}
+    if (forty) {games[0].rows=[row('white40','1','40','white')];games[0].sourceId=null;}
     return {templates,games,location:{page:'chips',gameId:'g1'},picker:null,editor:null,scope:'game',newName:'',nameShown:false,nameEdited:false,modal:null,message:'',next:100};
   }
   const editorDirty = e => e && (e.name !== e.baseName || JSON.stringify(e.rows) !== JSON.stringify(e.baseRows));
@@ -346,12 +369,29 @@ const mode=g=>g.mode==='cash'?'Cash game':'Tournament';
 const variants=['paired','ledger','stacked'];
 const comparing = new URLSearchParams(location.search).get('compare')==='layouts' || ['ledger','stacked'].includes(new URLSearchParams(location.search).get('variant'));
 let variant=new URLSearchParams(location.search).get('variant')||'paired';if(!variants.includes(variant))variant='paired';
-let state=ChipDemo.seed(),scale=1,dialogTrigger=null,scenario='independence',walkStep=0;
+let state=ChipDemo.seed(),scale=1,dialogTrigger=null,scenario='independence',walkStep=0,overviewOpen=true;
 const paths={back:'m15 18-6-6 6-6',arrow:'m9 18 6-6-6-6',plus:'M12 5v14M5 12h14',trash:'M4 7h16M9 7V4h6v3M7 7l1 13h8l1-13M10 10v7M14 10v7',edit:'m4 16 11-11 4 4-11 11H4zM13 7l4 4',layers:'m3 8 9-5 9 5-9 5zM3 12l9 5 9-5M3 16l9 5 9-5',home:'m3 11 9-8 9 8M6 9v12h12V9M10 21v-7h4v7',lock:'M6 10h12v11H6zM8 10V6a4 4 0 0 1 8 0v4',check:'m5 12 4 4L19 6',more:'M5 12h.01M12 12h.01M19 12h.01'};
 const icon=name=>`<svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="${paths[name]||paths.layers}"/></svg>`;
 function chipSymbol(r){const color=chipColor(r.color),value=/^\d{1,5}$/.test(r.value||'')&&BigInt(r.value)>0n?r.value:'';return `<svg class="chip-symbol" viewBox="0 0 72 72" aria-hidden="true" focusable="false"><circle cx="36" cy="36" r="34" fill="${color.fill}" stroke="#aab6c0" stroke-width="1.5"/><circle cx="36" cy="36" r="29" fill="none" stroke="${color.ink}" stroke-opacity=".85" stroke-width="6" stroke-dasharray="${color.id==='none'?'2 7':'8 15'}"/><circle cx="36" cy="36" r="22" fill="${color.fill}" stroke="${color.ink}" stroke-opacity=".65" stroke-width="1"/>${value?`<text x="36" y="37" text-anchor="middle" dominant-baseline="middle" fill="${color.ink}" font-size="${value.length>3?'12':'18'}" font-family="-apple-system, BlinkMacSystemFont, sans-serif" font-weight="700">${esc(value)}</text>`:''}</svg>`;}
 function colorControl(r,i){return `<button type="button" class="chip-color" id="color-${state.editor?'e':'g'}-${r.id}" data-action="color" data-id="${r.id}" aria-haspopup="dialog" aria-label="${esc(`Change chip color for denomination ${i+1}, value ${r.value||'not entered'} chip units. Current color ${chipColor(r.color).name}.`)}">${chipSymbol(r)}<span><span class="color-label">Chip color</span><span class="color-name">${chipColor(r.color).name}</span></span></button>`;}
 function chipTray(rows){return `<span class="chip-tray" role="list" aria-label="Chip denominations">${rows.map(r=>`<span class="chip-preview" role="listitem">${chipSymbol(r)}<span class="chip-preview-value">${esc(r.value||'Not entered')}<span class="sr-only"> chip units</span></span><span class="chip-preview-color">${chipColor(r.color).name}</span></span>`).join('')}</span>`;}
+const PileView = {
+  plan(raw, limit=8) {
+    if(!/^\d+$/.test(raw))return null;
+    const quantity=BigInt(raw),pileCount=(quantity+9n)/10n;
+    const layers=Array.from({length:Number(pileCount>BigInt(limit)?BigInt(limit):pileCount)},(_,i)=>Number(quantity-BigInt(i)*10n>=10n?10n:quantity%10n));
+    return {quantity,layers,hidden:quantity-layers.reduce((n,size)=>n+BigInt(size),0n),full:quantity/10n,partial:quantity%10n};
+  }
+};
+function chipPile(size,colorId){const color=chipColor(colorId),top=60-(size-1)*4;return `<svg class="chip-pile" viewBox="0 0 48 68" aria-hidden="true" focusable="false" data-chips="${size}" data-color="${color.id}">${Array.from({length:size},(_,i)=>`<ellipse cx="24" cy="${60-i*4}" rx="20" ry="6" fill="${color.fill}" stroke="${color.ink}" stroke-width="1.2" stroke-opacity=".8"/>`).join('')}<ellipse cx="24" cy="${top}" rx="14" ry="4" fill="none" stroke="${color.ink}" stroke-width="1" stroke-opacity=".6"/><path d="M5 ${top}h6m26 0h6M24 ${top-6}v3m0 6v3" fill="none" stroke="${color.ink}" stroke-width="2"/></svg>`;}
+function pilePicture(r,includeCount=false,limit=8){const plan=PileView.plan(r.quantity,limit);if(!plan)return `<div class="pile-view" data-count-state="${r.quantity===''?'missing':'invalid'}"><div class="pile-empty">${r.quantity===''?'Quantity not entered':'Quantity preview unavailable'}</div></div>`;
+  if(plan.quantity===0n)return '<div class="pile-view" data-quantity="0"><div class="pile-empty">0 chips · no piles</div></div>';
+  const breakdown=plan.hidden>0n?`${plan.layers.length} piles shown · 10 chips each`:plan.full===0n?`${number(plan.partial)} chips in a partial pile`:plan.partial===0n?`${number(plan.full)} ${plan.full===1n?'pile':'piles'} of 10`:`${number(plan.full)} × 10 + ${number(plan.partial)} chips`;
+  return `<div class="pile-view" data-quantity="${plan.quantity}"><div class="pile-tray" aria-hidden="true">${plan.layers.map(n=>chipPile(n,r.color)).join('')}</div>${plan.hidden>0n?`<span class="pile-remainder">+${number(plan.hidden)} more chips, not drawn</span>`:''}<span class="pile-caption">${includeCount?`${number(plan.quantity)} chips · `:''}${breakdown}</span></div>`;
+}
+function overviewTotal(rows){const total=ChipDemo.totals(rows);return !rows.length?'No denominations yet':total?`${number(total.chips)} physical chips`:'Incomplete chip set';}
+function overviewBody(rows){return `<p class="set-key">10 chips per full pile. Larger quantities are labelled rather than drawing every chip.</p>${rows.length?`<div class="set-grid">${rows.map((r,i)=>`<section class="set-group" aria-label="Denomination ${i+1} quantity preview"><span class="set-group-heading">${ChipDemo.fieldError(rows,r.id,'value')?`Denomination ${i+1} · value pending`:`${esc(r.value)} ${unitLabel(r.value)}`}<br>${chipColor(r.color).name}</span>${PileView.plan(r.quantity)?`<strong class="set-group-count">${number(BigInt(r.quantity))} chips</strong>`:''}${pilePicture(r,false,24)}</section>`).join('')}</div>`:'<p class="small">Add a denomination to build your chip set.</p>'}`;}
+function chipSetOverview(rows){return `<details class="set-overview" id="chip-set-overview" ${overviewOpen?'open':''}><summary><span><strong>Your chip set</strong><small id="set-overview-total">${overviewTotal(rows)}</small></span></summary><div id="set-overview-body">${overviewBody(rows)}</div></details>`;}
 const b=(label,action,cls='',extra='',symbol='')=>`<button type="button" data-action="${action}" class="${cls}${symbol?' with-icon':''}" ${extra}>${symbol?icon(symbol):''}<span>${esc(label)}</span></button>`;
 const ib=(label,action,symbol,extra='')=>`<button type="button" data-action="${action}" class="icon-button" aria-label="${esc(label)}" ${extra}>${icon(symbol)}</button>`;
 const notice=(text,type='info')=>`<div class="notice ${type}" role="status">${esc(text)}</div>`;
@@ -359,16 +399,16 @@ function context(g){return g?`<p class="context"><span class="badge">${mode(g)}<
 function header(title,g,back='games') {return `<div class="topline">${b(back==='games'?'Games':'Back',back,'quiet','',back==='games'?'home':'back')}${g?ib('Game actions and setup lock','lock','more'):''}</div>${context(g)}<h2 tabindex="-1">${esc(title)}</h2>`;}
 function summary(rows){const totals=ChipDemo.totals(rows);return totals?`${rows.length} denomination${rows.length===1?'':'s'} · ${number(totals.chips)} chips · ${number(totals.units)} chip units`:(rows.length?'Incomplete chip set':'No denominations yet');}
 function field(r,field,target){const id=target+'-'+r.id+'-'+field;return `<label class="field field-${field}" for="${id}"><span class="field-title">${field==='value'?'Value (chip units)':'Quantity (chips)'}</span><span class="input-wrap"><input type="text" inputmode="numeric" enterkeyhint="next" autocomplete="off" spellcheck="false" id="${id}" data-row="${r.id}" data-field="${field}" value="${esc(r[field])}" aria-describedby="${id}-error" aria-invalid="false"></span><span class="error" id="${id}-error"></span></label>`;}
-function rowsEditor(t){return `${t.rows.length?t.rows.map((r,i)=>`<section class="chip-row" aria-label="Denomination ${i+1}"><div class="row-heading">${colorControl(r,i)}${ib(`Remove denomination ${i+1}${r.value?' (value '+r.value+')':''}`,'remove','trash',`data-id="${r.id}"`)}</div><div class="field-pair">${(variant==='stacked'?['quantity','value']:['value','quantity']).map(f=>field(r,f,state.editor?'e':'g')).join('')}</div></section>`).join(''):`<div class="empty"><strong>No denominations yet</strong><p class="small">Enter the values and quantities in your physical chip set.</p></div>`}<span class="error" id="rows-error">${t.failed&&!t.rows.length?'Add at least one denomination.':''}</span>${b('Add denomination','add','full','','plus')}`;}
+function rowsEditor(t){return `${t.rows.length?t.rows.map((r,i)=>`<section class="chip-row" aria-label="Denomination ${i+1}"><div class="row-heading">${colorControl(r,i)}${ib(`Remove denomination ${i+1}${r.value?' (value '+r.value+')':''}`,'remove','trash',`data-id="${r.id}"`)}</div><div class="field-pair">${(variant==='stacked'?['quantity','value']:['value','quantity']).map(f=>field(r,f,state.editor?'e':'g')).join('')}</div><div class="quantity-preview" data-count-preview="${r.id}" aria-label="Live quantity preview for denomination ${i+1}">${pilePicture(r,true)}</div></section>`).join(''):`<div class="empty"><strong>No denominations yet</strong><p class="small">Enter the values and quantities in your physical chip set.</p></div>`}<span class="error" id="rows-error">${t.failed&&!t.rows.length?'Add at least one denomination.':''}</span>${b('Add denomination','add','full','','plus')}`;}
 function nameField(raw){return `<label class="field" for="template-name"><span class="field-title">Template name</span><span class="input-wrap"><input type="text" id="template-name" autocomplete="off" value="${esc(raw)}" aria-invalid="false" aria-describedby="template-name-error" enterkeyhint="${state.editor?'done':'next'}"></span><span class="error" id="template-name-error"></span></label>`;}
 function footer(g){return `<footer class="dock"><p>Draft retained in this demo · no chips issued</p><div class="actions">${b('Back','players','','','back')}${b(g.returnToPreview?'Return to preview':'Continue','continue','primary','id="step-action"','arrow')}</div></footer>`;}
-function chipScreen(g){const t=ChipDemo.source(state,g);return `${header('Chip set',g)}${b('Step 3 of '+(g.mode==='cash'?'5':'6')+' · Setup steps','steps','quiet step-button')}<div id="chip-summary" class="small">${esc(summary(g.rows))}</div>${b('Choose template','picker','full','','layers')}${g.sourceId?`<p class="small">${t?`Copied from “${esc(t.name)}” · this game’s copy`:'Source template deleted · this game’s copy is kept'}</p>`:''}${rowsEditor(g)}${footer(g)}`;}
+function chipScreen(g){const t=ChipDemo.source(state,g);return `${header('Chip set',g)}${b('Step 3 of '+(g.mode==='cash'?'5':'6')+' · Setup steps','steps','quiet step-button')}<div id="chip-summary" class="small">${esc(summary(g.rows))}</div>${b('Choose template','picker','full','','layers')}${g.sourceId?`<p class="small">${t?`Copied from “${esc(t.name)}” · this game’s copy`:'Source template deleted · this game’s copy is kept'}</p>`:''}${chipSetOverview(g.rows)}${rowsEditor(g)}${footer(g)}`;}
 function gamesScreen(){return `${header('Games')}${b('New game','handoff','primary full','','plus')}<div class="section-title"><h3>In progress</h3></div>${state.games.filter(g=>g.phase==='In progress').map(gameCard).join('')}<div class="section-title"><h3>Planning</h3></div>${state.games.filter(g=>g.phase==='Planning').map(gameCard).join('')}<nav class="secondary-nav">${b('Chip set templates','templates','quiet','','layers')}${b('Completed setup fixture','completed','quiet','','lock')}</nav>`;}
 function gameCard(g){return `<button data-action="resume" data-id="${g.id}" class="game-card"><small>${mode(g)} · ${g.phase} · ${g.created}</small><strong>${esc(g.names.join(', '))}</strong><small>${g.phase==='Planning'?'Resume setup':'Inspect locked setup'} →</small></button>`;}
 function templateList(picker){const sorted=[...state.templates].sort((a,b)=>a.name.localeCompare(b.name));return sorted.length?sorted.map(t=>picker?`<label class="choice"><input type="radio" name="template" value="${t.id}" ${state.picker?.selected===t.id?'checked':''}><span><strong>${esc(t.name)}</strong><small>${esc(summary(t.rows))}</small>${chipTray(t.rows)}</span></label>`:`<div class="template-row"><div class="row-heading"><strong class="name">${esc(t.name)}</strong>${ib('Edit '+t.name,'edit-template','edit',`data-id="${t.id}"`)}${ib('Delete '+t.name,'delete-template','trash',`data-id="${t.id}"`)}</div><p class="small">${esc(summary(t.rows))}</p>${chipTray(t.rows)}</div>`).join(''):`<div class="empty"><strong>No templates yet</strong><p class="small">${picker?'Create one here, or go back and enter chips only for this game.':'Save a chip set for future games.'}</p></div>`;}
 function pickerScreen(g){return `${header('Choose template',g,'chips')}<p class="small">Selecting here doesn’t change the game until Use template.</p>${b('New template','new-template','full','','plus')}${templateList(true)}<footer class="dock"><div class="actions">${b('Back','chips','','','back')}${b('Use template','use-template','primary','id="step-action"','check')}</div></footer>`;}
 function templatesScreen(){return `${header('Chip set templates')}${b('New template','new-template','primary full','','plus')}<p class="small" style="margin-top:16px">Changes here affect future selections, not existing games.</p>${templateList(false)}`;}
-function editorScreen(g){const e=state.editor;return `${header(e.id?'Edit template':'New template',g,'editor-back')}${notice('Reusable template · changes apply only after Save. Existing games stay unchanged.')}${nameField(e.name)}<div id="chip-summary" class="small">${esc(summary(e.rows))}</div>${rowsEditor(e)}<footer class="dock"><p id="editor-status">${ChipDemo.editorDirty(e)?'Unsaved changes':'Not changed'}</p><div class="actions">${b('Cancel','editor-back','','','back')}${b(e.origin==='picker'?'Save and use':'Save','save','primary','id="step-action"','check')}</div></footer>`;}
+function editorScreen(g){const e=state.editor;return `${header(e.id?'Edit template':'New template',g,'editor-back')}${notice('Reusable template · changes apply only after Save. Existing games stay unchanged.')}${nameField(e.name)}<div id="chip-summary" class="small">${esc(summary(e.rows))}</div>${chipSetOverview(e.rows)}${rowsEditor(e)}<footer class="dock"><p id="editor-status">${ChipDemo.editorDirty(e)?'Unsaved changes':'Not changed'}</p><div class="actions">${b('Cancel','editor-back','','','back')}${b(e.origin==='picker'?'Save and use':'Save','save','primary','id="step-action"','check')}</div></footer>`;}
 function readRows(rows){return `<div class="card">${rows.map(r=>`<div class="read-row"><div class="read-chip">${chipSymbol(r)}<span><strong>${esc(r.value)} ${unitLabel(r.value)}</strong><span class="small">${chipColor(r.color).name}</span></span></div><span>${esc(r.quantity)} ${r.quantity==='1'?'chip':'chips'}</span></div>`).join('')}</div>`;}
 function neighborScreen(g,page){if(page==='preview'){const valid=ChipDemo.validRows(g.rows),totals=ChipDemo.totals(g.rows);return `${header('Distribution preview',g)}${notice('Handoff to #35 · no allocation or feasibility solver runs in this prototype.')}<div class="card"><h3>Chip set</h3><p>${esc(summary(g.rows))}</p>${chipTray(g.rows)}${!valid?notice('Chip set needs attention.','failure'):totals.chips==='0'?notice('There are no chips available. A distribution cannot be formed.','failure'):''}${b('Edit chip set','edit-chips','','','edit')}</div><dl class="facts"><div><dt>Players</dt><dd>${esc(g.names.join(', '))}</dd></div><div><dt>Retained settings</dt><dd>EUR ${g.fields.buyin} · ${g.fields.depth} BB · coverage ${g.fields.coverage} · reserve ${g.fields.reserve}</dd></div></dl>${b('Start unavailable · distribution not implemented','start','full','aria-disabled="true"')}`;}
   return `${header(page==='players'?'Players':'Game settings',g)}${notice('Neighboring-step handoff · detailed Planning interactions are in the approved #33 prototype.')}<dl class="facts"><div><dt>Players</dt><dd>${esc(g.names.join(', '))}</dd></div>${Object.entries(g.fields).map(([k,v])=>`<div><dt>${esc({buyin:'Buy-in (EUR)',depth:'Starting stack (BB)',coverage:'Blind-payment coverage',reserve:'Chip reserve (stacks)',preference:'Distribution preference'}[k])}</dt><dd>${esc(v)}</dd></div>`).join('')}</dl><footer class="dock"><div class="actions">${b(page==='players'?'Chip set':'Back to chip set','chips','','','back')}${page==='settings'?b('Review inputs','preview','primary','','arrow'):''}</div></footer>`;}
@@ -384,6 +424,8 @@ function render(focus=null){const g=ChipDemo.game(state),p=state.location.page;l
 function updateFields(){const t=ChipDemo.target(state);if(t && ['chips','editor'].includes(state.location.page)){
   for(const input of document.querySelectorAll('#app input[data-row]')){const error=ChipDemo.fieldError(t.rows,input.dataset.row,input.dataset.field),shown=t.failed||t.show[input.dataset.row+'-'+input.dataset.field];input.setAttribute('aria-invalid',String(!!error&&!!shown));document.getElementById(input.id+'-error').textContent=shown?error:'';}
   const summaryNode=$('#chip-summary');if(summaryNode)summaryNode.textContent=summary(t.rows);
+  const overview=$('#set-overview-body');if(overview){overview.innerHTML=overviewBody(t.rows);$('#set-overview-total').textContent=overviewTotal(t.rows);}
+  document.querySelectorAll('#app [data-count-preview]').forEach(node=>{const r=t.rows.find(r=>r.id===node.dataset.countPreview);if(r)node.innerHTML=pilePicture(r,true);});
   t.rows.forEach((r,i)=>{const button=document.getElementById(`color-${state.editor?'e':'g'}-${r.id}`);if(button){button.setAttribute('aria-label',`Change chip color for denomination ${i+1}, value ${r.value||'not entered'} chip units. Current color ${chipColor(r.color).name}.`);button.querySelector('.chip-symbol').outerHTML=chipSymbol(r);button.querySelector('.color-name').textContent=chipColor(r.color).name;}});
   const status=$('#editor-status');if(status)status.textContent=ChipDemo.editorDirty(state.editor)?'Unsaved changes':'Not changed';
   const name=$('#template-name');if(name){const shown=state.editor?(state.editor.failed||state.editor.show.name):state.nameShown;const error=ChipDemo.nameError(state,state.editor?state.editor.name:state.newName,state.editor?.id);name.setAttribute('aria-invalid',String(!!error&&!!shown));$('#template-name-error').textContent=shown?error:'';}
@@ -428,6 +470,7 @@ document.addEventListener('click',e=>{const button=e.target.closest('[data-actio
 document.addEventListener('input',e=>{const input=e.target;if(input.dataset.row)send({type:'FIELD',id:input.dataset.row,field:input.dataset.field,value:input.value},{partial:true});if(input.id==='template-name')send({type:'NAME',value:input.value},{partial:true});});
 document.addEventListener('focusout',e=>{if(e.target.dataset.row)send({type:'BLUR',id:e.target.dataset.row,field:e.target.dataset.field},{partial:true});if(e.target.id==='template-name')send({type:'NAME_BLUR'},{partial:true});});
 document.addEventListener('change',e=>{if(e.target.name==='template')send({type:'SELECT',id:e.target.value},{partial:true});if(e.target.name==='chip-color')send({type:'COLOR_PICK',color:e.target.value},{partial:true});});
+document.addEventListener('toggle',e=>{if(e.target.id==='chip-set-overview')overviewOpen=e.target.open;},true);
 $('#dialog').addEventListener('cancel',e=>{e.preventDefault();send({type:'CANCEL'});});
 $('#dialog').addEventListener('click',e=>{const button=e.target.closest('[data-step]');if(!button)return;const p=button.dataset.step;state.modal=null;$('#dialog').close();send(navigation(p),{focus:'heading'});});
 document.addEventListener('keydown',e=>{if(e.key==='Enter'&&e.target.id==='template-name'&&state.modal?.type==='new-template'){e.preventDefault();send({type:'SAVE_NEW'});return;}if(e.key==='Enter'&&e.target.closest('#app')&&e.target.matches('input[type="text"]')){e.preventDefault();if(e.target.id==='template-name'&&state.editor){send({type:'SAVE'});if(state.editor?.failed)focusFirstError();return;}const fields=[...document.querySelectorAll('#app input[type="text"]')];const next=fields[fields.indexOf(e.target)+1]||$('#step-action');next?.focus();}
@@ -436,9 +479,17 @@ document.addEventListener('keydown',e=>{if(e.key==='Enter'&&e.target.id==='templ
 function setVariant(value){const active=document.activeElement?.id;variant=value;const url=new URL(location.href);url.searchParams.set('variant',variant);history.replaceState(null,'',url);render(active);}
 $('#variant').addEventListener('change',e=>setVariant(e.target.value));$('#previous-variant').addEventListener('click',()=>setVariant(variants[(variants.indexOf(variant)+2)%3]));$('#next-variant').addEventListener('click',()=>setVariant(variants[(variants.indexOf(variant)+1)%3]));
 $('#scale').addEventListener('change',e=>{scale=Number(e.target.value);render();});
-document.querySelectorAll('[data-review]').forEach(button=>button.addEventListener('click',()=>{const action=button.dataset.review;if(['reset','empty','dense','seven'].includes(action)){state=ChipDemo.seed(action==='empty',action==='dense',action==='seven');walkStep=0;render();renderWalkthrough();}if(action==='restart')send({type:'RESTART'},{focus:'heading'});if(action==='delete-source'){const g=ChipDemo.game(state);if(g&&ChipDemo.source(state,g))send({type:'DELETE',id:g.sourceId});else {state.message='Open a game with an existing source template first.';render();}}}));
+document.querySelectorAll('[data-review]').forEach(button=>button.addEventListener('click',()=>{const action=button.dataset.review;if(['reset','empty','dense','seven','forty'].includes(action)){state=ChipDemo.seed(action==='empty',action==='dense',action==='seven',action==='forty');overviewOpen=true;walkStep=0;render();renderWalkthrough();}if(action==='restart')send({type:'RESTART'},{focus:'heading'});if(action==='delete-source'){const g=ChipDemo.game(state);if(g&&ChipDemo.source(state,g))send({type:'DELETE',id:g.sourceId});else {state.message='Open a game with an existing source template first.';render();}}}));
 
 const scenarios={
+  piles:{label:'Live chip stacks',description:'Physical piles are a quantity visualization, not player starting stacks. Each full pile holds 10 chips; labels account for every chip even when large quantities are condensed.',steps:[
+    ['Show 40 White chips, with the other quantities at zero',()=>{const g=ChipDemo.game(state);for(const r of g.rows)send({type:'FIELD',id:r.id,field:'quantity',value:r===g.rows[0]?'40':'0'});send({type:'COLOR',id:g.rows[0].id});send({type:'COLOR_PICK',color:'white'});send({type:'COLOR_SAVE'});}],
+    ['Change 40 to 43: four full piles plus a partial pile of three',()=>send({type:'FIELD',id:ChipDemo.game(state).rows[0].id,field:'quantity',value:'43'})],
+    ['Enter explicit zero: no physical chips are drawn',()=>send({type:'FIELD',id:ChipDemo.game(state).rows[0].id,field:'quantity',value:'0'})],
+    ['Clear the field: missing is not zero and no stale piles remain',()=>send({type:'FIELD',id:ChipDemo.game(state).rows[0].id,field:'quantity',value:''})],
+    ['Enter 1,000: bounded visible piles plus an exact labelled remainder',()=>send({type:'FIELD',id:ChipDemo.game(state).rows[0].id,field:'quantity',value:'1000'})],
+    ['Continue for this game only; no template or physical inventory changes',()=>{send({type:'CONTINUE'});send({type:'SCOPE_CHOICE',value:'game'});}]
+  ]},
   scope:{label:'Continue popup',description:'Scope is chosen only after Continue validates the chip set. Cancel retains the draft and never updates a template.',steps:[
     ['Edit this game’s first quantity to 240',()=>send({type:'FIELD',id:ChipDemo.game(state).rows[0].id,field:'quantity',value:'240'})],
     ['Continue opens the popup; cancel without updating anything reusable',()=>{send({type:'CONTINUE'});send({type:'CANCEL'});}],
@@ -493,6 +544,7 @@ function renderWalkthrough(){const keys=Object.keys(scenarios);$('.scenario-tabs
 $('.scenario-tabs').addEventListener('click',e=>{const tab=e.target.closest('[data-scenario]');if(tab){scenario=tab.dataset.scenario;walkStep=0;state=ChipDemo.seed();render();renderWalkthrough();$('#tab-'+scenario).focus();}});
 $('.scenario-tabs').addEventListener('keydown',e=>{if(!['ArrowLeft','ArrowRight','Home','End'].includes(e.key))return;e.preventDefault();const keys=Object.keys(scenarios),i=keys.indexOf(scenario);const next=e.key==='Home'?keys[0]:e.key==='End'?keys.at(-1):keys[(i+(e.key==='ArrowLeft'?keys.length-1:1))%keys.length];document.getElementById('tab-'+next).click();});
 $('#walkthrough').addEventListener('click',e=>{const button=e.target.closest('[data-walk]');if(!button)return;const i=Number(button.dataset.walk);if(i<walkStep){state=ChipDemo.seed();for(let n=0;n<i;n++)scenarios[scenario].steps[n][1]();}scenarios[scenario].steps[i][1]();walkStep=i+1;renderWalkthrough();});
+if(new URLSearchParams(location.search).get('fixture')==='forty')state=ChipDemo.seed(false,false,false,true);
 const screen=new URLSearchParams(location.search).get('screen');if(['games','templates','picker','preview','details'].includes(screen)){state.location={page:screen,...(screen==='games'||screen==='templates'?{}:{gameId:screen==='details'?'g3':'g1'})};if(screen==='picker')state.picker={selected:null};}
 $('.variant-bar').hidden=!comparing;
 render();renderWalkthrough();
