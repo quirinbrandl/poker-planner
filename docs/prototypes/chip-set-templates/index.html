@@ -72,6 +72,27 @@
   .choice input { width: 20px; height: 20px; flex-shrink: 0; margin: .2em 0 0; accent-color: var(--accent); }
   .choice strong { display: block; font-size: .88em; }
   .choice small { display: block; font-size: .76em; margin-top: 4px; color: #b3c0ca; }
+  .choice > span { min-width: 0; flex: 1; }
+  .chip-symbol { display: block; width: 60px; height: 60px; flex-shrink: 0; }
+  .chip-color { display: inline-flex; align-items: center; gap: 10px; min-width: 0; padding: 6px; margin-left: -6px; border-color: transparent; background: transparent; text-align: left; }
+  .chip-color:hover { border-color: #7c90a0; }
+  .chip-color > span { min-width: 0; }
+  .chip-color .color-label { display: block; font-size: .7em; color: #b3c0ca; }
+  .chip-color .color-name { display: block; font-size: .9em; font-weight: 650; }
+  .chip-tray { display: flex; flex-wrap: wrap; gap: 14px 12px; margin: 16px 0 8px; }
+  .chip-preview { display: grid; justify-items: center; align-content: start; gap: 3px; width: 4.8em; min-width: 0; text-align: center; }
+  .chip-preview .chip-symbol { width: 48px; height: 48px; }
+  .chip-preview-value { font-size: .85em; font-weight: 650; font-variant-numeric: tabular-nums; overflow-wrap: anywhere; max-width: 100%; }
+  .chip-preview-color { font-size: .7em; color: #b3c0ca; }
+  .read-chip { display: flex; flex-wrap: wrap; align-items: center; gap: 12px; min-width: 0; }
+  .read-chip .small { display: block; }
+  .palette-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 5.7em), 1fr)); gap: 8px; margin: 16px 0 24px; }
+  .color-option { position: relative; display: grid; justify-items: center; gap: 6px; padding: 22px 8px 12px; min-width: 0; min-height: 112px; border: 1px solid #7c90a0; border-radius: 16px; background: #1e2a34; cursor: pointer; text-align: center; }
+  .color-option:has(:checked) { border-color: var(--accent); box-shadow: inset 0 0 0 1px var(--accent); background: var(--tint); }
+  .color-option:focus-within { outline: 3px solid var(--accent); outline-offset: 3px; }
+  .color-option input { position: absolute; top: 7px; left: 7px; width: 18px; height: 18px; margin: 0; accent-color: var(--accent); }
+  .color-option .chip-symbol { width: 48px; height: 48px; }
+  .color-option > span { font-size: .8em; }
   .notice { border-left: 3px solid #f2d08a; padding: 12px 14px; margin: 16px 0; color: #f2d08a; background: #383020; font-size: .8em; }
   .notice.info { color: var(--accent); border-color: var(--accent); background: var(--tint); }
   .notice.failure { color: #ffb3aa; border-color: #ffb3aa; background: #3d2427; }
@@ -132,12 +153,12 @@
   <header>
     <p class="eyebrow">Throwaway interaction study · #34 · Current / Lavender</p>
     <h1>One physical chip set. Clear editing boundaries.</h1>
-    <p class="intro">Can the host enter chips quickly, reuse a template, and tell exactly what will change? The behavior was agreed in conversation; these interactive screens and three inline layouts still need your review. Nothing here is production code.</p>
+    <p class="intro">Paired rows is selected. Tap a chip to choose its optional color; visual previews help match the app to your physical set. Color never sets a value. This refined treatment still needs your review. Nothing here is production code.</p>
     <details class="review">
       <summary>Review controls &amp; guided walkthroughs</summary>
       <p>In-memory fixtures only. Reload resets everything. “Simulate restart” demonstrates retention boundaries, not real storage. Other setup steps, distribution and lifecycle actions are labelled handoffs.</p>
       <div class="review-controls">
-        <button data-review="reset">Populated fixtures</button><button data-review="empty">No templates</button><button data-review="dense">12 denominations</button><button data-review="restart">Simulate restart</button><button data-review="delete-source">Delete source template…</button>
+        <button data-review="reset">Populated fixtures</button><button data-review="empty">No templates</button><button data-review="seven">Seven-color example</button><button data-review="dense">12 denominations</button><button data-review="restart">Simulate restart</button><button data-review="delete-source">Delete source template…</button>
         <label class="sr-only" for="scale">App text size</label><select id="scale"><option value="1">100% text</option><option value="1.5">150% text</option><option value="2">200% text</option></select>
       </div>
       <div class="scenario-tabs" role="tablist" aria-label="Guided walkthroughs"></div>
@@ -146,7 +167,7 @@
   </header>
   <div class="preview-layout"><main id="app" aria-label="Phone prototype"></main><aside id="inspector" aria-label="Prototype state"></aside></div>
 </div>
-<nav class="variant-bar" aria-label="Prototype row-layout comparison">
+<nav class="variant-bar" aria-label="Archived prototype row-layout comparison" hidden>
   <button id="previous-variant" aria-label="Previous layout">←</button>
   <div><label for="variant">ROW LAYOUT · REVIEW ONLY</label><select id="variant"><option value="paired">A · Paired rows</option><option value="ledger">B · Open ledger</option><option value="stacked">C · Quantity first</option></select></div>
   <button id="next-variant" aria-label="Next layout">→</button>
@@ -156,15 +177,30 @@
 <script>
 /* THROWAWAY ONLY. In-memory interaction fixtures, not a solver, durable store,
    application API or code to promote into production. All layout variants share behavior. */
+const CHIP_COLORS = [
+  {id:'none',name:'No color',fill:'#1e2a34',ink:'#f1f4f5'},
+  {id:'white',name:'White',fill:'#eeeae1',ink:'#222830'},
+  {id:'grey',name:'Grey',fill:'#a5acb5',ink:'#222830'},
+  {id:'red',name:'Red',fill:'#ac3546',ink:'#ffffff'},
+  {id:'blue',name:'Blue',fill:'#2963a4',ink:'#ffffff'},
+  {id:'green',name:'Green',fill:'#23745a',ink:'#ffffff'},
+  {id:'yellow',name:'Yellow',fill:'#ebcb5b',ink:'#222830'},
+  {id:'purple',name:'Purple',fill:'#7650a4',ink:'#ffffff'},
+  {id:'black',name:'Black',fill:'#222830',ink:'#f1f4f5'},
+  {id:'orange',name:'Orange',fill:'#dc934b',ink:'#222830'},
+  {id:'pink',name:'Pink',fill:'#df96bb',ink:'#222830'},
+  {id:'brown',name:'Brown',fill:'#85583f',ink:'#ffffff'}
+];
+const chipColor = id => CHIP_COLORS.find(c=>c.id===id) || CHIP_COLORS[0];
 const ChipDemo = (() => {
   const copy = x => structuredClone(x);
   const key = x => x.trim().toLocaleLowerCase('en');
   const whole = (raw, min) => /^\d+$/.test(raw) && BigInt(raw) >= BigInt(min);
-  const row = (id, value = '', quantity = '') => ({id, value, quantity});
-  const mix = prefix => [row(prefix+'1','1','200'), row(prefix+'2','5','150'), row(prefix+'3','25','100'), row(prefix+'4','100','50')];
+  const row = (id, value = '', quantity = '', color = null) => ({id, value, quantity, color});
+  const mix = prefix => [row(prefix+'1','1','200','grey'), row(prefix+'2','5','150','red'), row(prefix+'3','25','100','blue'), row(prefix+'4','100','50','green')];
   const game = s => s.games.find(g => g.id === s.location.gameId);
   const source = (s, g) => s.templates.find(t => t.id === g?.sourceId);
-  const hasData = rows => rows.some(r => r.value !== '' || r.quantity !== '');
+  const hasData = rows => rows.some(r => r.value !== '' || r.quantity !== '' || !!r.color);
   function fieldError(rows, id, field) {
     const r = rows.find(r => r.id === id); if (!r) return '';
     if (field === 'value') {
@@ -184,12 +220,13 @@ const ChipDemo = (() => {
     if (s.templates.some(t => t.id !== id && key(t.name) === key(raw))) return 'That template name already exists. Use a different name.';
     return '';
   }
-  function seed(empty = false, dense = false) {
+  function seed(empty = false, dense = false, seven = false) {
     const templates = empty ? [] : [{id:'t1',name:'Weeknight set',rows:mix('t')},{id:'t2',name:'Travel set',rows:[row('u1','1','100'),row('u2','5','100'),row('u3','25','60')]}];
     const make = (id, mode, phase, names, day) => ({id,mode,phase,names,created:`${day} Nov 2026 · 19:30`,rows:mix(id),sourceId:empty?null:'t1',last:'chips',returnToPreview:false,show:{},edited:{},failed:false,revision:0,fields:{buyin:'20',depth:'100',coverage:'4',preference:'Fewer chips',reserve:String(Math.ceil(names.length/2))}});
     const games = [make('g1','cash','Planning',['Maya','Jonas','Lena','Sam','Alex','Noor'],10),make('g2','tournament','Planning',['Chris','Robin'],9),make('g3','cash','In progress',['Alice','Bob','Eli'],8),make('g4','tournament','Completed',['Taylor','Jamie'],7)];
     if (empty) games[0].rows = [];
-    if (dense) games[0].rows = ['1','2','5','10','25','50','100','500','1000','5000','25000','100000'].map((v,i)=>row('d'+i,v,String(100+i*10)));
+    if (dense) games[0].rows = ['1','2','5','10','25','50','100','500','1000','5000','25000','100000'].map((v,i)=>row('d'+i,v,String(100+i*10),CHIP_COLORS[i].id==='none'?null:CHIP_COLORS[i].id));
+    if (seven) {games[0].rows=['1','5','25','100','500','1000','5000'].map((v,i)=>row('seven'+i,v,'100',['grey','red','blue','green','yellow','purple','black'][i]));games[0].sourceId=null;}
     return {templates,games,location:{page:'chips',gameId:'g1'},picker:null,editor:null,scope:'game',newName:'',nameShown:false,nameEdited:false,modal:null,message:'',next:100};
   }
   const editorDirty = e => e && (e.name !== e.baseName || JSON.stringify(e.rows) !== JSON.stringify(e.baseRows));
@@ -241,12 +278,15 @@ const ChipDemo = (() => {
       case 'RESUME': {const target=s.games.find(g=>g.id===a.id);if(target) navigate(s,{page:target.phase==='Planning'?target.last:'details',gameId:target.id});break;}
       case 'EDIT_CHIPS': if(g?.phase==='Planning') {g.returnToPreview=true;navigate(s,{page:'chips',gameId:g.id});}break;
       case 'FIELD': {const t=target(s);if(!t || (s.location.page!=='editor' && t.phase!=='Planning')) break;const r=t.rows.find(r=>r.id===a.id);if(r){r[a.field]=a.value;t.edited[a.id+'-'+a.field]=true;if(s.location.page!=='editor')t.revision++;}break;}
+      case 'COLOR': {const t=target(s);if(!['chips','editor'].includes(s.location.page)||!t||(!s.editor&&t.phase!=='Planning'))break;const r=t.rows.find(r=>r.id===a.id);if(r)s.modal={type:'color',id:r.id,color:chipColor(r.color).id};break;}
+      case 'COLOR_PICK': if(s.modal?.type==='color'&&CHIP_COLORS.some(c=>c.id===a.color))s.modal.color=a.color;break;
+      case 'COLOR_SAVE': {const m=s.modal,t=target(s);if(m?.type!=='color'||!['chips','editor'].includes(s.location.page)||!t||(!s.editor&&t.phase!=='Planning'))break;const r=t.rows.find(r=>r.id===m.id);if(r){r.color=m.color==='none'?null:m.color;s.message=`Chip color set to ${chipColor(r.color).name}. Values and quantities are unchanged.`;}s.modal=null;break;}
       case 'BLUR': {const t=target(s);if(t?.edited[a.id+'-'+a.field])t.show[a.id+'-'+a.field]=true;break;}
       case 'NAME': if(s.editor){s.editor.name=a.value;s.editor.edited.name=true;}else {s.newName=a.value;s.nameEdited=true;}break;
       case 'NAME_BLUR': if(s.editor?.edited.name)s.editor.show.name=true;else if(!s.editor && s.nameEdited)s.nameShown=true;break;
       case 'SCOPE': s.scope=a.value;break;
       case 'ADD': {const t=target(s);if(t && (s.editor || t.phase==='Planning')){t.rows.push(row('r'+s.next++));if(!s.editor)t.revision++;}break;}
-      case 'REMOVE': {const t=target(s),r=t?.rows.find(r=>r.id===a.id);if(r && (s.editor || t.phase==='Planning')){if(hasData([r]))s.modal={type:'remove',id:r.id,value:r.value,quantity:r.quantity};else {t.rows=t.rows.filter(r=>r.id!==a.id);if(!s.editor)t.revision++;}}break;}
+      case 'REMOVE': {const t=target(s),r=t?.rows.find(r=>r.id===a.id);if(r && (s.editor || t.phase==='Planning')){if(hasData([r]))s.modal={type:'remove',id:r.id,value:r.value,quantity:r.quantity,color:r.color};else {t.rows=t.rows.filter(r=>r.id!==a.id);if(!s.editor)t.revision++;}}break;}
       case 'PICKER': if(g?.phase==='Planning'){s.picker={selected:null};go(s,{page:'picker',gameId:g.id});}break;
       case 'SELECT': if(s.picker)s.picker.selected=a.id;break;
       case 'USE': if(s.picker?.selected){if(hasData(g.rows))s.modal={type:'replace',id:s.picker.selected};else useTemplate(s,s.picker.selected);}else s.message='Choose a template first.';break;
@@ -287,12 +327,17 @@ const ChipDemo = (() => {
 
 const $=s=>document.querySelector(s),esc=x=>String(x??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const number=x=>BigInt(x).toLocaleString('en');
+const unitLabel=x=>/^\d+$/.test(String(x))&&BigInt(x)===1n?'chip unit':'chip units';
 const mode=g=>g.mode==='cash'?'Cash game':'Tournament';
 const variants=['paired','ledger','stacked'];
+const comparing = new URLSearchParams(location.search).get('compare')==='layouts' || ['ledger','stacked'].includes(new URLSearchParams(location.search).get('variant'));
 let variant=new URLSearchParams(location.search).get('variant')||'paired';if(!variants.includes(variant))variant='paired';
 let state=ChipDemo.seed(),scale=1,dialogTrigger=null,scenario='independence',walkStep=0;
 const paths={back:'m15 18-6-6 6-6',arrow:'m9 18 6-6-6-6',plus:'M12 5v14M5 12h14',trash:'M4 7h16M9 7V4h6v3M7 7l1 13h8l1-13M10 10v7M14 10v7',edit:'m4 16 11-11 4 4-11 11H4zM13 7l4 4',layers:'m3 8 9-5 9 5-9 5zM3 12l9 5 9-5M3 16l9 5 9-5',home:'m3 11 9-8 9 8M6 9v12h12V9M10 21v-7h4v7',lock:'M6 10h12v11H6zM8 10V6a4 4 0 0 1 8 0v4',check:'m5 12 4 4L19 6',more:'M5 12h.01M12 12h.01M19 12h.01'};
 const icon=name=>`<svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="${paths[name]||paths.layers}"/></svg>`;
+function chipSymbol(r){const color=chipColor(r.color),value=/^\d{1,5}$/.test(r.value||'')&&BigInt(r.value)>0n?r.value:'';return `<svg class="chip-symbol" viewBox="0 0 72 72" aria-hidden="true" focusable="false"><circle cx="36" cy="36" r="34" fill="${color.fill}" stroke="#aab6c0" stroke-width="1.5"/><circle cx="36" cy="36" r="29" fill="none" stroke="${color.ink}" stroke-opacity=".85" stroke-width="6" stroke-dasharray="${color.id==='none'?'2 7':'8 15'}"/><circle cx="36" cy="36" r="22" fill="${color.fill}" stroke="${color.ink}" stroke-opacity=".65" stroke-width="1"/>${value?`<text x="36" y="37" text-anchor="middle" dominant-baseline="middle" fill="${color.ink}" font-size="${value.length>3?'12':'18'}" font-family="-apple-system, BlinkMacSystemFont, sans-serif" font-weight="700">${esc(value)}</text>`:''}</svg>`;}
+function colorControl(r,i){return `<button type="button" class="chip-color" id="color-${state.editor?'e':'g'}-${r.id}" data-action="color" data-id="${r.id}" aria-haspopup="dialog" aria-label="${esc(`Change chip color for denomination ${i+1}, value ${r.value||'not entered'} chip units. Current color ${chipColor(r.color).name}.`)}">${chipSymbol(r)}<span><span class="color-label">Chip color</span><span class="color-name">${chipColor(r.color).name}</span></span></button>`;}
+function chipTray(rows){return `<span class="chip-tray" role="list" aria-label="Chip denominations">${rows.map(r=>`<span class="chip-preview" role="listitem">${chipSymbol(r)}<span class="chip-preview-value">${esc(r.value||'Not entered')}<span class="sr-only"> chip units</span></span><span class="chip-preview-color">${chipColor(r.color).name}</span></span>`).join('')}</span>`;}
 const b=(label,action,cls='',extra='',symbol='')=>`<button type="button" data-action="${action}" class="${cls}${symbol?' with-icon':''}" ${extra}>${symbol?icon(symbol):''}<span>${esc(label)}</span></button>`;
 const ib=(label,action,symbol,extra='')=>`<button type="button" data-action="${action}" class="icon-button" aria-label="${esc(label)}" ${extra}>${icon(symbol)}</button>`;
 const notice=(text,type='info')=>`<div class="notice ${type}" role="status">${esc(text)}</div>`;
@@ -300,18 +345,18 @@ function context(g){return g?`<p class="context"><span class="badge">${mode(g)}<
 function header(title,g,back='games') {return `<div class="topline">${b(back==='games'?'Games':'Back',back,'quiet','',back==='games'?'home':'back')}${g?ib('Game actions and setup lock','lock','more'):''}</div>${context(g)}<h2 tabindex="-1">${esc(title)}</h2>`;}
 function summary(rows){const totals=ChipDemo.totals(rows);return totals?`${rows.length} denomination${rows.length===1?'':'s'} · ${number(totals.chips)} chips · ${number(totals.units)} chip units`:(rows.length?'Incomplete chip set':'No denominations yet');}
 function field(r,field,target){const id=target+'-'+r.id+'-'+field;return `<label class="field field-${field}" for="${id}"><span class="field-title">${field==='value'?'Value (chip units)':'Quantity (chips)'}</span><span class="input-wrap"><input type="text" inputmode="numeric" enterkeyhint="next" autocomplete="off" spellcheck="false" id="${id}" data-row="${r.id}" data-field="${field}" value="${esc(r[field])}" aria-describedby="${id}-error" aria-invalid="false"></span><span class="error" id="${id}-error"></span></label>`;}
-function rowsEditor(t){return `${t.rows.length?t.rows.map((r,i)=>`<section class="chip-row" aria-label="Denomination ${i+1}"><div class="row-heading"><strong>${variant==='stacked'?`Inventory ${i+1}`:`Denomination ${i+1}`}</strong>${ib(`Remove denomination ${i+1}${r.value?' (value '+r.value+')':''}`,'remove','trash',`data-id="${r.id}"`)}</div><div class="field-pair">${(variant==='stacked'?['quantity','value']:['value','quantity']).map(f=>field(r,f,state.editor?'e':'g')).join('')}</div></section>`).join(''):`<div class="empty"><strong>No denominations yet</strong><p class="small">Enter the values and quantities in your physical chip set.</p></div>`}<span class="error" id="rows-error">${t.failed&&!t.rows.length?'Add at least one denomination.':''}</span>${b('Add denomination','add','full','','plus')}`;}
+function rowsEditor(t){return `${t.rows.length?t.rows.map((r,i)=>`<section class="chip-row" aria-label="Denomination ${i+1}"><div class="row-heading">${colorControl(r,i)}${ib(`Remove denomination ${i+1}${r.value?' (value '+r.value+')':''}`,'remove','trash',`data-id="${r.id}"`)}</div><div class="field-pair">${(variant==='stacked'?['quantity','value']:['value','quantity']).map(f=>field(r,f,state.editor?'e':'g')).join('')}</div></section>`).join(''):`<div class="empty"><strong>No denominations yet</strong><p class="small">Enter the values and quantities in your physical chip set.</p></div>`}<span class="error" id="rows-error">${t.failed&&!t.rows.length?'Add at least one denomination.':''}</span>${b('Add denomination','add','full','','plus')}`;}
 function nameField(raw){return `<label class="field" for="template-name"><span class="field-title">Template name</span><span class="input-wrap"><input type="text" id="template-name" autocomplete="off" value="${esc(raw)}" aria-invalid="false" aria-describedby="template-name-error" enterkeyhint="${state.editor?'done':'next'}"></span><span class="error" id="template-name-error"></span></label>`;}
 function footer(g){return `<footer class="dock"><p>Draft retained in this demo · no chips issued</p><div class="actions">${b('Back','players','','','back')}${b(g.returnToPreview?'Return to preview':'Continue','continue','primary','id="step-action"','arrow')}</div></footer>`;}
 function chipScreen(g){const t=ChipDemo.source(state,g);return `${header('Chip set',g)}${b('Step 3 of '+(g.mode==='cash'?'5':'6')+' · Setup steps','steps','quiet step-button')}<div id="chip-summary" class="small">${esc(summary(g.rows))}</div>${b('Choose template','picker','full','','layers')}${g.sourceId?`<p class="small">${t?`Copied from “${esc(t.name)}” · this game’s copy`:'Source template deleted · this game’s copy is kept'}</p>`:''}${rowsEditor(g)}<fieldset><legend>When you finish this edit</legend><label class="choice"><input type="radio" name="scope" value="game" ${state.scope==='game'?'checked':''}><span><strong>Only this game</strong></span></label>${t?`<label class="choice"><input type="radio" name="scope" value="update" ${state.scope==='update'?'checked':''}><span><strong>Also update chip set template</strong><small>Update “${esc(t.name)}” for future games. Existing games stay unchanged.</small></span></label>`:`<label class="choice"><input type="radio" name="scope" value="new" ${state.scope==='new'?'checked':''}><span><strong>Save as new template</strong><small>Create a reusable copy when you continue.</small></span></label>`}</fieldset>${state.scope==='new'?nameField(state.newName):''}${footer(g)}`;}
 function gamesScreen(){return `${header('Games')}${b('New game','handoff','primary full','','plus')}<div class="section-title"><h3>In progress</h3></div>${state.games.filter(g=>g.phase==='In progress').map(gameCard).join('')}<div class="section-title"><h3>Planning</h3></div>${state.games.filter(g=>g.phase==='Planning').map(gameCard).join('')}<nav class="secondary-nav">${b('Chip set templates','templates','quiet','','layers')}${b('Completed setup fixture','completed','quiet','','lock')}</nav>`;}
 function gameCard(g){return `<button data-action="resume" data-id="${g.id}" class="game-card"><small>${mode(g)} · ${g.phase} · ${g.created}</small><strong>${esc(g.names.join(', '))}</strong><small>${g.phase==='Planning'?'Resume setup':'Inspect locked setup'} →</small></button>`;}
-function templateList(picker){const sorted=[...state.templates].sort((a,b)=>a.name.localeCompare(b.name));return sorted.length?sorted.map(t=>picker?`<label class="choice"><input type="radio" name="template" value="${t.id}" ${state.picker?.selected===t.id?'checked':''}><span><strong>${esc(t.name)}</strong><small>${esc(summary(t.rows))}</small><small>${t.rows.map(r=>esc(r.value)).join(' / ')} chip units</small></span></label>`:`<div class="template-row"><div class="row-heading"><strong class="name">${esc(t.name)}</strong>${ib('Edit '+t.name,'edit-template','edit',`data-id="${t.id}"`)}${ib('Delete '+t.name,'delete-template','trash',`data-id="${t.id}"`)}</div><p class="small">${esc(summary(t.rows))}</p></div>`).join(''):`<div class="empty"><strong>No templates yet</strong><p class="small">${picker?'Create one here, or go back and enter chips only for this game.':'Save a chip set for future games.'}</p></div>`;}
+function templateList(picker){const sorted=[...state.templates].sort((a,b)=>a.name.localeCompare(b.name));return sorted.length?sorted.map(t=>picker?`<label class="choice"><input type="radio" name="template" value="${t.id}" ${state.picker?.selected===t.id?'checked':''}><span><strong>${esc(t.name)}</strong><small>${esc(summary(t.rows))}</small>${chipTray(t.rows)}</span></label>`:`<div class="template-row"><div class="row-heading"><strong class="name">${esc(t.name)}</strong>${ib('Edit '+t.name,'edit-template','edit',`data-id="${t.id}"`)}${ib('Delete '+t.name,'delete-template','trash',`data-id="${t.id}"`)}</div><p class="small">${esc(summary(t.rows))}</p>${chipTray(t.rows)}</div>`).join(''):`<div class="empty"><strong>No templates yet</strong><p class="small">${picker?'Create one here, or go back and enter chips only for this game.':'Save a chip set for future games.'}</p></div>`;}
 function pickerScreen(g){return `${header('Choose template',g,'chips')}<p class="small">Selecting here doesn’t change the game until Use template.</p>${b('New template','new-template','full','','plus')}${templateList(true)}<footer class="dock"><div class="actions">${b('Back','chips','','','back')}${b('Use template','use-template','primary','id="step-action"','check')}</div></footer>`;}
 function templatesScreen(){return `${header('Chip set templates')}${b('New template','new-template','primary full','','plus')}<p class="small" style="margin-top:16px">Changes here affect future selections, not existing games.</p>${templateList(false)}`;}
 function editorScreen(g){const e=state.editor;return `${header(e.id?'Edit template':'New template',g,'editor-back')}${notice('Reusable template · changes apply only after Save. Existing games stay unchanged.')}${nameField(e.name)}<div id="chip-summary" class="small">${esc(summary(e.rows))}</div>${rowsEditor(e)}<footer class="dock"><p id="editor-status">${ChipDemo.editorDirty(e)?'Unsaved changes':'Not changed'}</p><div class="actions">${b('Cancel','editor-back','','','back')}${b(e.origin==='picker'?'Save and use':'Save','save','primary','id="step-action"','check')}</div></footer>`;}
-function readRows(rows){return `<div class="card">${rows.map(r=>`<div class="read-row"><strong>${esc(r.value)} chip units</strong><span>${esc(r.quantity)} chips</span></div>`).join('')}</div>`;}
-function neighborScreen(g,page){if(page==='preview'){const valid=ChipDemo.validRows(g.rows),totals=ChipDemo.totals(g.rows);return `${header('Distribution preview',g)}${notice('Handoff to #35 · no allocation or feasibility solver runs in this prototype.')}<div class="card"><h3>Chip set</h3><p>${esc(summary(g.rows))}</p>${!valid?notice('Chip set needs attention.','failure'):totals.chips==='0'?notice('There are no chips available. A distribution cannot be formed.','failure'):''}${b('Edit chip set','edit-chips','','','edit')}</div><dl class="facts"><div><dt>Players</dt><dd>${esc(g.names.join(', '))}</dd></div><div><dt>Retained settings</dt><dd>EUR ${g.fields.buyin} · ${g.fields.depth} BB · coverage ${g.fields.coverage} · reserve ${g.fields.reserve}</dd></div></dl>${b('Start unavailable · distribution not implemented','start','full','aria-disabled="true"')}`;}
+function readRows(rows){return `<div class="card">${rows.map(r=>`<div class="read-row"><div class="read-chip">${chipSymbol(r)}<span><strong>${esc(r.value)} ${unitLabel(r.value)}</strong><span class="small">${chipColor(r.color).name}</span></span></div><span>${esc(r.quantity)} ${r.quantity==='1'?'chip':'chips'}</span></div>`).join('')}</div>`;}
+function neighborScreen(g,page){if(page==='preview'){const valid=ChipDemo.validRows(g.rows),totals=ChipDemo.totals(g.rows);return `${header('Distribution preview',g)}${notice('Handoff to #35 · no allocation or feasibility solver runs in this prototype.')}<div class="card"><h3>Chip set</h3><p>${esc(summary(g.rows))}</p>${chipTray(g.rows)}${!valid?notice('Chip set needs attention.','failure'):totals.chips==='0'?notice('There are no chips available. A distribution cannot be formed.','failure'):''}${b('Edit chip set','edit-chips','','','edit')}</div><dl class="facts"><div><dt>Players</dt><dd>${esc(g.names.join(', '))}</dd></div><div><dt>Retained settings</dt><dd>EUR ${g.fields.buyin} · ${g.fields.depth} BB · coverage ${g.fields.coverage} · reserve ${g.fields.reserve}</dd></div></dl>${b('Start unavailable · distribution not implemented','start','full','aria-disabled="true"')}`;}
   return `${header(page==='players'?'Players':'Game settings',g)}${notice('Neighboring-step handoff · detailed Planning interactions are in the approved #33 prototype.')}<dl class="facts"><div><dt>Players</dt><dd>${esc(g.names.join(', '))}</dd></div>${Object.entries(g.fields).map(([k,v])=>`<div><dt>${esc({buyin:'Buy-in (EUR)',depth:'Starting stack (BB)',coverage:'Blind-payment coverage',reserve:'Chip reserve (stacks)',preference:'Distribution preference'}[k])}</dt><dd>${esc(v)}</dd></div>`).join('')}</dl><footer class="dock"><div class="actions">${b(page==='players'?'Chip set':'Back to chip set','chips','','','back')}${page==='settings'?b('Review inputs','preview','primary','','arrow'):''}</div></footer>`;}
 function detailsScreen(g){return `${header('Game details',g)}<p class="badge">${icon('lock')} Setup locked</p>${notice(g.phase==='Completed'?'Completed setup is read-only. Reopen first; Return to Planning is a separate reset.':'To change this chip set, use the separately confirmed Return to Planning action. Gather and redistribute physical chips.')}<h3>Chip set</h3><p class="small">${esc(summary(g.rows))}</p>${readRows(g.rows)}${b('Why can’t I edit?','lock','full','','lock')}<p class="small" style="margin-top:16px">Template management can change future selections, never this game’s copy. Lifecycle actions are not implemented in this study.</p>`;}
 function handoffScreen(){return `${header('New game')}${notice('Mode and Players belong to the approved #33 setup prototype. These buttons load clearly named prepared fixtures at the Chip set boundary.')}<div class="stack">${b('Open six-player cash fixture','cash-fixture','primary')}${b('Open two-player tournament fixture','tournament-fixture')}</div>`;}
@@ -325,12 +370,14 @@ function render(focus=null){const g=ChipDemo.game(state),p=state.location.page;l
 function updateFields(){const t=ChipDemo.target(state);if(t && ['chips','editor'].includes(state.location.page)){
   for(const input of document.querySelectorAll('#app input[data-row]')){const error=ChipDemo.fieldError(t.rows,input.dataset.row,input.dataset.field),shown=t.failed||t.show[input.dataset.row+'-'+input.dataset.field];input.setAttribute('aria-invalid',String(!!error&&!!shown));document.getElementById(input.id+'-error').textContent=shown?error:'';}
   const summaryNode=$('#chip-summary');if(summaryNode)summaryNode.textContent=summary(t.rows);
+  t.rows.forEach((r,i)=>{const button=document.getElementById(`color-${state.editor?'e':'g'}-${r.id}`);if(button){button.setAttribute('aria-label',`Change chip color for denomination ${i+1}, value ${r.value||'not entered'} chip units. Current color ${chipColor(r.color).name}.`);button.querySelector('.chip-symbol').outerHTML=chipSymbol(r);button.querySelector('.color-name').textContent=chipColor(r.color).name;}});
   const status=$('#editor-status');if(status)status.textContent=ChipDemo.editorDirty(state.editor)?'Unsaved changes':'Not changed';
   const name=$('#template-name');if(name){const shown=state.editor?(state.editor.failed||state.editor.show.name):state.nameShown;const error=ChipDemo.nameError(state,state.editor?state.editor.name:state.newName,state.editor?.id);name.setAttribute('aria-invalid',String(!!error&&!!shown));$('#template-name-error').textContent=shown?error:'';}
 }}
-function renderInspector(){const g=ChipDemo.game(state);$('#inspector').innerHTML=`<details open><summary>Live state · review only</summary><dl><dt>Location</dt><dd>${esc(state.location.page)}${g?' · '+g.id:''}</dd><dt>Optional template operation</dt><dd>${esc({game:'Only this game',update:'Update source on Continue',new:'Create template on Continue'}[state.scope])}</dd><dt>Proposed new-template name</dt><dd>${esc(state.newName||'None')}</dd></dl><h3>Independent game copies</h3>${state.games.map(game=>`<details ${g?.id===game.id?'open':''}><summary>${game.id} · ${mode(game)} · ${game.phase}</summary><dl><dt>Captured chip fields</dt><dd>${game.rows.length?game.rows.map(r=>`[${esc(r.value||'blank')}] × [${esc(r.quantity||'blank')}]`).join(' · '):'Empty'}</dd><dt>Source</dt><dd>${esc(ChipDemo.source(state,game)?.name||(game.sourceId?'Deleted':'None'))}</dd><dt>Resume / correction return</dt><dd>${game.last} / ${game.returnToPreview?'Return to preview':'Sequential Continue'}</dd><dt>Later settings retained</dt><dd>EUR ${game.fields.buyin} · ${game.fields.depth} BB · coverage ${game.fields.coverage} · ${game.fields.preference} · reserve ${game.fields.reserve}</dd></dl></details>`).join('')}<h3>Accepted reusable templates</h3>${state.templates.length?state.templates.map(t=>`<p><strong>${esc(t.name)}</strong><br>${t.rows.map(r=>`${esc(r.value)} × ${esc(r.quantity)}`).join(' · ')}</p>`).join(''):'<p>None</p>'}<h3>Unaccepted reusable editor</h3><p>${state.editor?`${esc(state.editor.name||'(blank name)')} · ${esc(summary(state.editor.rows))} · ${ChipDemo.editorDirty(state.editor)?'dirty':'unchanged'}`:'None'}</p><h3>Inventory / lifecycle</h3><p>No chips issued, returned or moved by any action in this prototype. No distribution, reset, reopen or settlement is executed.</p></details>`;}
+function renderInspector(){const g=ChipDemo.game(state);$('#inspector').innerHTML=`<details open><summary>Live state · review only</summary><dl><dt>Location</dt><dd>${esc(state.location.page)}${g?' · '+g.id:''}</dd><dt>Optional template operation</dt><dd>${esc({game:'Only this game',update:'Update source on Continue',new:'Create template on Continue'}[state.scope])}</dd><dt>Proposed new-template name</dt><dd>${esc(state.newName||'None')}</dd><dt>Unapplied color choice</dt><dd>${state.modal?.type==='color'?chipColor(state.modal.color).name:'None'}</dd></dl><h3>Independent game copies</h3>${state.games.map(game=>`<details ${g?.id===game.id?'open':''}><summary>${game.id} · ${mode(game)} · ${game.phase}</summary><dl><dt>Captured chip fields / colors</dt><dd>${game.rows.length?game.rows.map(r=>`[${esc(r.value||'blank')}] × [${esc(r.quantity||'blank')}] · ${chipColor(r.color).name}`).join(' / '):'Empty'}</dd><dt>Source</dt><dd>${esc(ChipDemo.source(state,game)?.name||(game.sourceId?'Deleted':'None'))}</dd><dt>Resume / correction return</dt><dd>${game.last} / ${game.returnToPreview?'Return to preview':'Sequential Continue'}</dd><dt>Later settings retained</dt><dd>EUR ${game.fields.buyin} · ${game.fields.depth} BB · coverage ${game.fields.coverage} · ${game.fields.preference} · reserve ${game.fields.reserve}</dd></dl></details>`).join('')}<h3>Accepted reusable templates</h3>${state.templates.length?state.templates.map(t=>`<p><strong>${esc(t.name)}</strong><br>${t.rows.map(r=>`${esc(r.value)} × ${esc(r.quantity)} · ${chipColor(r.color).name}`).join(' / ')}</p>`).join(''):'<p>None</p>'}<h3>Unaccepted reusable editor</h3><p>${state.editor?`${esc(state.editor.name||'(blank name)')} · ${esc(summary(state.editor.rows))} · ${ChipDemo.editorDirty(state.editor)?'dirty':'unchanged'}`:'None'}</p><h3>Inventory / lifecycle</h3><p>No chips issued, returned or moved by any action in this prototype. No distribution, reset, reopen or settlement is executed. Color choices never alter numeric chip inputs or their totals.</p></details>`;}
 function modalContent(){const m=state.modal,g=ChipDemo.game(state);if(!m)return null;
-  if(m.type==='remove')return {title:'Remove denomination?',text:`Remove value “${m.value||'not entered'}” with quantity “${m.quantity||'not entered'}” from ${state.editor?'this unsaved template edit':'this game’s chip set'}?`,confirm:'Remove denomination'};
+  if(m.type==='color'){const r=ChipDemo.target(state).rows.find(r=>r.id===m.id);return {title:'Chip color',text:`${r.value?'Value: '+r.value+' '+unitLabel(r.value)+'. ':'New denomination. '}Match your physical chips. Color doesn’t set a value.`,palette:true};}
+  if(m.type==='remove')return {title:'Remove denomination?',text:`Remove value “${m.value||'not entered'}” with quantity “${m.quantity||'not entered'}” (${chipColor(m.color).name}) from ${state.editor?'this unsaved template edit':'this game’s chip set'}?`,confirm:'Remove denomination'};
   if(m.type==='replace'||m.type==='save-use')return {title:'Replace this game’s chip set?',text:`Replace this game’s entered chip data with “${m.type==='save-use'?state.editor.name:state.templates.find(t=>t.id===m.id)?.name}”? Other settings, templates and game copies stay unchanged.${m.type==='save-use'?' The new template is saved only if you accept.':''}`,confirm:m.type==='save-use'?'Save and replace':'Replace chip set'};
   if(m.type==='delete')return {title:'Delete template?',text:`Permanently delete “${m.name}”? Every existing game keeps its chip set. Future games can no longer select this template.`,confirm:'Delete template'};
   if(m.type==='discard')return {title:'Discard template changes?',text:'The reusable template has not been saved. Discarding leaves the previous saved template and every game unchanged.',confirm:'Discard changes',cancel:'Keep editing'};
@@ -340,8 +387,9 @@ function modalContent(){const m=state.modal,g=ChipDemo.game(state);if(!m)return 
   if(m.type==='steps')return {title:'Setup steps',steps:true,cancel:'Close'};
 }
 function renderDialog(){const dialog=$('#dialog'),m=modalContent();if(!m){if(dialog.open)dialog.close();return;}
-  dialog.style.setProperty('--scale',scale);dialog.innerHTML=`<h2 id="dialog-title">${esc(m.title)}</h2>${m.text?`<p>${esc(m.text)}</p>`:''}${m.steps?['players','chips','settings','preview'].map(p=>`<button class="step-link" data-step="${p}">${esc({players:'Players',chips:'Chip set',settings:'Game settings',preview:'Distribution preview'}[p])}<small>${p==='chips'?(ChipDemo.validRows(ChipDemo.game(state).rows)?'Complete inputs · not feasibility':'Needs attention'):'Neighboring workflow handoff'}</small></button>`).join(''):''}<div class="actions">${b(m.cancel||'Cancel','cancel-modal')}${m.confirm?b(m.confirm,'confirm-modal','danger'):''}</div>`;
-  if(!dialog.open)dialog.showModal();dialog.querySelector('[data-action="cancel-modal"]').focus();
+  dialog.style.setProperty('--scale',scale);dialog.innerHTML=`<h2 id="dialog-title">${esc(m.title)}</h2>${m.text?`<p id="dialog-description">${esc(m.text)}</p>`:''}${m.palette?`<fieldset><legend class="sr-only">Available chip colors</legend><div class="palette-grid">${CHIP_COLORS.map(c=>`<label class="color-option"><input type="radio" name="chip-color" value="${c.id}" ${state.modal.color===c.id?'checked':''}>${chipSymbol({color:c.id})}<span>${c.name}</span></label>`).join('')}</div></fieldset>`:''}${m.steps?['players','chips','settings','preview'].map(p=>`<button class="step-link" data-step="${p}">${esc({players:'Players',chips:'Chip set',settings:'Game settings',preview:'Distribution preview'}[p])}<small>${p==='chips'?(ChipDemo.validRows(ChipDemo.game(state).rows)?'Complete inputs · not feasibility':'Needs attention'):'Neighboring workflow handoff'}</small></button>`).join(''):''}<div class="actions">${b(m.cancel||'Cancel','cancel-modal')}${m.palette?b('Apply color','apply-color','primary'):m.confirm?b(m.confirm,'confirm-modal','danger'):''}</div>`;
+  if(m.text)dialog.setAttribute('aria-describedby','dialog-description');else dialog.removeAttribute('aria-describedby');
+  if(!dialog.open)dialog.showModal();dialog.querySelector(m.palette?'[name="chip-color"]:checked':'[data-action="cancel-modal"]').focus();
 }
 function send(action,{partial=false,focus=null}={}){const beforeModal=!!state.modal;state=ChipDemo.reduce(state,action);
   if(!beforeModal && state.modal){const active=document.activeElement;dialogTrigger={id:active?.id,action:active?.dataset.action,dataId:active?.dataset.id};}
@@ -356,23 +404,30 @@ document.addEventListener('click',e=>{const button=e.target.closest('[data-actio
   if(action==='resume'){send({type:'RESUME',id},{focus:'heading'});return;}
   if(action==='completed'){send({type:'RESUME',id:'g4'},{focus:'heading'});return;}
   if(action==='cash-fixture'||action==='tournament-fixture'){send({type:'RESUME',id:action==='cash-fixture'?'g1':'g2'},{focus:'heading'});return;}
-  const map={picker:'PICKER','use-template':'USE','new-template':'EDITOR','edit-template':'EDITOR','delete-template':'DELETE','editor-back':'EDITOR_BACK',add:'ADD',remove:'REMOVE',continue:'CONTINUE',save:'SAVE','edit-chips':'EDIT_CHIPS',steps:'STEPS',lock:'LOCK',start:'START','cancel-modal':'CANCEL','confirm-modal':'CONFIRM'};
+  const map={picker:'PICKER','use-template':'USE','new-template':'EDITOR','edit-template':'EDITOR','delete-template':'DELETE','editor-back':'EDITOR_BACK',add:'ADD',remove:'REMOVE',continue:'CONTINUE',save:'SAVE','edit-chips':'EDIT_CHIPS',steps:'STEPS',lock:'LOCK',start:'START','cancel-modal':'CANCEL','confirm-modal':'CONFIRM',color:'COLOR','apply-color':'COLOR_SAVE'};
   if(map[action]){const oldPage=state.location.page;send({type:map[action],id});if(action==='add'){const r=ChipDemo.target(state).rows.at(-1);document.getElementById((state.editor?'e':'g')+'-'+r.id+'-'+(variant==='stacked'?'quantity':'value'))?.focus();}else if((action==='save'&&state.editor?.failed)||(action==='continue'&&ChipDemo.game(state)?.failed))focusFirstError();else if(state.location.page!==oldPage)$('#app h2')?.focus();}
 });
 document.addEventListener('input',e=>{const input=e.target;if(input.dataset.row)send({type:'FIELD',id:input.dataset.row,field:input.dataset.field,value:input.value},{partial:true});if(input.id==='template-name')send({type:'NAME',value:input.value},{partial:true});});
 document.addEventListener('focusout',e=>{if(e.target.dataset.row)send({type:'BLUR',id:e.target.dataset.row,field:e.target.dataset.field},{partial:true});if(e.target.id==='template-name')send({type:'NAME_BLUR'},{partial:true});});
-document.addEventListener('change',e=>{if(e.target.name==='scope'){const value=e.target.value;send({type:'SCOPE',value});document.querySelector(`#app [name="scope"][value="${value}"]`)?.focus({preventScroll:true});}if(e.target.name==='template')send({type:'SELECT',id:e.target.value},{partial:true});});
+document.addEventListener('change',e=>{if(e.target.name==='scope'){const value=e.target.value;send({type:'SCOPE',value});document.querySelector(`#app [name="scope"][value="${value}"]`)?.focus({preventScroll:true});}if(e.target.name==='template')send({type:'SELECT',id:e.target.value},{partial:true});if(e.target.name==='chip-color')send({type:'COLOR_PICK',color:e.target.value},{partial:true});});
 $('#dialog').addEventListener('cancel',e=>{e.preventDefault();send({type:'CANCEL'});});
 $('#dialog').addEventListener('click',e=>{const button=e.target.closest('[data-step]');if(!button)return;const p=button.dataset.step;state.modal=null;$('#dialog').close();send(navigation(p),{focus:'heading'});});
 document.addEventListener('keydown',e=>{if(e.key==='Enter'&&e.target.closest('#app')&&e.target.matches('input[type="text"]')){e.preventDefault();if(e.target.id==='template-name'&&state.editor){send({type:'SAVE'});if(state.editor?.failed)focusFirstError();return;}const fields=[...document.querySelectorAll('#app input[type="text"]')];const next=fields[fields.indexOf(e.target)+1]||$('#step-action');next?.focus();}
-  if((e.key==='ArrowLeft'||e.key==='ArrowRight')&&!e.target.closest('input,textarea,select,[contenteditable],dialog,[role="tablist"]')){e.preventDefault();setVariant(variants[(variants.indexOf(variant)+(e.key==='ArrowLeft'?2:1))%3]);}
+  if(comparing&&(e.key==='ArrowLeft'||e.key==='ArrowRight')&&!e.target.closest('input,textarea,select,[contenteditable],dialog,[role="tablist"]')){e.preventDefault();setVariant(variants[(variants.indexOf(variant)+(e.key==='ArrowLeft'?2:1))%3]);}
 });
 function setVariant(value){const active=document.activeElement?.id;variant=value;const url=new URL(location.href);url.searchParams.set('variant',variant);history.replaceState(null,'',url);render(active);}
 $('#variant').addEventListener('change',e=>setVariant(e.target.value));$('#previous-variant').addEventListener('click',()=>setVariant(variants[(variants.indexOf(variant)+2)%3]));$('#next-variant').addEventListener('click',()=>setVariant(variants[(variants.indexOf(variant)+1)%3]));
 $('#scale').addEventListener('change',e=>{scale=Number(e.target.value);render();});
-document.querySelectorAll('[data-review]').forEach(button=>button.addEventListener('click',()=>{const action=button.dataset.review;if(['reset','empty','dense'].includes(action)){state=ChipDemo.seed(action==='empty',action==='dense');walkStep=0;render();renderWalkthrough();}if(action==='restart')send({type:'RESTART'},{focus:'heading'});if(action==='delete-source'){const g=ChipDemo.game(state);if(g&&ChipDemo.source(state,g))send({type:'DELETE',id:g.sourceId});else {state.message='Open a game with an existing source template first.';render();}}}));
+document.querySelectorAll('[data-review]').forEach(button=>button.addEventListener('click',()=>{const action=button.dataset.review;if(['reset','empty','dense','seven'].includes(action)){state=ChipDemo.seed(action==='empty',action==='dense',action==='seven');walkStep=0;render();renderWalkthrough();}if(action==='restart')send({type:'RESTART'},{focus:'heading'});if(action==='delete-source'){const g=ChipDemo.game(state);if(g&&ChipDemo.source(state,g))send({type:'DELETE',id:g.sourceId});else {state.message='Open a game with an existing source template first.';render();}}}));
 
 const scenarios={
+  colors:{label:'Colors & scope',description:'Colors help identify physical chips. Cancel keeps the old color; an accepted game-only edit never changes its template or any number.',steps:[
+    ['Try Yellow on the first chip, then cancel',()=>{send({type:'COLOR',id:ChipDemo.game(state).rows[0].id});send({type:'COLOR_PICK',color:'yellow'});send({type:'CANCEL'});}],
+    ['Apply Purple to this game’s first chip',()=>{send({type:'COLOR',id:ChipDemo.game(state).rows[0].id});send({type:'COLOR_PICK',color:'purple'});send({type:'COLOR_SAVE'});}],
+    ['Continue with Only this game; template stays Grey',()=>send({type:'CONTINUE'})],
+    ['Return and explicitly update the source template',()=>{send(navigation('chips'));send({type:'SCOPE',value:'update'});send({type:'CONTINUE'});}],
+    ['Inspect the started game: its chip remains Grey and locked',()=>send({type:'RESUME',id:'g3'})]
+  ]},
   independence:{label:'Game vs template',description:'Change a game, then explicitly update the template. Other captured game copies never change.',steps:[
     ['Edit this game’s 1-unit quantity to 240',()=>{send({type:'FIELD',id:ChipDemo.game(state).rows[0].id,field:'quantity',value:'240'});}],
     ['Continue with Only this game',()=>send({type:'CONTINUE'})],
@@ -416,6 +471,7 @@ $('.scenario-tabs').addEventListener('click',e=>{const tab=e.target.closest('[da
 $('.scenario-tabs').addEventListener('keydown',e=>{if(!['ArrowLeft','ArrowRight','Home','End'].includes(e.key))return;e.preventDefault();const keys=Object.keys(scenarios),i=keys.indexOf(scenario);const next=e.key==='Home'?keys[0]:e.key==='End'?keys.at(-1):keys[(i+(e.key==='ArrowLeft'?keys.length-1:1))%keys.length];document.getElementById('tab-'+next).click();});
 $('#walkthrough').addEventListener('click',e=>{const button=e.target.closest('[data-walk]');if(!button)return;const i=Number(button.dataset.walk);if(i<walkStep){state=ChipDemo.seed();for(let n=0;n<i;n++)scenarios[scenario].steps[n][1]();}scenarios[scenario].steps[i][1]();walkStep=i+1;renderWalkthrough();});
 const screen=new URLSearchParams(location.search).get('screen');if(['games','templates','picker','preview','details'].includes(screen)){state.location={page:screen,...(screen==='games'||screen==='templates'?{}:{gameId:screen==='details'?'g3':'g1'})};if(screen==='picker')state.picker={selected:null};}
+$('.variant-bar').hidden=!comparing;
 render();renderWalkthrough();
 </script>
 </html>
