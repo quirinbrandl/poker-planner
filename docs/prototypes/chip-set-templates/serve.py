@@ -21,5 +21,5 @@ if __name__ == "__main__":
     directory = Path(__file__).resolve().parent
     handler = partial(ReviewHandler, directory=str(directory))
     server = ThreadingHTTPServer(("127.0.0.1", args.port), handler)
-    print(f"Review v6: http://127.0.0.1:{args.port}/?review=v6 — {directory}", flush=True)
+    print(f"Review v7: http://127.0.0.1:{args.port}/?review=v7 — {directory}", flush=True)
     server.serve_forever()

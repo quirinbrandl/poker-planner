@@ -2,7 +2,7 @@
 <html lang="en">
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Chip sets · Review v6 · Compact chip case</title>
+<title>Chip sets · Review v7 · Fit-to-width chip case</title>
 <style>
   * { box-sizing: border-box; }
   :root { color-scheme: dark; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; background: #0b1117; color: #f1f4f5; --accent: #c9b5ff; --on-accent: #2b1e45; --tint: #322b45; }
@@ -88,12 +88,10 @@
   .read-chip { display: flex; flex-wrap: wrap; align-items: center; gap: 12px; min-width: 0; }
   .read-chip .small { display: block; }
   .case-preview { margin: 4px 0 24px; min-width: 0; }
-  .case-scroll { max-width: 100%; overflow-x: auto; overflow-y: hidden; padding: 8px 0 12px; overscroll-behavior-x: contain; scrollbar-color: #7c90a0 #1e2a34; scrollbar-width: auto; border-radius: 14px; }
-  .case-scroll::-webkit-scrollbar { height: 8px; }
-  .case-scroll::-webkit-scrollbar-track { background: #1e2a34; border-radius: 8px; }
-  .case-scroll::-webkit-scrollbar-thumb { background: #7c90a0; border-radius: 8px; }
-  #case-content { display: flex; justify-content: center; width: max-content; min-width: 100%; }
-  .case-scene { position: relative; flex: 0 0 auto; height: 374px; padding: 0 8px 24px; }
+  /* v7: fit-to-width. The case keeps its natural size until it is wider than the viewport, then the whole scene scales down proportionally (no horizontal scrolling). */
+  .case-scroll { max-width: 100%; overflow: hidden; padding: 8px 0 12px; border-radius: 14px; }
+  #case-content { --case-scale: 1; position: relative; width: 100%; height: calc(374px * var(--case-scale)); }
+  .case-scene { position: absolute; left: 50%; top: 0; box-sizing: border-box; height: 374px; padding: 0 8px 24px; transform: translateX(-50%) scale(var(--case-scale)); transform-origin: top center; }
   .case-lid { position: relative; height: 78px; margin: 0 3px 8px; border: 8px solid #788792; border-top-color: #acb8c0; border-left-color: #8c9ca7; border-right-color: #4c5c68; border-bottom-color: #3b4d5a; border-radius: 18px 18px 7px 7px; background: #0a1117; box-shadow: inset 0 0 0 2px #03080b, 0 5px 12px #0006; transform: perspective(700px) rotateX(-12deg); transform-origin: bottom; }
   .case-lid::before { content: ''; position: absolute; inset: 6px; border: 1px solid #29343b; border-radius: 7px; background: repeating-linear-gradient(35deg, #121b22 0 3px, #0d151b 3px 7px); box-shadow: inset 0 0 18px #000; }
   .case-lid::after { content: ''; position: absolute; left: 26%; right: 26%; top: -9px; height: 3px; border-radius: 5px; background: #d2d9de; opacity: .6; }
@@ -178,7 +176,7 @@
 <div class="workshop">
   <header>
     <p class="eyebrow">Throwaway interaction study · #34 · Current / Lavender</p>
-    <p class="revision" id="review-revision">Review v6 · Compact chip case</p>
+    <p class="revision" id="review-revision">Review v7 · Fit-to-width chip case</p>
     <h1>One physical chip set. Clear editing boundaries.</h1>
     <p class="intro">An open chip case grows as you fill its storage channels. Change quantities or colors below, then scroll sideways to explore the case. Exact records stay in the form—not in the illustration. Throwaway setup study, not the bank during play.</p>
     <details class="review">
@@ -394,8 +392,9 @@ const caseKey=rows=>JSON.stringify(rows.map(r=>[r.id,r.quantity,r.color]));
 function caseChannel(channel,index){const color=chipColor(channel.color),top=204-channel.count*1.9,pattern='case-edge-'+index;return `<div class="case-channel${channel.continues?' case-channel-more':''}" data-denomination="${channel.id}" data-chips="${channel.count}" data-color="${color.id}"><svg viewBox="0 0 44 212" preserveAspectRatio="none" focusable="false"><defs><pattern id="${pattern}" x="0" y="${top}" width="44" height="1.9" patternUnits="userSpaceOnUse"><rect x="5" width="34" height="1.9" fill="${color.fill}"/><path d="M5 .5h34" stroke="${color.ink}" stroke-opacity=".5" stroke-width=".55"/><path d="M9 0v1.9m26-1.9v1.9" stroke="${color.ink}" stroke-opacity=".6" stroke-width="2"/></pattern></defs><rect x="5" y="${top}" width="34" height="${channel.count*1.9}" rx="3" fill="url(#${pattern})"/><ellipse cx="22" cy="204" rx="17" ry="3" fill="${color.fill}" stroke="${color.ink}" stroke-opacity=".5"/><ellipse cx="22" cy="${top}" rx="17" ry="3" fill="${color.fill}" stroke="${color.ink}" stroke-opacity=".65"/><ellipse cx="22" cy="${top}" rx="11" ry="1.7" fill="none" stroke="${color.ink}" stroke-opacity=".4"/></svg></div>`;}
 function caseArt(plan){return `<div class="case-scene" style="width:${plan.width}px" aria-hidden="true"><div class="case-lid"></div><div class="case-base"><div class="case-channels">${plan.channels.map(caseChannel).join('')}</div><span class="case-clasp left"></span><span class="case-clasp right"></span><span class="case-handle"></span></div></div>`;}
 function caseContext(){return state.editor?`editor:${state.editor.id||'new'}:${state.editor.origin}`:`game:${ChipDemo.game(state)?.id}`;}
-function chipCase(rows){return `<figure class="case-preview"><div id="case-scroll" class="case-scroll" role="region" tabindex="0" data-context="${caseContext()}" aria-label="Chip case illustration. Scroll horizontally to explore it. Exact chip values and quantities are in the fields below." aria-describedby="case-caption"><div id="case-content" data-preview-key="${esc(caseKey(rows))}">${caseArt(CaseView.plan(rows))}</div></div><figcaption class="case-caption" id="case-caption"></figcaption></figure>`;}
-function updateCase(rows){const viewport=$('#case-scroll');if(!viewport)return;const plan=CaseView.plan(rows),content=$('#case-content'),key=caseKey(rows),left=viewport.scrollLeft;if(content.dataset.previewKey!==key){content.innerHTML=caseArt(plan);content.dataset.previewKey=key;viewport.scrollLeft=left;}const notes=[];if(plan.schematic)notes.push('Very large quantities are shown schematically.');if(plan.incomplete&&plan.channels.length)notes.push('Unfinished quantities aren’t shown.');if(viewport.scrollWidth>viewport.clientWidth+1)notes.push('↔ Scroll to explore the whole case.');$('#case-caption').textContent=notes.join(' ');}
+function chipCase(rows){return `<figure class="case-preview"><div id="case-scroll" class="case-scroll" role="img" data-context="${caseContext()}" aria-label="Chip case illustration, scaled to fit the screen. Exact chip values and quantities are in the fields below." aria-describedby="case-caption"><div id="case-content" data-preview-key="${esc(caseKey(rows))}">${caseArt(CaseView.plan(rows))}</div></div><figcaption class="case-caption" id="case-caption"></figcaption></figure>`;}
+function fitCase(plan){const content=$('#case-content');if(!content)return 1;const available=content.clientWidth,scale=available>0?Math.min(1,available/plan.width):1;content.style.setProperty('--case-scale',String(scale));content.dataset.scale=scale.toFixed(3);return scale;}
+function updateCase(rows){const viewport=$('#case-scroll');if(!viewport)return;const plan=CaseView.plan(rows),content=$('#case-content'),key=caseKey(rows);if(content.dataset.previewKey!==key){content.innerHTML=caseArt(plan);content.dataset.previewKey=key;}fitCase(plan);const notes=[];if(plan.schematic)notes.push('Very large quantities are shown schematically.');if(plan.incomplete&&plan.channels.length)notes.push('Unfinished quantities aren’t shown.');$('#case-caption').textContent=notes.join(' ');}
 const b=(label,action,cls='',extra='',symbol='')=>`<button type="button" data-action="${action}" class="${cls}${symbol?' with-icon':''}" ${extra}>${symbol?icon(symbol):''}<span>${esc(label)}</span></button>`;
 const ib=(label,action,symbol,extra='')=>`<button type="button" data-action="${action}" class="icon-button" aria-label="${esc(label)}" ${extra}>${icon(symbol)}</button>`;
 const notice=(text,type='info')=>`<div class="notice ${type}" role="status">${esc(text)}</div>`;
@@ -491,7 +490,7 @@ const scenarios={
     ['Fill that channel with 100 White chips',()=>send({type:'FIELD',id:ChipDemo.game(state).rows[0].id,field:'quantity',value:'100'})],
     ['Enter 101: a second channel appears for the same denomination',()=>send({type:'FIELD',id:ChipDemo.game(state).rows[0].id,field:'quantity',value:'101'})],
     ['Enter 240: two full channels and a partially filled third',()=>send({type:'FIELD',id:ChipDemo.game(state).rows[0].id,field:'quantity',value:'240'})],
-    ['Enter 1,000: the case grows sideways and can be scrolled',()=>send({type:'FIELD',id:ChipDemo.game(state).rows[0].id,field:'quantity',value:'1000'})],
+    ['Enter 1,000: the case grows sideways and scales down to fit',()=>send({type:'FIELD',id:ChipDemo.game(state).rows[0].id,field:'quantity',value:'1000'})],
     ['Continue for this game only; no template or physical inventory changes',()=>{send({type:'CONTINUE'});send({type:'SCOPE_CHOICE',value:'game'});}]
   ]},
   scope:{label:'Continue popup',description:'Scope is chosen only after Continue validates the chip set. Cancel retains the draft and never updates a template.',steps:[
