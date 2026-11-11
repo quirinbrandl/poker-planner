@@ -2,7 +2,7 @@
 <html lang="en">
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Distribution preview &amp; Start · Review v2 · Visual Stack Designs</title>
+<title>Distribution preview &amp; Start · Review v3 · 3D Chip Towers</title>
 <style>
   * { box-sizing: border-box; }
   :root {
@@ -490,9 +490,9 @@
 <div class="workshop">
   <header>
     <p class="eyebrow">Throwaway interaction study · #35 · Current / Lavender</p>
-    <p class="revision" id="review-revision">Review v2 · Visual starting-stack showcase (low text)</p>
+    <p class="revision" id="review-revision">Review v3 · Selected 3D Chip Towers (1 starting stack)</p>
     <h1>One glance: total units and how many of each chip.</h1>
-    <p class="intro">Compare three low-text visual stack designs on the bottom switcher: <strong>A · 3D Chip Towers</strong> (isometric stacked chip columns on a lit plinth), <strong>B · Dealer’s Spread</strong> (splayed horizontal chip cascades grouped in 5s), and <strong>C · Precision Rack &amp; Case</strong> (calibrated vertical tray wells + 1-tap remaining case view).</p>
+    <p class="intro">Selected <strong>A · 3D Chip Towers</strong> on a radial-lit plinth, showing one player’s starting stack: total chip units at the top and each denomination’s 3D tower and chip count below, with the combined-stack toggle removed.</p>
     <details class="review">
       <summary>Review controls, state presets &amp; guided walkthroughs</summary>
       <p>Switch states below or edit players, chip quantities, or settings directly inside the prototype. All state is in memory; reload resets fixtures.</p>
@@ -522,12 +522,12 @@
     <aside id="inspector" aria-label="Prototype state"></aside>
   </div>
 </div>
-<nav class="variant-bar" aria-label="Visual stack design switcher">
+<nav class="variant-bar" aria-label="Archived visual stack design switcher" hidden>
   <button id="previous-variant" aria-label="Previous visual stack design">←</button>
   <div>
-    <label for="variant">VISUAL STACK DESIGN · ?variant=</label>
+    <label for="variant">ARCHIVED LAYOUT COMPARISON · ?compare=layouts</label>
     <select id="variant">
-      <option value="towers">A · 3D Chip Towers (Spotlight Plinth)</option>
+      <option value="towers">A · 3D Chip Towers (Selected)</option>
       <option value="fanned">B · Dealer’s Spread (Fanned Cascades)</option>
       <option value="tray">C · Precision Rack &amp; Case Toggle</option>
     </select>
@@ -1022,8 +1022,11 @@ const esc = x => String(x ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt
 const modeLabel = g => g.mode === 'cash' ? 'Cash game' : 'Tournament';
 
 const variants = ['towers', 'fanned', 'tray'];
-let variant = new URLSearchParams(location.search).get('variant') || 'towers';
+const searchParams = new URLSearchParams(location.search);
+const comparing = searchParams.get('compare') === 'layouts' || ['fanned', 'tray'].includes(searchParams.get('variant'));
+let variant = searchParams.get('variant') || 'towers';
 if (!variants.includes(variant)) variant = 'towers';
+if (comparing) document.querySelector('.variant-bar').hidden = false;
 
 let state = DistributionStudy.makePreset(new URLSearchParams(location.search).get('preset') || 'feasible');
 let scale = 1;
@@ -1213,13 +1216,10 @@ function renderAlternativeBanner(evalRes, g) {
 }
 
 function renderVisualStackShowcase(p, g) {
-  const showAll = g.stackScope === 'all';
-  const mult = showAll ? p.N : 1;
-  const displayUnits = p.stackUnits * mult;
   const activeMixRows = p.sortedRows.map((r, i) => ({
     ...r,
     perPlayer: p.mix[i],
-    displayCount: p.mix[i] * mult,
+    displayCount: p.mix[i],
     bankRem: p.bankRem[i]
   }));
   const usedInStack = activeMixRows.filter(r => r.perPlayer > 0);
@@ -1228,7 +1228,7 @@ function renderVisualStackShowcase(p, g) {
   let visualCenter = '';
   if (variant === 'towers') {
     visualCenter = `
-      <div class="towers-stage" role="list" aria-label="${showAll ? `All ${p.N} starting stacks combined` : 'One starting stack'}">
+      <div class="towers-stage" role="list" aria-label="One starting stack">
         ${usedInStack.map(r => `
           <div class="tower-col" role="listitem" aria-label="${r.displayCount} chips of value ${r.numVal} (${chipColor(r.color).name})">
             ${render3DTowerSvg(r, r.displayCount)}
@@ -1240,7 +1240,7 @@ function renderVisualStackShowcase(p, g) {
     `;
   } else if (variant === 'fanned') {
     visualCenter = `
-      <div class="fanned-list" role="list" aria-label="${showAll ? `All ${p.N} starting stacks combined` : 'One starting stack'}">
+      <div class="fanned-list" role="list" aria-label="One starting stack">
         ${usedInStack.map(r => `
           <div class="fanned-lane" role="listitem" aria-label="${r.displayCount} chips of value ${r.numVal} (${chipColor(r.color).name})">
             <div class="fanned-denom-badge">
@@ -1253,7 +1253,6 @@ function renderVisualStackShowcase(p, g) {
       </div>
     `;
   } else {
-    // Variant C: Precision Rack + 1-tap Case toggle
     const showingCase = g.rackTab === 'case';
     visualCenter = `
       <div class="row-heading" style="margin-bottom:10px">
@@ -1265,7 +1264,7 @@ function renderVisualStackShowcase(p, g) {
       </div>
       ${showingCase
         ? renderCaseIllustration(bankCaseRows, 'Unissued bank chips remaining in the poker case.')
-        : `<div class="rack-grid" role="list" aria-label="${showAll ? `All ${p.N} starting stacks combined` : 'One starting stack'}">
+        : `<div class="rack-grid" role="list" aria-label="One starting stack">
             ${usedInStack.map(r => `
               <div class="rack-slot" role="listitem" aria-label="${r.displayCount} chips of value ${r.numVal} (${chipColor(r.color).name})">
                 ${chipSymbol(r)}
@@ -1280,14 +1279,8 @@ function renderVisualStackShowcase(p, g) {
   return `
     <section class="stack-showcase" aria-label="Starting stack overview">
       <div class="stack-hero-bar">
-        <div>
-          <span class="stack-hero-label">${showAll ? `All ${p.N} players total` : '1 starting stack'}</span>
-          <div class="stack-hero-units">${displayUnits.toLocaleString('en')}<small>chip units</small></div>
-        </div>
-        <div class="scope-seg" role="group" aria-label="Stack count scope">
-          <button type="button" data-action="stack-scope" data-scope="one" aria-pressed="${!showAll}">1 player</button>
-          <button type="button" data-action="stack-scope" data-scope="all" aria-pressed="${showAll}">All ${p.N} (${p.issuedChips})</button>
-        </div>
+        <span class="stack-hero-label">1 starting stack</span>
+        <div class="stack-hero-units">${p.stackUnits.toLocaleString('en')}<small>chip units</small></div>
       </div>
       ${visualCenter}
     </section>
@@ -1891,7 +1884,7 @@ $('#next-variant').addEventListener('click', () => setVariant(variants[(variants
 $('#scale').addEventListener('change', e => { scale = Number(e.target.value); render(); });
 
 document.addEventListener('keydown', e => {
-  if ((e.key === 'ArrowLeft' || e.key === 'ArrowRight') && !e.target.closest('input,textarea,select,[contenteditable],dialog,[role="tablist"]')) {
+  if (comparing && (e.key === 'ArrowLeft' || e.key === 'ArrowRight') && !e.target.closest('input,textarea,select,[contenteditable],dialog,[role="tablist"]')) {
     e.preventDefault();
     setVariant(variants[(variants.indexOf(variant) + (e.key === 'ArrowLeft' ? 2 : 1)) % 3]);
   }
@@ -1917,12 +1910,12 @@ document.querySelectorAll('[data-preset]').forEach(btn => {
 const scenarios = {
   feasible:{
     label:'1. Visual stack & Start',
-    description:'Compare 1-player vs All-N-players counts on the visual stack, switch between Fewer/More chips, and confirm Start.',
+    description:'Review the 3D starting-stack towers (total units + per-denomination counts), switch between Fewer/More chips, and confirm Start.',
     steps:[
-      ['Show 1-player starting stack (200 chip units: ×15, ×2, ×3, ×1)', () => { state = DistributionStudy.makePreset('feasible'); render('heading'); }],
-      ['Toggle to All 6 players pull counts (1,200 chip units)', () => { state.game.stackScope = 'all'; render(); }],
-      ['Switch preference to More chips (×15, ×12, ×5)', () => { state.game.stackScope = 'one'; state.game.fields.preference = 'More chips'; render(); }],
-      ['Confirm Start cash game → enters locked In progress', () => { document.querySelector('[data-action="start-game"]')?.click(); document.querySelector('[data-action="confirm-start"]')?.click(); }]
+      ['Show 1 starting stack (200 chip units: ×15, ×2, ×3, ×1)', () => { state = DistributionStudy.makePreset('feasible'); render('heading'); }],
+      ['Switch preference to More chips (×15, ×12, ×5; green 100s stay unused in bank)', () => { state.game.fields.preference = 'More chips'; render(); }],
+      ['Open Start cash game confirmation dialog (still unissued)', () => { document.querySelector('[data-action="start-game"]')?.click(); }],
+      ['Confirm Start cash game → enters locked In progress', () => { if (!state.modal) document.querySelector('[data-action="start-game"]')?.click(); document.querySelector('[data-action="confirm-start"]')?.click(); }]
     ]
   },
   alt:{
