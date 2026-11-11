@@ -2,7 +2,7 @@
 <html lang="en">
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Distribution preview &amp; Start · Review v1 · Current / Lavender</title>
+<title>Distribution preview &amp; Start · Review v2 · Visual Stack Designs</title>
 <style>
   * { box-sizing: border-box; }
   :root {
@@ -85,13 +85,13 @@
     border-radius: 26px;
     box-shadow: 0 18px 65px #0004;
   }
-  .page { padding: 24px 20px 30px; }
+  .page { padding: 22px 18px 30px; }
   .topline, .row-heading { display: flex; justify-content: space-between; align-items: center; gap: 8px; flex-wrap: wrap; }
-  .topline { margin-bottom: 14px; }
-  #app h2 { font-size: 2.35em; font-weight: 730; letter-spacing: -.045em; line-height: 1.08; margin-bottom: 14px; }
-  #app h3 { font-size: 1.08em; line-height: 1.35; margin-bottom: 8px; }
-  .small, .context { font-size: .8em; color: #b3c0ca; }
-  .context { margin-bottom: 14px; }
+  .topline { margin-bottom: 12px; }
+  #app h2 { font-size: 2.25em; font-weight: 730; letter-spacing: -.045em; line-height: 1.08; margin-bottom: 10px; }
+  #app h3 { font-size: 1.04em; line-height: 1.35; margin-bottom: 6px; }
+  .small, .context { font-size: .78em; color: #b3c0ca; }
+  .context { margin-bottom: 10px; }
   .quiet { background: transparent; border-color: transparent; }
   .primary { background: var(--accent); border-color: var(--accent); color: var(--on-accent); font-weight: 650; border-radius: 100px; }
   .primary:active { background: var(--accent); filter: brightness(.92); }
@@ -110,76 +110,266 @@
   .badge.warn { color: #f2d08a; border-color: #f2d08a; background: #383020; }
   .badge.err { color: #ffb3aa; border-color: #ffb3aa; background: #3d2427; }
   .badge.info { color: var(--accent); border-color: var(--accent); background: var(--tint); }
-  .step-button { padding: 10px 0; margin-bottom: 14px; text-align: left; font-size: .8em; text-decoration: underline; text-underline-offset: 4px; }
-  .card { background: #1e2a34; border: 1px solid #364653; border-radius: 22px; padding: 18px; margin: 16px 0; min-width: 0; }
+  .step-button { padding: 8px 0; margin-bottom: 10px; text-align: left; font-size: .78em; text-decoration: underline; text-underline-offset: 4px; }
+  .card { background: #1e2a34; border: 1px solid #364653; border-radius: 22px; padding: 16px; margin: 14px 0; min-width: 0; }
   .card.prominent { border-color: var(--accent); box-shadow: inset 0 0 0 1px var(--accent); }
   .card.proposal { border-color: #f2d08a; background: #26231c; }
   .card.failure-card { border-color: #ffb3aa; background: #2a1c20; }
-  .section-title { margin: 24px 0 10px; display: flex; flex-wrap: wrap; gap: 8px; align-items: center; justify-content: space-between; }
-  .section-title h3 { margin: 0 !important; }
-  .notice { border-left: 3px solid #f2d08a; border-radius: 0 14px 14px 0; padding: 12px 14px; margin: 14px 0; color: #f2d08a; background: #383020; font-size: .82em; }
+  .notice { border-left: 3px solid #f2d08a; border-radius: 0 14px 14px 0; padding: 11px 14px; margin: 12px 0; color: #f2d08a; background: #383020; font-size: .8em; }
   .notice.info { color: var(--accent); border-color: var(--accent); background: var(--tint); }
   .notice.failure { color: #ffb3aa; border-color: #ffb3aa; background: #3d2427; }
   .notice.ok { color: #b8dfbd; border-color: #b8dfbd; background: #20372b; }
-  .notice strong { display: block; margin-bottom: 4px; }
-  .chip-symbol { display: block; width: 52px; height: 52px; flex-shrink: 0; }
-  .mix-list { display: grid; gap: 12px; margin: 14px 0; }
-  .mix-row {
-    display: flex;
-    flex-wrap: wrap;
-    justify-content: space-between;
-    align-items: center;
-    gap: 12px;
-    padding: 12px 14px;
-    border: 1px solid #364653;
-    border-radius: 16px;
-    background: #111920;
-    min-width: 0;
+  .notice strong { display: block; margin-bottom: 3px; }
+  .chip-symbol { display: block; width: 48px; height: 48px; flex-shrink: 0; }
+
+  /* HERO VISUAL STACK SHOWCASE */
+  .stack-showcase {
+    position: relative;
+    border-radius: 24px;
+    border: 1px solid #3f5263;
+    background:
+      radial-gradient(120% 90% at 50% 0%, #293847 0%, #141e27 58%, #0c1319 100%);
+    box-shadow: inset 0 1px 0 #ffffff18, 0 14px 34px #0006;
+    padding: 18px 16px 16px;
+    margin: 10px 0 14px;
+    overflow: hidden;
   }
-  .mix-chip { display: flex; align-items: center; gap: 12px; min-width: 0; flex: 1 1 150px; }
-  .mix-chip strong { display: block; font-size: .95em; font-variant-numeric: tabular-nums; }
-  .mix-chip span { display: block; font-size: .76em; color: #b3c0ca; }
-  .mix-counts { text-align: right; font-variant-numeric: tabular-nums; flex: 0 1 auto; }
-  .mix-counts strong { display: block; font-size: 1.05em; color: #f1f4f5; }
-  .mix-counts small { display: block; font-size: .76em; color: #b3c0ca; }
-  .kv-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 145px), 1fr)); gap: 12px; margin: 12px 0; }
-  .kv-box { padding: 12px 14px; border-radius: 16px; background: #111920; border: 1px solid #364653; min-width: 0; }
-  .kv-box dt { font-size: .75em; color: #b3c0ca; }
-  .kv-box dd { margin: 4px 0 0; font-size: 1.05em; font-weight: 700; font-variant-numeric: tabular-nums; }
-  .kv-box small { display: block; font-size: .72em; color: #b3c0ca; font-weight: 400; margin-top: 3px; }
-  dl { margin: 0; }
-  .facts > div { padding: 11px 0; border-bottom: 1px solid #364653; display: flex; flex-wrap: wrap; justify-content: space-between; gap: 6px 12px; align-items: baseline; }
-  .facts > div:last-child { border-bottom: 0; }
-  dt { color: #b3c0ca; font-size: .82em; }
-  dd { margin: 0; font-weight: 600; font-variant-numeric: tabular-nums; }
-  .ledger-row {
-    display: grid;
-    grid-template-columns: minmax(0, 1.3fr) repeat(3, minmax(0, 1fr));
-    gap: 8px;
-    align-items: center;
-    padding: 12px 0;
-    border-bottom: 1px solid #364653;
+  .stack-hero-bar {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-end;
+    gap: 12px;
+    flex-wrap: wrap;
+    padding-bottom: 14px;
+    border-bottom: 1px solid #2b3a47;
+    margin-bottom: 14px;
+  }
+  .stack-hero-label {
+    font-size: .74em;
+    letter-spacing: .08em;
+    text-transform: uppercase;
+    color: #b3c0ca;
+    display: block;
+    margin-bottom: 2px;
+  }
+  .stack-hero-units {
+    font-size: 2.3em;
+    font-weight: 800;
+    letter-spacing: -.04em;
+    line-height: 1;
+    color: #f1f4f5;
     font-variant-numeric: tabular-nums;
   }
-  .ledger-head { font-size: .72em; color: #b3c0ca; text-transform: uppercase; letter-spacing: .04em; padding-top: 4px; }
-  .ledger-cell { text-align: right; min-width: 0; }
-  .ledger-cell strong { display: block; font-size: .95em; }
-  .ledger-cell small { display: block; font-size: .72em; color: #b3c0ca; }
-  .stack-tray {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 14px;
-    justify-content: center;
-    padding: 16px 12px;
-    border-radius: 18px;
-    background: #111920;
+  .stack-hero-units small {
+    font-size: .38em;
+    font-weight: 600;
+    letter-spacing: .01em;
+    color: #b3c0ca;
+    margin-left: 4px;
+  }
+  .scope-seg {
+    display: inline-flex;
+    padding: 3px;
+    border-radius: 100px;
+    background: #0b1117;
     border: 1px solid #364653;
+    gap: 2px;
+  }
+  .scope-seg button {
+    min-height: 48px;
+    min-width: 48px;
+    padding: 6px 12px;
+    border: 0;
+    border-radius: 100px;
+    background: transparent;
+    color: #b3c0ca;
+    font-size: .75em;
+    font-weight: 650;
+  }
+  .scope-seg button[aria-pressed="true"] {
+    background: var(--tint);
+    color: var(--accent);
+    box-shadow: inset 0 0 0 1px var(--accent);
+  }
+
+  /* Variant A: 3D Isometric Chip Towers */
+  .towers-stage {
+    position: relative;
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(74px, 1fr));
+    gap: 10px 8px;
+    align-items: end;
+    padding: 8px 4px 4px;
+  }
+  .tower-col {
+    display: grid;
+    justify-items: center;
+    text-align: center;
+    gap: 6px;
+    min-width: 0;
+  }
+  .tower-svg {
+    display: block;
+    width: 100%;
+    max-width: 92px;
+    height: auto;
+    overflow: visible;
+    filter: drop-shadow(0 8px 12px #0008);
+  }
+  .tower-count {
+    display: inline-block;
+    font-size: 1.25em;
+    font-weight: 800;
+    letter-spacing: -.03em;
+    color: #f1f4f5;
+    font-variant-numeric: tabular-nums;
+    line-height: 1.1;
+  }
+  .tower-denom {
+    font-size: .72em;
+    color: #b3c0ca;
+    font-variant-numeric: tabular-nums;
+    line-height: 1.2;
+  }
+
+  /* Variant B: Dealer's Spread (Splayed Fanned Cascades) */
+  .fanned-list {
+    display: grid;
+    gap: 10px;
+  }
+  .fanned-lane {
+    display: grid;
+    grid-template-columns: auto minmax(0, 1fr) auto;
+    align-items: center;
+    gap: 12px;
+    padding: 10px 14px;
+    border-radius: 18px;
+    background: linear-gradient(135deg, #17222b 0%, #0e161d 100%);
+    border: 1px solid #2f404f;
+    box-shadow: inset 0 1px 0 #ffffff0d;
+  }
+  .fanned-denom-badge {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    min-width: 0;
+  }
+  .fanned-denom-badge .chip-symbol { width: 46px; height: 46px; }
+  .fanned-stream {
+    width: 100%;
+    height: 48px;
+    display: block;
+  }
+  .fanned-qty {
+    font-size: 1.35em;
+    font-weight: 800;
+    font-variant-numeric: tabular-nums;
+    color: #f1f4f5;
+    padding: 4px 10px;
+    border-radius: 12px;
+    background: #1b2833;
+    border: 1px solid #364653;
+    white-space: nowrap;
+  }
+
+  /* Variant C: Precision Acrylic Rack & Case */
+  .rack-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(76px, 1fr));
+    gap: 10px;
+  }
+  .rack-slot {
+    position: relative;
+    display: grid;
+    justify-items: center;
+    gap: 8px;
+    padding: 12px 6px 10px;
+    border-radius: 18px;
+    background: linear-gradient(180deg, #0b1218 0%, #15202a 100%);
+    border: 1px solid #364653;
+    box-shadow: inset 0 4px 12px #000a;
+    text-align: center;
+  }
+  .rack-well {
+    width: 58px;
+    height: 124px;
+    border-radius: 12px;
+    background: #060b0f;
+    border: 1px solid #293845;
+    box-shadow: inset 0 3px 8px #000;
+    padding: 4px;
+    display: flex;
+    align-items: flex-end;
+    justify-content: center;
+    position: relative;
+  }
+  .rack-well svg { width: 100%; height: 100%; display: block; }
+  .rack-qty {
+    font-size: 1.2em;
+    font-weight: 800;
+    font-variant-numeric: tabular-nums;
+    color: var(--accent);
+    background: var(--tint);
+    border: 1px solid var(--accent);
+    border-radius: 100px;
+    padding: 2px 10px;
+  }
+
+  /* Compact 3-pill metrics strip */
+  .metric-strip {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(105px, 1fr));
+    gap: 8px;
     margin: 12px 0;
   }
-  .stack-pillar { display: grid; justify-items: center; gap: 6px; min-width: 68px; text-align: center; font-variant-numeric: tabular-nums; }
-  .stack-pillar strong { font-size: .88em; }
-  .stack-pillar small { font-size: .72em; color: #b3c0ca; }
-  .case-preview { margin: 8px 0 12px; min-width: 0; }
+  .metric-tile {
+    padding: 11px 12px;
+    border-radius: 16px;
+    background: #18232c;
+    border: 1px solid #31414f;
+    min-width: 0;
+  }
+  .metric-tile dt {
+    font-size: .7em;
+    text-transform: uppercase;
+    letter-spacing: .06em;
+    color: #b3c0ca;
+  }
+  .metric-tile dd {
+    margin: 3px 0 0;
+    font-size: 1.02em;
+    font-weight: 750;
+    font-variant-numeric: tabular-nums;
+    color: #f1f4f5;
+  }
+  .metric-tile small {
+    display: block;
+    font-size: .7em;
+    color: #b3c0ca;
+    margin-top: 2px;
+  }
+
+  /* Compact Bank chip strip */
+  .bank-strip {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin-top: 10px;
+  }
+  .bank-pill {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 6px 10px 6px 6px;
+    border-radius: 100px;
+    background: #111920;
+    border: 1px solid #364653;
+    font-size: .82em;
+    font-variant-numeric: tabular-nums;
+  }
+  .bank-pill .chip-symbol { width: 28px; height: 28px; }
+
+  .case-preview { margin: 8px 0 6px; min-width: 0; }
   .case-scroll { max-width: 100%; overflow: hidden; padding: 6px 0 10px; border-radius: 14px; }
   .case-content { --case-scale: 1; position: relative; width: 100%; height: calc(374px * var(--case-scale)); }
   .case-scene { position: absolute; left: 50%; top: 0; box-sizing: border-box; height: 374px; padding: 0 8px 24px; transform: translateX(-50%) scale(var(--case-scale)); transform-origin: top center; }
@@ -197,6 +387,26 @@
   .case-clasp.left { left: 17%; }
   .case-clasp.right { right: 17%; }
   .case-handle { position: absolute; width: min(72px, 46%); height: 18px; border: 6px solid #516979; border-top: 0; border-radius: 0 0 12px 12px; left: 50%; bottom: -26px; transform: translateX(-50%); box-shadow: inset 0 -1px #bdc8d0; }
+
+  .mix-row {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: space-between;
+    align-items: center;
+    gap: 12px;
+    padding: 12px 14px;
+    border: 1px solid #364653;
+    border-radius: 16px;
+    background: #111920;
+    min-width: 0;
+  }
+  .mix-chip { display: flex; align-items: center; gap: 10px; min-width: 0; }
+  dl { margin: 0; }
+  .facts > div { padding: 10px 0; border-bottom: 1px solid #364653; display: flex; flex-wrap: wrap; justify-content: space-between; gap: 6px 12px; align-items: baseline; }
+  .facts > div:last-child { border-bottom: 0; }
+  dt { color: #b3c0ca; font-size: .8em; }
+  dd { margin: 0; font-weight: 600; font-variant-numeric: tabular-nums; }
+
   .field-pair { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 12px; }
   .field { display: block; min-width: 0; margin: 14px 0; }
   .field-pair .field { margin: 0; }
@@ -205,17 +415,14 @@
   .input-wrap:focus-within { outline: 3px solid var(--accent); outline-offset: 3px; }
   input[type="text"] { width: 100%; min-width: 0; min-height: 52px; padding: 10px 12px; background: transparent; border: 0; border-radius: 16px; color: #f1f4f5; font-size: 1.1em; font-variant-numeric: tabular-nums; }
   .input-wrap input:focus { outline: none; }
-  .input-wrap:has([aria-invalid="true"]) { border: 2px solid #ffb3aa; }
   .hint { display: block; font-size: .75em; color: #b3c0ca; margin-top: 5px; }
-  .error { display: block; color: #ffb3aa; font-size: .8em; margin-top: 6px; }
-  .error:empty, .hint:empty { display: none; }
   .choice { display: flex; align-items: flex-start; gap: 10px; min-height: 52px; padding: 12px 14px; border: 1px solid #7c90a0; background: #111920; border-radius: 16px; cursor: pointer; margin-bottom: 8px; }
   .choice:has(:checked) { border-color: var(--accent); box-shadow: inset 0 0 0 1px var(--accent); background: var(--tint); }
   .choice input { width: 20px; height: 20px; flex-shrink: 0; margin: .2em 0 0; accent-color: var(--accent); }
   .choice strong { display: block; font-size: .88em; }
   .choice small { display: block; font-size: .75em; margin-top: 3px; color: #b3c0ca; }
-  .dock { margin: 28px -20px -30px; padding: 20px; border-top: 1px solid #364653; background: #1e2a34; border-radius: 0 0 26px 26px; }
-  .dock p { font-size: .76em; color: #b3c0ca; margin-bottom: 10px; }
+  .dock { margin: 22px -18px -30px; padding: 18px; border-top: 1px solid #364653; background: #1e2a34; border-radius: 0 0 26px 26px; }
+  .dock p { font-size: .75em; color: #b3c0ca; margin-bottom: 10px; }
   .actions .primary { flex: 1; }
   .stack { display: grid; gap: 10px; }
   .icon { width: 1.2em; height: 1.2em; vertical-align: middle; flex-shrink: 0; }
@@ -232,7 +439,7 @@
     align-items: center;
     gap: 8px;
     padding: 8px;
-    width: min(390px, calc(100% - 24px));
+    width: min(410px, calc(100% - 24px));
     border: 1px solid #c9b5ff;
     border-radius: 22px;
     background: #0b1117;
@@ -264,10 +471,7 @@
   [hidden] { display: none !important; }
   [data-large="true"] .field-pair { grid-template-columns: minmax(0, 1fr); }
   [data-large="true"] .actions { flex-direction: column; }
-  [data-large="true"] .ledger-row { grid-template-columns: minmax(0, 1fr); gap: 6px; }
-  [data-large="true"] .ledger-head { display: none; }
-  [data-large="true"] .ledger-cell { text-align: left; display: flex; justify-content: space-between; gap: 8px; }
-  [data-large="true"] .ledger-cell::before { content: attr(data-col); font-size: .78em; color: #b3c0ca; }
+  [data-large="true"] .fanned-lane { grid-template-columns: minmax(0, 1fr); justify-items: start; }
   @media (max-width: 760px) {
     .preview-layout { display: block; max-width: 430px; margin: auto; }
     #inspector { margin-top: 24px; }
@@ -286,10 +490,10 @@
 <div class="workshop">
   <header>
     <p class="eyebrow">Throwaway interaction study · #35 · Current / Lavender</p>
-    <p class="revision" id="review-revision">Review v1 · Distribution preview, alternative depth &amp; Start</p>
-    <h1>Understand the stacks. Accept any alternative depth. Start deliberately.</h1>
-    <p class="intro">Three structurally different layouts for <strong>Distribution preview</strong> on the floating bottom bar: <strong>A · Handout cards</strong> (1-player stack + N-player pull totals), <strong>B · Table ledger</strong> (unified denomination columns), and <strong>C · Visual stack + case</strong> (1-player stack tray + remaining unissued chip case). Previewing never issues chips.</p>
-    <details class="review" open>
+    <p class="revision" id="review-revision">Review v2 · Visual starting-stack showcase (low text)</p>
+    <h1>One glance: total units and how many of each chip.</h1>
+    <p class="intro">Compare three low-text visual stack designs on the bottom switcher: <strong>A · 3D Chip Towers</strong> (isometric stacked chip columns on a lit plinth), <strong>B · Dealer’s Spread</strong> (splayed horizontal chip cascades grouped in 5s), and <strong>C · Precision Rack &amp; Case</strong> (calibrated vertical tray wells + 1-tap remaining case view).</p>
+    <details class="review">
       <summary>Review controls, state presets &amp; guided walkthroughs</summary>
       <p>Switch states below or edit players, chip quantities, or settings directly inside the prototype. All state is in memory; reload resets fixtures.</p>
       <div class="review-controls">
@@ -318,36 +522,36 @@
     <aside id="inspector" aria-label="Prototype state"></aside>
   </div>
 </div>
-<nav class="variant-bar" aria-label="Distribution preview layout variant switcher">
-  <button id="previous-variant" aria-label="Previous layout variant">←</button>
+<nav class="variant-bar" aria-label="Visual stack design switcher">
+  <button id="previous-variant" aria-label="Previous visual stack design">←</button>
   <div>
-    <label for="variant">PREVIEW LAYOUT · ?variant=</label>
+    <label for="variant">VISUAL STACK DESIGN · ?variant=</label>
     <select id="variant">
-      <option value="handout">A · Handout cards (recommended)</option>
-      <option value="ledger">B · Table ledger</option>
-      <option value="visual">C · Visual stack + remaining case</option>
+      <option value="towers">A · 3D Chip Towers (Spotlight Plinth)</option>
+      <option value="fanned">B · Dealer’s Spread (Fanned Cascades)</option>
+      <option value="tray">C · Precision Rack &amp; Case Toggle</option>
     </select>
   </div>
-  <button id="next-variant" aria-label="Next layout variant">→</button>
+  <button id="next-variant" aria-label="Next visual stack design">→</button>
 </nav>
 <dialog id="dialog" aria-labelledby="dialog-title"></dialog>
 <div class="sr-only" id="announcement" role="status" aria-live="polite"></div>
 <script>
 /* THROWAWAY PROTOTYPE ONLY.
-   Pure in-memory state machine and bounded distribution evaluator for #35 review. */
+   Pure in-memory state machine and bounded distribution evaluator for #35 Review v2. */
 const CHIP_COLORS = [
-  {id:'none',name:'No color',fill:'#1e2a34',ink:'#f1f4f5'},
-  {id:'white',name:'White',fill:'#eeeae1',ink:'#222830'},
-  {id:'grey',name:'Grey',fill:'#a5acb5',ink:'#222830'},
-  {id:'red',name:'Red',fill:'#ac3546',ink:'#ffffff'},
-  {id:'blue',name:'Blue',fill:'#2963a4',ink:'#ffffff'},
-  {id:'green',name:'Green',fill:'#23745a',ink:'#ffffff'},
-  {id:'yellow',name:'Yellow',fill:'#ebcb5b',ink:'#222830'},
-  {id:'purple',name:'Purple',fill:'#7650a4',ink:'#ffffff'},
-  {id:'black',name:'Black',fill:'#222830',ink:'#f1f4f5'},
-  {id:'orange',name:'Orange',fill:'#dc934b',ink:'#222830'},
-  {id:'pink',name:'Pink',fill:'#df96bb',ink:'#222830'},
-  {id:'brown',name:'Brown',fill:'#85583f',ink:'#ffffff'}
+  {id:'none',name:'No color',fill:'#1e2a34',edge:'#0f171e',ink:'#f1f4f5'},
+  {id:'white',name:'White',fill:'#eeeae1',edge:'#cfc9bc',ink:'#222830'},
+  {id:'grey',name:'Grey',fill:'#a5acb5',edge:'#7f8791',ink:'#222830'},
+  {id:'red',name:'Red',fill:'#c23b4e',edge:'#8e2433',ink:'#ffffff'},
+  {id:'blue',name:'Blue',fill:'#2f70ba',edge:'#1e4c82',ink:'#ffffff'},
+  {id:'green',name:'Green',fill:'#288769',edge:'#195c46',ink:'#ffffff'},
+  {id:'yellow',name:'Yellow',fill:'#ebcb5b',edge:'#bfa036',ink:'#222830'},
+  {id:'purple',name:'Purple',fill:'#845ab8',edge:'#5b3985',ink:'#ffffff'},
+  {id:'black',name:'Black',fill:'#262d36',edge:'#13171c',ink:'#f1f4f5'},
+  {id:'orange',name:'Orange',fill:'#dc934b',edge:'#a86829',ink:'#222830'},
+  {id:'pink',name:'Pink',fill:'#df96bb',edge:'#b0688c',ink:'#222830'},
+  {id:'brown',name:'Brown',fill:'#85583f',edge:'#5c3a27',ink:'#ffffff'}
 ];
 const chipColor = id => CHIP_COLORS.find(c => c.id === id) || CHIP_COLORS[0];
 
@@ -372,8 +576,6 @@ const DistributionStudy = (() => {
     return `EUR ${(centsPerUnit / 100).toFixed(4).replace(/0+$/, '').replace(/\.$/, '')}`;
   }
 
-  // Check if a denomination vector `counts` (aligned with ascending `vals`) can fund
-  // `k` disjoint SB payments + `k` disjoint BB payments.
   function canFormPayment(target, vals, avail, idx = 0, chosen = new Array(vals.length).fill(0)) {
     if (target === 0) return chosen.slice();
     for (let i = idx; i < vals.length; i++) {
@@ -394,23 +596,18 @@ const DistributionStudy = (() => {
 
   function hasDisjointCoverage(mix, vals, sb, bb, k) {
     const rem = mix.slice();
-    // Form k small-blind payments and k big-blind payments using smallest denominations first for SB, then BB
     for (let p = 0; p < k; p++) {
-      const usedSb = canFormPayment(sb, vals, rem);
-      if (!usedSb) return false;
+      if (!canFormPayment(sb, vals, rem)) return false;
     }
     for (let p = 0; p < k; p++) {
-      const usedBb = canFormPayment(bb, vals, rem);
-      if (!usedBb) return false;
+      if (!canFormPayment(bb, vals, rem)) return false;
     }
     return true;
   }
 
-  // Derive largest positive denomination-representable SB <= floor(bb / 2) using denominations with qty > 0
   function deriveSmallBlind(bb, vals, qtys) {
     const maxSb = Math.floor(bb / 2);
     if (maxSb < 1) return 0;
-    const activeVals = vals.filter((_, i) => qtys[i] > 0);
     for (let candidate = maxSb; candidate >= 1; candidate--) {
       const avail = qtys.map(q => Math.min(q, candidate));
       if (canFormPayment(candidate, vals, avail)) return candidate;
@@ -418,7 +615,6 @@ const DistributionStudy = (() => {
     return 0;
   }
 
-  // Find all qualifying single-stack mixes for target T within maxPerStack quantities
   function findQualifyingMixes(T, vals, maxPerStack, sb, bb, k) {
     const results = [];
     const current = new Array(vals.length).fill(0);
@@ -432,7 +628,6 @@ const DistributionStudy = (() => {
       if (idx < 0) return;
       const v = vals[idx];
       const maxTake = Math.min(maxPerStack[idx], Math.floor(remValue / v));
-      // Prune if even taking max of all remaining smaller denominations cannot reach remValue
       let maxPossible = 0;
       for (let j = 0; j <= idx; j++) maxPossible += maxPerStack[j] * vals[j];
       if (maxPossible < remValue) return;
@@ -446,16 +641,12 @@ const DistributionStudy = (() => {
     return results;
   }
 
-  // Check if `reserveCount` simultaneous qualifying stacks can be formed from `bankRem`
-  // Reserve mixes may differ from the initial mix and from each other.
   function canSupplySimultaneousReserve(reserveCount, T, vals, bankRem, sb, bb, k) {
     if (reserveCount <= 0) return true;
     const totalRemValue = bankRem.reduce((acc, q, i) => acc + q * vals[i], 0);
     if (totalRemValue < reserveCount * T) return false;
-    // Fast path: can bankRem supply `reserveCount` identical qualifying reserve stacks?
     const equalMax = bankRem.map(q => Math.floor(q / reserveCount));
     if (findQualifyingMixes(T, vals, equalMax, sb, bb, k).length > 0) return true;
-    // Otherwise test heterogeneous reserve mixes (bounded to keep UI instant)
     const candidateMixes = findQualifyingMixes(T, vals, bankRem, sb, bb, k).slice(0, 24);
     if (!candidateMixes.length) return false;
     function placeReserve(stackIdx, minMixIdx, remBank) {
@@ -481,14 +672,14 @@ const DistributionStudy = (() => {
     const distA = Math.abs(a.depth - requestedDepth);
     const distB = Math.abs(b.depth - requestedDepth);
     if (distA !== distB) return distA - distB;
-    if (a.depth !== b.depth) return a.depth - b.depth; // lower depth at equal distance
+    if (a.depth !== b.depth) return a.depth - b.depth;
     if (a.issuedChips !== b.issuedChips) {
       return preference === 'More chips' ? b.issuedChips - a.issuedChips : a.issuedChips - b.issuedChips;
     }
     if (a.exactHalf !== b.exactHalf) return a.exactHalf ? -1 : 1;
     if (a.bb !== b.bb) return a.bb - b.bb;
     for (let i = 0; i < a.mix.length; i++) {
-      if (a.mix[i] !== b.mix[i]) return b.mix[i] - a.mix[i]; // more smaller-denomination chips
+      if (a.mix[i] !== b.mix[i]) return b.mix[i] - a.mix[i];
     }
     return 0;
   }
@@ -496,7 +687,7 @@ const DistributionStudy = (() => {
   function validateSetup(g) {
     const blockers = [];
     if (g.names.length < 2) {
-      blockers.push({step:'players', label:'Edit players', title:'At least 2 players required', detail:`This game currently has ${g.names.length} player${g.names.length === 1 ? '' : 's'}. Add at least 2 players before starting.`});
+      blockers.push({step:'players', label:'Players', title:'Need at least 2 players', detail:`Currently ${g.names.length} player.`});
     }
     const rowErrors = [];
     if (!g.rows.length) {
@@ -504,39 +695,38 @@ const DistributionStudy = (() => {
     } else {
       const seen = new Set();
       for (const r of g.rows) {
-        if (!isWhole(r.value, 1)) rowErrors.push(`Denomination value “${r.value || 'blank'}” must be a positive whole number.`);
-        else if (seen.has(Number(r.value))) rowErrors.push(`Duplicate denomination value ${r.value}. Combine quantities in one row.`);
+        if (!isWhole(r.value, 1)) rowErrors.push(`Value “${r.value || 'blank'}” must be a positive whole number.`);
+        else if (seen.has(Number(r.value))) rowErrors.push(`Duplicate denomination ${r.value}. Combine quantities.`);
         else seen.add(Number(r.value));
-        if (!isWhole(r.quantity, 0)) rowErrors.push(`Quantity for value ${r.value || '?'} must be a whole number (0 or more).`);
+        if (!isWhole(r.quantity, 0)) rowErrors.push(`Quantity for ${r.value || '?'} must be 0 or more.`);
       }
     }
     if (rowErrors.length) {
-      blockers.push({step:'chips', label:'Edit chip set', title:'Chip set needs attention', detail:rowErrors[0]});
+      blockers.push({step:'chips', label:'Chip set', title:'Chip set needs attention', detail:rowErrors[0]});
     }
     const cents = parseCents(g.fields.buyin);
     if (cents === null) {
-      blockers.push({step:'settings', label:'Edit game settings', title:'Buy-in needs attention', detail:g.fields.buyin.trim() === '' ? 'Enter a shared initial buy-in of at least EUR 0.01.' : `“${g.fields.buyin}” is not a valid whole-cent EUR amount.`});
+      blockers.push({step:'settings', label:'Settings', title:'Buy-in required', detail:g.fields.buyin.trim() === '' ? 'Enter at least EUR 0.01.' : `“${g.fields.buyin}” isn’t whole cents.`});
     }
     if (!isWhole(g.fields.depth, 1)) {
-      blockers.push({step:'settings', label:'Edit game settings', title:'Starting stack depth needs attention', detail:'Enter a positive whole number of big blinds (e.g. 100).'});
+      blockers.push({step:'settings', label:'Settings', title:'Stack depth required', detail:'Enter whole big blinds (1 or more).'});
     }
     if (!isWhole(g.fields.coverage, 1)) {
-      blockers.push({step:'settings', label:'Edit game settings', title:'Blind-payment coverage needs attention', detail:'Enter at least 1 blind-payment pair per stack.'});
+      blockers.push({step:'settings', label:'Settings', title:'Coverage required', detail:'Enter at least 1 payment pair.'});
     }
     if (!isWhole(g.fields.reserve, 0)) {
-      blockers.push({step:'settings', label:'Edit game settings', title:'Chip reserve needs attention', detail:'Enter a whole number of reserved stacks (0 or more).'});
+      blockers.push({step:'settings', label:'Settings', title:'Reserve required', detail:'Enter 0 or more stacks.'});
     }
     if (g.mode === 'tournament' && !g.payoutValid) {
-      blockers.push({step:'payouts', label:'Edit payout schedule', title:'Tournament payout schedule needs attention', detail:g.payoutReason || 'Paid places cannot exceed the number of players (6), and shares must sum to 100%.'});
+      blockers.push({step:'payouts', label:'Payouts', title:'Payout schedule invalid', detail:g.payoutReason || 'Paid places exceed player count.'});
     }
     return blockers;
   }
 
   function evaluateDistribution(g) {
     const setupBlockers = validateSetup(g);
-    if (setupBlockers.length) {
-      return {status:'invalid-setup', setupBlockers};
-    }
+    if (setupBlockers.length) return {status:'invalid-setup', setupBlockers};
+
     const N = g.names.length;
     const requestedDepth = Number(g.fields.depth);
     const k = Number(g.fields.coverage);
@@ -554,13 +744,12 @@ const DistributionStudy = (() => {
       return {
         status:'no-valid',
         reasonCode:'total-value',
-        reasonTitle:'Insufficient total chip value',
-        reasonDetail:`Your chip set has 0 usable chips (0 chip units). At least ${N} starting stacks${R > 0 ? ` plus ${R} reserved stacks` : ''} are required.`,
+        reasonTitle:'Not enough total chip value',
+        reasonDetail:`0 usable chips for ${N} starting stacks${R > 0 ? ` + ${R} reserved` : ''}.`,
         diagnostics:{totalUnits, totalPhysical, N, R, k, requestedDepth}
       };
     }
 
-    // Candidate big blinds to test: common playable multiples based on denominations
     const candidateBbs = new Set();
     for (const v of vals) {
       candidateBbs.add(v);
@@ -579,15 +768,12 @@ const DistributionStudy = (() => {
       return {
         status:'no-valid',
         reasonCode:'denominations',
-        reasonTitle:'Denominations cannot form valid blinds',
-        reasonDetail:`None of the available chip denominations (${vals.join(', ')}) can form a positive small blind at or below half the big blind.`,
+        reasonTitle:'Unsuitable denominations',
+        reasonDetail:`Denominations (${vals.join(', ')}) cannot form a positive small blind ≤ half big blind.`,
         diagnostics:{totalUnits, totalPhysical, N, R, k, requestedDepth}
       };
     }
 
-    // Search candidate depths outward from requestedDepth (0, -1, +1, -2, +2, ...)
-    // Since lower depth wins ties at equal distance, checking -delta before +delta means
-    // as soon as we find a feasible plan at distance `delta`, no larger distance can beat it.
     const candidateDepths = [requestedDepth];
     for (let delta = 1; delta <= 150; delta++) {
       if (requestedDepth - delta >= 1) candidateDepths.push(requestedDepth - delta);
@@ -598,12 +784,6 @@ const DistributionStudy = (() => {
     let exactAtRequested = null;
     let failedOnlyByReserveAtRequested = false;
     let failedByCoverageAtRequested = false;
-    let failedByTotalValueAtRequested = false;
-
-    const minBb = validPairs[0].bb;
-    if (totalUnits < (N + R) * requestedDepth * minBb) {
-      failedByTotalValueAtRequested = true;
-    }
 
     for (const depth of candidateDepths) {
       if (bestCandidate && Math.abs(depth - requestedDepth) > Math.abs(bestCandidate.depth - requestedDepth)) {
@@ -621,7 +801,6 @@ const DistributionStudy = (() => {
           if (depth === requestedDepth) failedByCoverageAtRequested = true;
           continue;
         }
-        // Sort qualifyingInitial by initial chip-count objective + small-chip tie-break first
         qualifyingInitial.sort((mA, mB) => {
           const cA = mA.reduce((a, b) => a + b, 0);
           const cB = mB.reduce((a, b) => a + b, 0);
@@ -640,23 +819,11 @@ const DistributionStudy = (() => {
           }
           const perPlayerChips = mix.reduce((a, b) => a + b, 0);
           const cand = {
-            depth,
-            sb,
-            bb,
-            exactHalf,
-            stackUnits: T,
-            mix,
-            bankRem,
-            perPlayerChips,
-            issuedChips: N * perPlayerChips,
+            depth, sb, bb, exactHalf, stackUnits: T, mix, bankRem,
+            perPlayerChips, issuedChips: N * perPlayerChips,
             bankChips: bankRem.reduce((a, b) => a + b, 0),
             bankUnits: bankRem.reduce((acc, q, i) => acc + q * vals[i], 0),
-            sortedRows,
-            buyinCents,
-            N,
-            R,
-            k,
-            preference
+            sortedRows, buyinCents, N, R, k, preference
           };
           if (!bestCandidate || compareCandidates(cand, bestCandidate, requestedDepth, preference) < 0) {
             bestCandidate = cand;
@@ -664,40 +831,22 @@ const DistributionStudy = (() => {
           if (depth === requestedDepth && (!exactAtRequested || compareCandidates(cand, exactAtRequested, requestedDepth, preference) < 0)) {
             exactAtRequested = cand;
           }
-          break; // Best mix for this (depth, sb, bb) already found
+          break;
         }
       }
     }
 
-    if (exactAtRequested) {
-      return {status:'feasible-exact', plan:exactAtRequested, requestedDepth};
-    }
+    if (exactAtRequested) return {status:'feasible-exact', plan:exactAtRequested, requestedDepth};
 
-    // Build human-readable explanation of why requestedDepth was infeasible
-    let whyRequestedFailed = '';
-    if (failedOnlyByReserveAtRequested) {
-      whyRequestedFailed = `At ${requestedDepth} BB, the chip set can build the ${N} starting stacks, but cannot simultaneously supply all ${R} reserved qualifying stacks with ${k} blind-payment pairs each.`;
-    } else if (failedByCoverageAtRequested) {
-      whyRequestedFailed = `At ${requestedDepth} BB, there is enough total chip value, but not enough small blind-paying chips to give every stack ${k} separate small- and big-blind payment pairs.`;
-    } else if (failedByTotalValueAtRequested) {
-      whyRequestedFailed = `At ${requestedDepth} BB, ${N} starting stacks plus ${R} reserved stacks require at least ${(N + R) * requestedDepth * minBb} chip units, but the chip set holds ${totalUnits} chip units.`;
-    } else {
-      whyRequestedFailed = `At ${requestedDepth} BB, the available denominations (${vals.join(', ')}) cannot form ${N} identical qualifying stacks${R > 0 ? ` and ${R} simultaneous reserved stacks` : ''} with ${k} blind payments each.`;
-    }
+    let whyRequestedFailed = failedOnlyByReserveAtRequested
+      ? `${requestedDepth} BB fits ${N} starting stacks, but not ${R} simultaneous reserved stacks.`
+      : failedByCoverageAtRequested
+        ? `${requestedDepth} BB lacks enough small blind-paying chips for ${k} blind pairs per stack.`
+        : `${requestedDepth} BB exceeds available chip quantities for ${N} stacks${R > 0 ? ` + ${R} reserve` : ''}.`;
 
     if (bestCandidate) {
-      return {
-        status:'feasible-alternative',
-        plan:bestCandidate,
-        requestedDepth,
-        whyRequestedFailed
-      };
+      return {status:'feasible-alternative', plan:bestCandidate, requestedDepth, whyRequestedFailed};
     }
-
-    // No depth worked at all — classify primary bottleneck
-    let reasonCode = 'denominations';
-    let reasonTitle = 'Unsuitable denomination mix for blind payments';
-    let reasonDetail = whyRequestedFailed;
 
     const minOneDepthTotal = (N + R) * validPairs[0].bb;
     const anyInitialQualifiesAtAnyDepth = candidateDepths.some(d =>
@@ -713,23 +862,23 @@ const DistributionStudy = (() => {
       })
     );
 
+    let reasonCode = 'denominations';
+    let reasonTitle = 'Unsuitable denominations for stacks & blinds';
+    let reasonDetail = `With ${N} players and denominations (${vals.join(', ')}), each stack needs separate chips for small and big blinds (${validPairs[0].sb}/${validPairs[0].bb}), which quantities (${qtys.join(', ')}) cannot form.`;
+
     if (totalUnits < minOneDepthTotal) {
       reasonCode = 'total-value';
       reasonTitle = 'Insufficient total chip value';
-      reasonDetail = `Your chip set holds ${totalUnits.toLocaleString('en')} chip units across ${totalPhysical} chips, which is not enough to build ${N} identical starting stacks${R > 0 ? ` and ${R} reserved stacks` : ''} even at 1 BB (${minOneDepthTotal} chip units needed).`;
+      reasonDetail = `${totalUnits.toLocaleString('en')} total chip units cannot supply ${N} stacks${R > 0 ? ` + ${R} reserve` : ''} even at 1 BB (${minOneDepthTotal} units needed).`;
     } else if (anyInitialQualifiesAtAnyDepth && R > 0) {
       reasonCode = 'reserve';
-      reasonTitle = 'Cannot supply starting stacks and chip reserve simultaneously';
-      reasonDetail = `The chip set can build ${N} identical qualifying starting stacks on their own, but there are not enough remaining blind-paying chips in the bank to simultaneously guarantee ${R} additional qualifying stacks at ${k} blind-payment coverage.`;
+      reasonTitle = 'Simultaneous chip reserve not feasible';
+      reasonDetail = `Chips can build ${N} starting stacks alone, but not ${R} simultaneous reserved stacks at ${k} blind-payment coverage.`;
     } else if (anyInitialQualifiesWithK1 && k > 1) {
       const maxPer = qtys.map(q => Math.floor(q / N));
       reasonCode = 'coverage';
-      reasonTitle = 'Scarce blind-paying chips for coverage';
-      reasonDetail = `Each player has at most ${maxPer.map((q, i) => `${q} × ${vals[i]}`).join(', ')} chips available. That can form stacks with 1 blind payment, but cannot fund ${k} separate small-blind and ${k} separate big-blind payments per stack without reusing the same physical chips.`;
-    } else {
-      reasonCode = 'denominations';
-      reasonTitle = 'Unsuitable denominations for identical stacks & blinds';
-      reasonDetail = `With ${N} players and denominations ${vals.join(', ')}, each player needs separate chips to pay both the small blind and big blind (${validPairs[0].sb} / ${validPairs[0].bb}), which the current quantities (${qtys.join(', ')}) cannot form at any whole-BB depth.`;
+      reasonTitle = 'Scarce blind-paying chips';
+      reasonDetail = `Max ${maxPer.map((q, i) => `${q}×${vals[i]}`).join(', ')} per player cannot fund ${k} separate SB + BB payment pairs per stack.`;
     }
 
     return {
@@ -769,12 +918,12 @@ const DistributionStudy = (() => {
       payoutReason:'',
       acceptedAltDepth:null,
       declinedAltDepth:null,
-      returnToPreview:false,
+      stackScope:'one', // 'one' | 'all'
+      rackTab:'stack', // 'stack' | 'case'
       startedSnapshot:null
     };
 
     if (preset === 'zero-reserve') {
-      // 6 players, 1/5/25 set where 6 stacks at 100 BB (200 units) work with 0 reserve, but not with 3 reserve
       game.rows = [
         {id:'c1', value:'1', quantity:'90', color:'grey'},
         {id:'c2', value:'5', quantity:'72', color:'red'},
@@ -783,14 +932,12 @@ const DistributionStudy = (() => {
       game.fields.reserve = '0';
       game.fields.reserveCustom = true;
     } else if (preset === 'alt-98') {
-      // Requested 100 BB -> nearest feasible is 98 BB (6 players + 3 reserve = 9 stacks; each stack maxes at 16*1 + 1*5 + 7*25 = 196 = 98 BB)
       game.rows = [
         {id:'c1', value:'1', quantity:'144', color:'grey'},
         {id:'c2', value:'5', quantity:'9', color:'red'},
         {id:'c3', value:'25', quantity:'63', color:'blue'}
       ];
     } else if (preset === 'alt-101') {
-      // Requested 100 BB -> 101 BB (distance 1) preferred over 98 BB (distance 2)
       game.names = ['Maya', 'Jonas', 'Lena', 'Sam'];
       game.fields.reserve = '0';
       game.fields.reserveCustom = true;
@@ -799,7 +946,6 @@ const DistributionStudy = (() => {
         {id:'c2', value:'190', quantity:'4', color:'purple'}
       ];
     } else if (preset === 'rounded-sb') {
-      // Denominations 1, 5, 25 with 10 ones per stack (60 across 4 players + 2 reserve): 1/2 fails k=4 (needs 12 ones), so BB=5 with rounded SB=2 wins at exact 40 BB!
       game.names = ['Maya', 'Jonas', 'Lena', 'Sam'];
       game.fields.reserve = '0';
       game.fields.reserveCustom = true;
@@ -810,7 +956,6 @@ const DistributionStudy = (() => {
         {id:'c3', value:'25', quantity:'60', color:'blue'}
       ];
     } else if (preset === 'fail-reserve') {
-      // 6 initial stacks work at 20 BB (12 ones + 1*28 = 40 units), but only 12 ones remain in bank (cannot fund 3 reserve stacks)
       game.rows = [
         {id:'c1', value:'1', quantity:'84', color:'grey'},
         {id:'c2', value:'28', quantity:'9', color:'blue'}
@@ -818,19 +963,14 @@ const DistributionStudy = (() => {
       game.fields.depth = '20';
       game.fields.reserve = '3';
     } else if (preset === 'fail-coverage') {
-      // Enough chips for k=1 (3 ones + 1*17 = 20 units at 10 BB), but not enough ones for k=4
       game.rows = [
         {id:'c1', value:'1', quantity:'36', color:'grey'},
         {id:'c2', value:'17', quantity:'18', color:'green'}
       ];
       game.fields.depth = '10';
     } else if (preset === 'fail-value') {
-      // Total units (14) < minimum 1 BB for 6 players + 3 reserve (18 units)
-      game.rows = [
-        {id:'c1', value:'1', quantity:'14', color:'grey'}
-      ];
+      game.rows = [{id:'c1', value:'1', quantity:'14', color:'grey'}];
     } else if (preset === 'fail-denom') {
-      // Plenty of total value (3,030 units), but only 1 five-unit chip per player and rest are 50-unit chips -> cannot form separate SB and BB payments
       game.rows = [
         {id:'c1', value:'5', quantity:'6', color:'red'},
         {id:'c2', value:'50', quantity:'6', color:'green'}
@@ -855,7 +995,6 @@ const DistributionStudy = (() => {
           issuedChips:evalRes.plan.issuedChips,
           buyinCents:evalRes.plan.buyinCents,
           rateLabel:formatRate(evalRes.plan.buyinCents, evalRes.plan.stackUnits),
-          bbMoneyLabel:formatEurCents(Math.round(evalRes.plan.buyinCents / evalRes.plan.depth)),
           reserveTarget:evalRes.plan.R,
           reserveRemaining:evalRes.plan.R,
           initialMix:evalRes.plan.sortedRows.map((r, i) => ({...r, perPlayer:evalRes.plan.mix[i], issuedTotal:evalRes.plan.N * evalRes.plan.mix[i], bankRem:evalRes.plan.bankRem[i]}))
@@ -873,32 +1012,23 @@ const DistributionStudy = (() => {
   }
 
   return {
-    copy,
-    isWhole,
-    parseCents,
-    formatEurCents,
-    formatRate,
-    validateSetup,
-    evaluateDistribution,
-    makePreset
+    copy, isWhole, parseCents, formatEurCents, formatRate,
+    validateSetup, evaluateDistribution, makePreset
   };
 })();
 
 const $ = s => document.querySelector(s);
 const esc = x => String(x ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
-const unitLabel = n => Number(n) === 1 ? 'chip unit' : 'chip units';
-const chipLabel = n => Number(n) === 1 ? 'chip' : 'chips';
 const modeLabel = g => g.mode === 'cash' ? 'Cash game' : 'Tournament';
 
-const variants = ['handout', 'ledger', 'visual'];
-let variant = new URLSearchParams(location.search).get('variant') || 'handout';
-if (!variants.includes(variant)) variant = 'handout';
+const variants = ['towers', 'fanned', 'tray'];
+let variant = new URLSearchParams(location.search).get('variant') || 'towers';
+if (!variants.includes(variant)) variant = 'towers';
 
 let state = DistributionStudy.makePreset(new URLSearchParams(location.search).get('preset') || 'feasible');
 let scale = 1;
 let dialogTrigger = null;
 let activeScenario = 'feasible';
-let walkStep = 0;
 
 const paths = {
   back:'m15 18-6-6 6-6',
@@ -923,6 +1053,89 @@ function chipSymbol(r) {
   const color = chipColor(r.color);
   const value = /^\d{1,5}$/.test(String(r.value || '')) && Number(r.value) > 0 ? String(r.value) : '';
   return `<svg class="chip-symbol" viewBox="0 0 72 72" aria-hidden="true" focusable="false"><circle cx="36" cy="36" r="34" fill="${color.fill}" stroke="#aab6c0" stroke-width="1.5"/><circle cx="36" cy="36" r="29" fill="none" stroke="${color.ink}" stroke-opacity=".85" stroke-width="6" stroke-dasharray="${color.id === 'none' ? '2 7' : '8 15'}"/><circle cx="36" cy="36" r="22" fill="${color.fill}" stroke="${color.ink}" stroke-opacity=".65" stroke-width="1"/>${value ? `<text x="36" y="37" text-anchor="middle" dominant-baseline="middle" fill="${color.ink}" font-size="${value.length > 3 ? '12' : '18'}" font-family="-apple-system, BlinkMacSystemFont, sans-serif" font-weight="700">${esc(value)}</text>` : ''}</svg>`;
+}
+
+/* Variant A SVG: 3D Isometric Chip Tower */
+function render3DTowerSvg(r, count) {
+  const color = chipColor(r.color);
+  const valStr = String(r.numVal);
+  // Draw up to 20 physical discs in the column so heights immediately reflect count
+  const drawn = Math.max(1, Math.min(20, count));
+  const step = 5.4;
+  const rx = 33;
+  const ry = 11.5;
+  const h = 5.6;
+  const baseCy = 166;
+  let discs = '';
+  for (let i = 0; i < drawn; i++) {
+    const cy = baseCy - i * step;
+    const isFifth = (i + 1) % 5 === 0 && i < drawn - 1;
+    // Cylinder side wall + edge stripes + top rim
+    discs += `
+      <path d="M ${50 - rx} ${cy} A ${rx} ${ry} 0 0 0 ${50 + rx} ${cy} L ${50 + rx} ${cy + h} A ${rx} ${ry} 0 0 1 ${50 - rx} ${cy + h} Z" fill="${color.edge}" stroke="#080d12" stroke-width="0.7"/>
+      <path d="M ${50 - 22} ${cy + 2.2} v ${h - 0.8} M 50 ${cy + ry - 0.3} v ${h - 0.8} M ${50 + 22} ${cy + 2.2} v ${h - 0.8}" stroke="${color.ink}" stroke-opacity="0.72" stroke-width="3.6"/>
+      <ellipse cx="50" cy="${cy}" rx="${rx}" ry="${ry}" fill="${color.fill}" stroke="${isFifth ? '#c9b5ff' : '#ffffff44'}" stroke-width="${isFifth ? '1.4' : '0.7'}"/>
+    `;
+    if (i === drawn - 1) {
+      // Top chip face inlay and denomination numeral
+      discs += `
+        <ellipse cx="50" cy="${cy}" rx="27" ry="9.2" fill="none" stroke="${color.ink}" stroke-opacity="0.82" stroke-width="3.2" stroke-dasharray="6 9"/>
+        <ellipse cx="50" cy="${cy}" rx="20" ry="6.8" fill="${color.fill}" stroke="${color.ink}" stroke-opacity="0.55" stroke-width="0.9"/>
+        <text x="50" y="${cy + 0.8}" text-anchor="middle" dominant-baseline="middle" fill="${color.ink}" font-size="${valStr.length > 3 ? '9.5' : '12'}" font-weight="800" font-family="-apple-system, BlinkMacSystemFont, sans-serif">${esc(valStr)}</text>
+      `;
+    }
+  }
+  return `<svg class="tower-svg" viewBox="0 0 100 186" aria-hidden="true" focusable="false">
+    <ellipse cx="50" cy="174" rx="38" ry="12" fill="#04080c" opacity="0.75"/>
+    ${discs}
+  </svg>`;
+}
+
+/* Variant B SVG: Splayed Horizontal Chip Cascade ("Dealer's Spread") */
+function renderFannedCascadeSvg(r, count) {
+  const color = chipColor(r.color);
+  const drawn = Math.max(1, Math.min(20, count));
+  // Spread chips left-to-right with a slight extra gap every 5 chips so counting is effortless
+  const groups = Math.floor((drawn - 1) / 5);
+  const maxSpan = 176;
+  const rawStep = drawn > 1 ? Math.min(13, (maxSpan - groups * 6) / (drawn - 1)) : 0;
+  let items = '';
+  for (let i = 0; i < drawn; i++) {
+    const groupBonus = Math.floor(i / 5) * 6;
+    const cx = 22 + i * rawStep + groupBonus;
+    items += `
+      <g transform="translate(${cx.toFixed(1)}, 24)">
+        <circle cx="-1.5" cy="1.5" r="17.5" fill="#050a0f" opacity="0.55"/>
+        <circle cx="0" cy="0" r="17.5" fill="${color.fill}" stroke="${color.edge}" stroke-width="1.4"/>
+        <circle cx="0" cy="0" r="14.2" fill="none" stroke="${color.ink}" stroke-opacity="0.8" stroke-width="3" stroke-dasharray="4 6.5"/>
+        <circle cx="0" cy="0" r="10.2" fill="${color.fill}" stroke="${color.ink}" stroke-opacity="0.5" stroke-width="0.8"/>
+      </g>
+    `;
+  }
+  return `<svg class="fanned-stream" viewBox="0 0 228 48" preserveAspectRatio="xMinYMid meet" aria-hidden="true" focusable="false">${items}</svg>`;
+}
+
+/* Variant C SVG: Precision Recessed Rack Slot */
+function renderRackWellSvg(r, count) {
+  const color = chipColor(r.color);
+  const drawn = Math.max(1, Math.min(20, count));
+  const slotH = 112;
+  const discH = 4.6;
+  let ticks = '';
+  for (const t of [5, 10, 15, 20]) {
+    const ty = slotH - t * discH;
+    ticks += `<line x1="2" y1="${ty}" x2="8" y2="${ty}" stroke="#596d7e" stroke-width="1"/><line x1="42" y1="${ty}" x2="48" y2="${ty}" stroke="#596d7e" stroke-width="1"/>`;
+  }
+  let bars = '';
+  for (let i = 0; i < drawn; i++) {
+    const y = slotH - (i + 1) * discH;
+    const isFifth = (i + 1) % 5 === 0;
+    bars += `
+      <rect x="8" y="${y.toFixed(1)}" width="34" height="${(discH - 0.7).toFixed(1)}" rx="2" fill="${color.fill}" stroke="${isFifth ? '#c9b5ff' : color.edge}" stroke-width="${isFifth ? '0.9' : '0.4'}"/>
+      <path d="M 14 ${y.toFixed(1)} v ${(discH - 0.7).toFixed(1)} M 25 ${y.toFixed(1)} v ${(discH - 0.7).toFixed(1)} M 36 ${y.toFixed(1)} v ${(discH - 0.7).toFixed(1)}" stroke="${color.ink}" stroke-opacity="0.65" stroke-width="2.4"/>
+    `;
+  }
+  return `<svg viewBox="0 0 50 116" preserveAspectRatio="none" aria-hidden="true" focusable="false">${ticks}${bars}</svg>`;
 }
 
 const CaseView = {
@@ -964,7 +1177,7 @@ function fitAllCases() {
 }
 
 function header(title, g, back = 'games') {
-  return `<div class="topline">${b(back === 'games' ? 'Games' : 'Back', back, 'quiet', '', back === 'games' ? 'home' : 'back')}${ib('Game actions and lifecycle menu', 'game-menu', 'more')}</div><p class="context"><span class="badge">${modeLabel(g)}</span><span class="badge ${g.phase === 'In progress' ? 'ok' : 'info'}">${esc(g.phase)}</span><span class="badge">${g.names.length} players</span><br>${esc(g.created)} · ${esc(g.names.join(', '))}</p><h2 tabindex="-1">${esc(title)}</h2>`;
+  return `<div class="topline">${b(back === 'games' ? 'Games' : 'Back', back, 'quiet', '', back === 'games' ? 'home' : 'back')}${ib('Game actions and lifecycle menu', 'game-menu', 'more')}</div><p class="context"><span class="badge">${modeLabel(g)}</span><span class="badge ${g.phase === 'In progress' ? 'ok' : 'info'}">${esc(g.phase)}</span><span class="badge">${g.names.length} players</span></p><h2 tabindex="-1">${esc(title)}</h2>`;
 }
 
 function renderAlternativeBanner(evalRes, g) {
@@ -972,221 +1185,157 @@ function renderAlternativeBanner(evalRes, g) {
   const alt = evalRes.plan.depth;
   const req = evalRes.requestedDepth;
   const accepted = g.acceptedAltDepth === alt;
-  const distance = Math.abs(alt - req);
   if (accepted) {
     return `<section class="card prominent" aria-label="Accepted alternative stack depth">
       <div class="row-heading">
-        <span class="badge ok">${icon('check')} Alternative depth accepted</span>
-        <span class="small">Requested ${req} BB → Using ${alt} BB</span>
+        <span class="badge ok">${icon('check')} Accepted ${alt} BB</span>
+        <span class="small">Requested ${req} BB</span>
       </div>
-      <h3>Using ${alt} BB starting stacks (requested ${req} BB)</h3>
-      <p class="small">${esc(evalRes.whyRequestedFailed)} You accepted the nearest feasible whole-BB depth (${alt} BB, ${distance} BB ${alt < req ? 'below' : 'above'} ${req} BB). Any setup edit preserves your ${req} BB request and rechecks from scratch.</p>
+      <p class="small" style="margin-bottom:10px">${esc(evalRes.whyRequestedFailed)}</p>
       <div class="actions">
         ${b('Withdraw acceptance', 'decline-alt', '')}
-        ${b('Edit game settings', 'go-settings', 'quiet', '', 'edit')}
-        ${b('Edit chip set', 'go-chips', 'quiet', '', 'edit')}
+        ${b('Edit setup', 'go-settings', 'quiet', '', 'edit')}
       </div>
     </section>`;
   }
   return `<section class="card proposal" aria-label="Alternative stack depth proposal">
     <div class="row-heading">
-      <span class="badge warn">${icon('alert')} Requested ${req} BB is not feasible</span>
-      <span class="small">Nearest feasible: ${alt} BB</span>
+      <span class="badge warn">${icon('alert')} ${req} BB unavailable</span>
+      <span class="small">Closest feasible: ${alt} BB</span>
     </div>
-    <h3>Offer: Use ${alt} BB instead of ${req} BB?</h3>
+    <h3>Use ${alt} BB instead of ${req} BB?</h3>
     <p class="small">${esc(evalRes.whyRequestedFailed)}</p>
-    <p class="small"><strong>${alt} BB</strong> is the closest whole-BB depth that satisfies exact stack values (${evalRes.plan.stackUnits} chip units), identical initial stacks, ${evalRes.plan.k} blind-payment pairs per stack, and ${evalRes.plan.R} simultaneous reserved stacks.${g.declinedAltDepth === alt ? ' You kept this proposal unaccepted; Start remains blocked until you accept it or change setup.' : ' Viewing this preview does not accept it or issue chips.'}</p>
     <div class="actions">
       ${b(`Accept ${alt} BB`, 'accept-alt', 'primary', 'id="accept-alt-btn"', 'check')}
-      ${b('Keep unaccepted / edit setup', 'decline-alt', '')}
-    </div>
-    <div class="pill-row" style="margin-top:10px">
-      ${b('Edit chip set', 'go-chips', 'quiet', '', 'edit')}
-      ${b('Edit game settings', 'go-settings', 'quiet', '', 'edit')}
-      ${b('Edit players', 'go-players', 'quiet', '', 'edit')}
+      ${b('Keep unaccepted', 'decline-alt', '')}
     </div>
   </section>`;
 }
 
-function renderFeasibleBody(evalRes, g) {
-  const p = evalRes.plan;
-  const isAlt = evalRes.status === 'feasible-alternative';
-  const isAccepted = !isAlt || g.acceptedAltDepth === p.depth;
+function renderVisualStackShowcase(p, g) {
+  const showAll = g.stackScope === 'all';
+  const mult = showAll ? p.N : 1;
+  const displayUnits = p.stackUnits * mult;
   const activeMixRows = p.sortedRows.map((r, i) => ({
     ...r,
     perPlayer: p.mix[i],
-    perPlayerUnits: p.mix[i] * r.numVal,
-    issuedTotal: p.N * p.mix[i],
-    bankRem: p.bankRem[i],
-    bankUnits: p.bankRem[i] * r.numVal
+    displayCount: p.mix[i] * mult,
+    bankRem: p.bankRem[i]
   }));
   const usedInStack = activeMixRows.filter(r => r.perPlayer > 0);
-  const unusedInStack = activeMixRows.filter(r => r.perPlayer === 0);
+  const bankCaseRows = activeMixRows.map(r => ({id:r.id, value:r.value, quantity:String(r.bankRem), color:r.color}));
 
-  const blindPairText = `${p.sb} / ${p.bb} chip units`;
-  const blindNote = p.exactHalf
-    ? `Exact half (${p.sb} = ${p.bb} ÷ 2)`
-    : `Small blind rounded down from ${p.bb / 2} to ${p.sb} to match representable denominations`;
-
-  const cashRateText = g.mode === 'cash'
-    ? `${DistributionStudy.formatRate(p.buyinCents, p.stackUnits)} per chip unit · ${DistributionStudy.formatEurCents(Math.round(p.buyinCents * p.sb / p.stackUnits))} / ${DistributionStudy.formatEurCents(Math.round(p.buyinCents * p.bb / p.stackUnits))} blinds`
-    : 'Tournament chips have no monetary value';
-
-  const reserveHeadline = p.R === 0
-    ? '0 reserved stacks (explicit zero reserve)'
-    : `${p.R} additional qualifying stack${p.R === 1 ? '' : 's'} guaranteed`;
-
-  const reserveSubtext = p.R === 0
-    ? 'No reserve was requested. Remaining bank chips stay unissued in the case; later rebuys or late arrivals depend on whatever chips remain or are returned.'
-    : `Simultaneously verified with all ${p.N} starting stacks (${p.stackUnits} chip units and ${p.k} blind-payment pairs each). Reserve and unused chips stay together in one unissued bank for rebuys or late arrivals—do not prepack or assign them per player.`;
-
-  if (variant === 'ledger') {
-    return `
-      <section class="card" aria-label="Blinds and stack summary">
-        <div class="row-heading">
-          <span class="badge ${isAccepted ? 'info' : 'warn'}">${isAccepted ? 'Preview · no chips issued' : `Proposed ${p.depth} BB · awaiting acceptance`}</span>
-          <span class="small">${esc(p.preference)}</span>
-        </div>
-        <dl class="kv-grid">
-          <div class="kv-box"><dt>Blinds (SB / BB)</dt><dd>${esc(blindPairText)}</dd><small>${esc(blindNote)}</small></div>
-          <div class="kv-box"><dt>Each starting stack</dt><dd>${p.stackUnits.toLocaleString('en')} units</dd><small>${p.depth} BB${isAlt ? ` (requested ${evalRes.requestedDepth} BB)` : ''} · ${p.perPlayerChips} chips</small></div>
-          ${g.mode === 'cash'
-            ? `<div class="kv-box"><dt>Provisional cash value</dt><dd>${DistributionStudy.formatEurCents(p.buyinCents)} each</dd><small>${esc(cashRateText)}</small></div>`
-            : `<div class="kv-box"><dt>Tournament prize pool</dt><dd>${DistributionStudy.formatEurCents(p.buyinCents * p.N)}</dd><small>${p.N} × ${DistributionStudy.formatEurCents(p.buyinCents)} buy-in · chips have no EUR rate</small></div>`}
-          <div class="kv-box"><dt>Shared chip reserve</dt><dd>${p.R} stack${p.R === 1 ? '' : 's'}</dd><small>${p.bankChips} chips (${p.bankUnits.toLocaleString('en')} units) stay in bank</small></div>
-        </dl>
-      </section>
-      <section class="card" aria-label="Denomination ledger">
-        <div class="row-heading">
-          <h3>Denomination ledger (${p.N} identical stacks + unissued bank)</h3>
-          <span class="small">Count 1 stack per player, or pull the ${p.N}-player total</span>
-        </div>
-        <div class="ledger-row ledger-head" aria-hidden="true">
-          <span>Denomination</span>
-          <span class="ledger-cell">1 player</span>
-          <span class="ledger-cell">All ${p.N} players</span>
-          <span class="ledger-cell">Unissued bank</span>
-        </div>
-        ${activeMixRows.map(r => `
-          <div class="ledger-row">
-            <div class="mix-chip">${chipSymbol(r)}<div><strong>${r.numVal} ${unitLabel(r.numVal)}</strong><span>${chipColor(r.color).name} · ${r.numQty} owned</span></div></div>
-            <div class="ledger-cell" data-col="1 player"><strong>${r.perPlayer} ${chipLabel(r.perPlayer)}</strong><small>${r.perPlayerUnits} units</small></div>
-            <div class="ledger-cell" data-col="All ${p.N} players"><strong>${r.issuedTotal} ${chipLabel(r.issuedTotal)}</strong><small>${r.perPlayer > 0 ? 'Hand out' : 'Unused'}</small></div>
-            <div class="ledger-cell" data-col="Unissued bank"><strong>${r.bankRem} ${chipLabel(r.bankRem)}</strong><small>${r.bankUnits} units</small></div>
-          </div>
-        `).join('')}
-        <p class="small" style="margin-top:12px">${esc(reserveSubtext)}</p>
-      </section>
-    `;
-  }
-
-  if (variant === 'visual') {
-    const bankCaseRows = activeMixRows.map(r => ({id:r.id, value:r.value, quantity:String(r.bankRem), color:r.color}));
-    return `
-      <section class="card" aria-label="Visual starting stack and remaining case">
-        <div class="row-heading">
-          <span class="badge ${isAccepted ? 'info' : 'warn'}">${isAccepted ? 'Preview · no chips issued' : `Proposed ${p.depth} BB · awaiting acceptance`}</span>
-          <span class="small">${p.perPlayerChips} chips per player · ${p.issuedChips} handed out</span>
-        </div>
-        <h3>Give each of the ${p.N} players (${p.stackUnits.toLocaleString('en')} chip units)</h3>
-        <div class="stack-tray" role="list" aria-label="One player's starting stack">
-          ${usedInStack.map(r => `
-            <div class="stack-pillar" role="listitem">
-              ${chipSymbol(r)}
-              <strong>${r.perPlayer} × ${r.numVal}</strong>
-              <small>${chipColor(r.color).name} (${r.perPlayerUnits}u)</small>
-              <small>Pull ${r.issuedTotal} total</small>
-            </div>
-          `).join('')}
-        </div>
-        <h3 style="margin-top:18px">Remaining in case (unissued bank: ${p.bankChips} chips)</h3>
-        ${renderCaseIllustration(bankCaseRows, 'Unissued bank chips remaining in the poker case after preparing starting stacks.')}
-        <p class="small"><strong>${esc(reserveHeadline)}:</strong> ${esc(reserveSubtext)}</p>
-      </section>
-      <section class="card" aria-label="Blinds, valuation and bank details">
-        <h3>Blinds &amp; game terms</h3>
-        <dl class="facts">
-          <div><dt>Small / big blind</dt><dd>${esc(blindPairText)}</dd></div>
-          <div><dt>Blind derivation</dt><dd>${esc(blindNote)}</dd></div>
-          <div><dt>Starting stack depth</dt><dd>${p.depth} BB (${p.stackUnits.toLocaleString('en')} chip units)${isAlt ? ` · requested ${evalRes.requestedDepth} BB` : ''}</dd></div>
-          <div><dt>Blind-payment coverage</dt><dd>${p.k} pairs of each blind per stack (${esc(p.preference)})</dd></div>
-          ${g.mode === 'cash'
-            ? `<div><dt>Provisional cash-game valuation</dt><dd>${DistributionStudy.formatEurCents(p.buyinCents)} buy-in · ${esc(cashRateText)}</dd></div>`
-            : `<div><dt>Tournament prize pool</dt><dd>${DistributionStudy.formatEurCents(p.buyinCents * p.N)} (${p.N} × ${DistributionStudy.formatEurCents(p.buyinCents)}) · chips have no EUR value</dd></div>`}
-          <div><dt>Unissued bank by denomination</dt><dd>${activeMixRows.map(r => `${r.bankRem} × ${r.numVal} (${chipColor(r.color).name})`).join(' · ')}</dd></div>
-        </dl>
-      </section>
-    `;
-  }
-
-  // Default: Variant A · Handout cards
-  return `
-    <section class="card" aria-label="Starting stack per player">
-      <div class="row-heading">
-        <span class="badge ${isAccepted ? 'info' : 'warn'}">${isAccepted ? 'Preview · no chips issued' : `Proposed ${p.depth} BB · awaiting acceptance`}</span>
-        <span class="small">${esc(p.preference)}</span>
-      </div>
-      <h3>Give each of the ${p.N} players</h3>
-      <p class="small">Every initial player receives this identical starting stack of <strong>${p.stackUnits.toLocaleString('en')} chip units</strong> (${p.perPlayerChips} physical chips each; ${p.issuedChips} chips total across all ${p.N} players).</p>
-      <div class="mix-list" role="list" aria-label="Starting stack denomination mix">
+  let visualCenter = '';
+  if (variant === 'towers') {
+    visualCenter = `
+      <div class="towers-stage" role="list" aria-label="${showAll ? `All ${p.N} starting stacks combined` : 'One starting stack'}">
         ${usedInStack.map(r => `
-          <div class="mix-row" role="listitem">
-            <div class="mix-chip">
+          <div class="tower-col" role="listitem" aria-label="${r.displayCount} chips of value ${r.numVal} (${chipColor(r.color).name})">
+            ${render3DTowerSvg(r, r.displayCount)}
+            <span class="tower-count">×${r.displayCount}</span>
+            <span class="tower-denom">${r.numVal} · ${chipColor(r.color).name}</span>
+          </div>
+        `).join('')}
+      </div>
+    `;
+  } else if (variant === 'fanned') {
+    visualCenter = `
+      <div class="fanned-list" role="list" aria-label="${showAll ? `All ${p.N} starting stacks combined` : 'One starting stack'}">
+        ${usedInStack.map(r => `
+          <div class="fanned-lane" role="listitem" aria-label="${r.displayCount} chips of value ${r.numVal} (${chipColor(r.color).name})">
+            <div class="fanned-denom-badge">
               ${chipSymbol(r)}
-              <div>
-                <strong>${r.numVal} ${unitLabel(r.numVal)}</strong>
-                <span>${chipColor(r.color).name} · ${r.perPlayerUnits} chip units per player</span>
+            </div>
+            ${renderFannedCascadeSvg(r, r.displayCount)}
+            <span class="fanned-qty">×${r.displayCount}</span>
+          </div>
+        `).join('')}
+      </div>
+    `;
+  } else {
+    // Variant C: Precision Rack + 1-tap Case toggle
+    const showingCase = g.rackTab === 'case';
+    visualCenter = `
+      <div class="row-heading" style="margin-bottom:10px">
+        <span class="small">${showingCase ? `${p.bankChips} unissued chips left in case` : '5-chip gauge marks per slot'}</span>
+        <div class="scope-seg" role="group" aria-label="Tray view">
+          <button type="button" data-action="rack-tab" data-tab="stack" aria-pressed="${!showingCase}">Stack rack</button>
+          <button type="button" data-action="rack-tab" data-tab="case" aria-pressed="${showingCase}">Bank case (${p.bankChips})</button>
+        </div>
+      </div>
+      ${showingCase
+        ? renderCaseIllustration(bankCaseRows, 'Unissued bank chips remaining in the poker case.')
+        : `<div class="rack-grid" role="list" aria-label="${showAll ? `All ${p.N} starting stacks combined` : 'One starting stack'}">
+            ${usedInStack.map(r => `
+              <div class="rack-slot" role="listitem" aria-label="${r.displayCount} chips of value ${r.numVal} (${chipColor(r.color).name})">
+                ${chipSymbol(r)}
+                <div class="rack-well">${renderRackWellSvg(r, r.displayCount)}</div>
+                <span class="rack-qty">×${r.displayCount}</span>
               </div>
-            </div>
-            <div class="mix-counts">
-              <strong>${r.perPlayer} ${chipLabel(r.perPlayer)} each</strong>
-              <small>Pull ${r.issuedTotal} of ${r.numQty} for ${p.N} players</small>
-            </div>
-          </div>
-        `).join('')}
+            `).join('')}
+          </div>`}
+    `;
+  }
+
+  return `
+    <section class="stack-showcase" aria-label="Starting stack overview">
+      <div class="stack-hero-bar">
+        <div>
+          <span class="stack-hero-label">${showAll ? `All ${p.N} players total` : '1 starting stack'}</span>
+          <div class="stack-hero-units">${displayUnits.toLocaleString('en')}<small>chip units</small></div>
+        </div>
+        <div class="scope-seg" role="group" aria-label="Stack count scope">
+          <button type="button" data-action="stack-scope" data-scope="one" aria-pressed="${!showAll}">1 player</button>
+          <button type="button" data-action="stack-scope" data-scope="all" aria-pressed="${showAll}">All ${p.N} (${p.issuedChips})</button>
+        </div>
       </div>
-      ${unusedInStack.length ? `<p class="small">Unused in initial stacks (kept in bank): ${unusedInStack.map(r => `${r.numVal} (${chipColor(r.color).name}, all ${r.numQty} kept)`).join(', ')}.</p>` : ''}
+      ${visualCenter}
     </section>
+  `;
+}
 
-    <section class="card" aria-label="Blinds and valuation">
-      <h3>Blinds &amp; game terms</h3>
-      <dl class="kv-grid">
-        <div class="kv-box">
-          <dt>Small / big blind</dt>
-          <dd>${esc(blindPairText)}</dd>
-          <small>${esc(blindNote)}</small>
-        </div>
-        <div class="kv-box">
-          <dt>Starting stack</dt>
-          <dd>${p.depth} BB (${p.stackUnits.toLocaleString('en')} units)</dd>
-          <small>${isAlt ? `Accepted / proposed alternative for requested ${evalRes.requestedDepth} BB` : 'Exact match for requested depth'}</small>
-        </div>
-      </dl>
-      <dl class="facts">
-        <div><dt>Blind-payment coverage</dt><dd>${p.k} separate SB + ${p.k} separate BB payments per stack</dd></div>
-        ${g.mode === 'cash'
-          ? `<div><dt>Shared initial buy-in</dt><dd>${DistributionStudy.formatEurCents(p.buyinCents)} per player (${DistributionStudy.formatEurCents(p.buyinCents * p.N)} table total)</dd></div>
-             <div><dt>Provisional cash-game rate</dt><dd>${esc(cashRateText)}</dd></div>`
-          : `<div><dt>Shared initial buy-in &amp; prize pool</dt><dd>${DistributionStudy.formatEurCents(p.buyinCents)} each · ${DistributionStudy.formatEurCents(p.buyinCents * p.N)} prize pool</dd></div>
-             <div><dt>Tournament chip valuation</dt><dd>Chips have no monetary value (${esc(g.payoutSchedule)})</dd></div>`}
-      </dl>
-    </section>
+function renderFeasibleBody(evalRes, g) {
+  const p = evalRes.plan;
+  const activeMixRows = p.sortedRows.map((r, i) => ({
+    ...r,
+    perPlayer: p.mix[i],
+    bankRem: p.bankRem[i]
+  }));
 
-    <section class="card" aria-label="Unissued bank and chip reserve">
+  const blindSub = p.exactHalf ? `${p.depth} BB depth` : `Rounded SB · ${p.depth} BB`;
+  const moneyTile = g.mode === 'cash'
+    ? `<div class="metric-tile"><dt>Cash value</dt><dd>${DistributionStudy.formatEurCents(p.buyinCents)}</dd><small>${DistributionStudy.formatRate(p.buyinCents, p.stackUnits)} / unit</small></div>`
+    : `<div class="metric-tile"><dt>Prize pool</dt><dd>${DistributionStudy.formatEurCents(p.buyinCents * p.N)}</dd><small>No chip money value</small></div>`;
+
+  return `
+    ${renderVisualStackShowcase(p, g)}
+    <dl class="metric-strip" aria-label="Game terms summary">
+      <div class="metric-tile">
+        <dt>Blinds</dt>
+        <dd>${p.sb} / ${p.bb}</dd>
+        <small>${esc(blindSub)}</small>
+      </div>
+      ${moneyTile}
+      <div class="metric-tile">
+        <dt>Reserve</dt>
+        <dd>${p.R} stack${p.R === 1 ? '' : 's'}</dd>
+        <small>${p.R === 0 ? 'Explicit 0 reserve' : 'Shared in bank'}</small>
+      </div>
+    </dl>
+    <section class="card" aria-label="Unissued bank">
       <div class="row-heading">
-        <h3>Unissued bank &amp; chip reserve</h3>
-        <span class="badge ${p.R > 0 ? 'ok' : 'warn'}">${esc(reserveHeadline)}</span>
+        <h3>Unissued bank (${p.bankChips} chips)</h3>
+        <span class="small">${p.R > 0 ? `Covers ${p.R} reserved stack${p.R === 1 ? '' : 's'} · not prepacked` : 'Unreserved bank'}</span>
       </div>
-      <p class="small">${esc(reserveSubtext)}</p>
-      <dl class="facts">
+      <div class="bank-strip" role="list" aria-label="Remaining bank quantities">
         ${activeMixRows.map(r => `
-          <div>
-            <dt>${r.numVal} ${unitLabel(r.numVal)} (${chipColor(r.color).name})</dt>
-            <dd>${r.bankRem} of ${r.numQty} ${chipLabel(r.bankRem)} left in bank (${r.bankUnits.toLocaleString('en')} units)</dd>
-          </div>
+          <span class="bank-pill" role="listitem">
+            ${chipSymbol(r)}
+            <strong>×${r.bankRem}</strong>
+            <span class="small">(${r.numVal})</span>
+          </span>
         `).join('')}
-        <div><dt>Total remaining in bank</dt><dd>${p.bankChips} physical chips · ${p.bankUnits.toLocaleString('en')} chip units</dd></div>
-      </dl>
+      </div>
     </section>
   `;
 }
@@ -1197,23 +1346,12 @@ function renderNoValidBody(evalRes, g) {
     <section class="card failure-card" aria-label="No valid distribution">
       <span class="badge err">${icon('alert')} No valid distribution</span>
       <h3>${esc(evalRes.reasonTitle)}</h3>
-      <p>${esc(evalRes.reasonDetail)}</p>
-      <p class="small">The app never silently lowers your blind-payment coverage (${d.k}), reduces your chip reserve (${d.R} stack${d.R === 1 ? '' : 's'}), or hands out unequal initial stacks. Adjust one of the inputs below and return to this preview.</p>
-      <div class="stack" style="margin-top:16px">
-        ${b('Edit chip set (quantities or denominations)', 'go-chips', 'primary full', '', 'edit')}
-        ${b('Edit game settings (depth, coverage, or reserve)', 'go-settings', 'full', '', 'edit')}
-        ${b('Edit players (' + g.names.length + ' in roster)', 'go-players', 'full', '', 'edit')}
+      <p class="small">${esc(evalRes.reasonDetail)}</p>
+      <div class="stack" style="margin-top:12px">
+        ${b('Edit chip set', 'go-chips', 'primary full', '', 'edit')}
+        ${b('Edit game settings', 'go-settings', 'full', '', 'edit')}
+        ${b('Edit players (' + g.names.length + ')', 'go-players', 'full', '', 'edit')}
       </div>
-    </section>
-    <section class="card" aria-label="Current setup summary">
-      <h3>Checked configuration</h3>
-      <dl class="facts">
-        <div><dt>Players</dt><dd>${g.names.length} (${esc(g.names.join(', '))})</dd></div>
-        <div><dt>Chip set total</dt><dd>${d.totalPhysical} physical chips · ${d.totalUnits.toLocaleString('en')} chip units</dd></div>
-        <div><dt>Requested depth</dt><dd>${d.requestedDepth} BB (${esc(g.fields.preference)})</dd></div>
-        <div><dt>Blind-payment coverage</dt><dd>${d.k} separate pairs per stack</dd></div>
-        <div><dt>Chip reserve requirement</dt><dd>${d.R} simultaneous qualifying stack${d.R === 1 ? '' : 's'}</dd></div>
-      </dl>
     </section>
   `;
 }
@@ -1221,15 +1359,13 @@ function renderNoValidBody(evalRes, g) {
 function renderInvalidSetupBody(evalRes) {
   return `
     <section class="card failure-card" aria-label="Setup needs attention">
-      <span class="badge err">${icon('alert')} Setup needs attention before distribution preview</span>
-      <h3>Complete or fix setup inputs</h3>
-      <p class="small">Distribution preview revalidates the whole plan. Fix the highlighted step below; your other entries remain saved and Return to preview brings you straight back here.</p>
-      <div class="stack" style="margin-top:14px">
+      <span class="badge err">${icon('alert')} Setup incomplete</span>
+      <div class="stack" style="margin-top:10px">
         ${evalRes.setupBlockers.map(item => `
           <div class="mix-row">
             <div>
               <strong>${esc(item.title)}</strong>
-              <span class="small">${esc(item.detail)}</span>
+              <span class="small" style="display:block">${esc(item.detail)}</span>
             </div>
             ${b(item.label, 'go-' + item.step, 'primary', '', 'edit')}
           </div>
@@ -1243,14 +1379,10 @@ function renderPreviewScreen(g) {
   const evalRes = DistributionStudy.evaluateDistribution(g);
   const totalSteps = g.mode === 'cash' ? 5 : 6;
   const canStart = evalRes.status === 'feasible-exact' || (evalRes.status === 'feasible-alternative' && g.acceptedAltDepth === evalRes.plan.depth);
-  let startBlockerReason = 'No chips have been issued yet. Starting records the initial stacks and locks setup.';
-  if (evalRes.status === 'invalid-setup') {
-    startBlockerReason = 'Start is blocked until all required setup steps are valid.';
-  } else if (evalRes.status === 'no-valid') {
-    startBlockerReason = 'Start is blocked because no valid distribution exists for this configuration.';
-  } else if (evalRes.status === 'feasible-alternative' && !canStart) {
-    startBlockerReason = `Start is blocked until you explicitly accept ${evalRes.plan.depth} BB (or edit setup so ${evalRes.requestedDepth} BB becomes feasible).`;
-  }
+  let startBlockerReason = 'Preview only · no chips issued yet.';
+  if (evalRes.status === 'invalid-setup') startBlockerReason = 'Fix setup inputs before starting.';
+  else if (evalRes.status === 'no-valid') startBlockerReason = 'No valid distribution for current setup.';
+  else if (evalRes.status === 'feasible-alternative' && !canStart) startBlockerReason = `Accept ${evalRes.plan.depth} BB (or edit setup) to enable Start.`;
 
   let bodyHtml = '';
   if (evalRes.status === 'invalid-setup') bodyHtml = renderInvalidSetupBody(evalRes);
@@ -1261,23 +1393,17 @@ function renderPreviewScreen(g) {
     ${header('Distribution preview', g, 'prev-step')}
     ${b(`Step ${totalSteps} of ${totalSteps} · Setup steps`, 'steps', 'quiet step-button')}
     ${bodyHtml}
-    <section class="card" aria-label="Quick setup adjustments">
-      <div class="row-heading">
-        <h3>Need to change setup?</h3>
-        <span class="small">Uses direct Return to preview</span>
-      </div>
-      <div class="pill-row">
-        ${b('Edit players', 'go-players', '', '', 'edit')}
-        ${b('Edit chip set', 'go-chips', '', '', 'edit')}
-        ${b('Edit game settings', 'go-settings', '', '', 'edit')}
-        ${g.mode === 'tournament' ? b('Edit payout schedule', 'go-payouts', '', '', 'edit') : ''}
-      </div>
-    </section>
+    <div class="pill-row" style="margin-top:12px">
+      ${b('Players', 'go-players', 'quiet', '', 'edit')}
+      ${b('Chip set', 'go-chips', 'quiet', '', 'edit')}
+      ${b('Settings', 'go-settings', 'quiet', '', 'edit')}
+      ${g.mode === 'tournament' ? b('Payouts', 'go-payouts', 'quiet', '', 'edit') : ''}
+    </div>
     <footer class="dock">
       <p id="start-status">${esc(startBlockerReason)}</p>
       <div class="actions">
         ${b('Back', 'prev-step', '', '', 'back')}
-        ${b(canStart ? `Start ${g.mode === 'cash' ? 'cash game' : 'tournament'}` : 'Start game (blocked)', 'start-game', 'primary', `id="step-action" ${canStart ? '' : 'aria-disabled="true"'}`, 'play')}
+        ${b(canStart ? `Start ${g.mode === 'cash' ? 'cash game' : 'tournament'}` : 'Start game', 'start-game', 'primary', `id="step-action" ${canStart ? '' : 'aria-disabled="true"'}`, 'play')}
       </div>
     </footer>
   `;
@@ -1286,26 +1412,22 @@ function renderPreviewScreen(g) {
 function renderPlayersScreen(g) {
   return `
     ${header('Players', g, 'preview')}
-    ${notice('Editing Players from Distribution preview preserves your requested depth (' + g.fields.depth + ' BB), revalidates the distribution, and clears any stale alternative-depth acceptance.')}
     <section class="card">
       <h3>Participants (${g.names.length})</h3>
       <div class="stack">
         ${g.names.map((name, idx) => `
           <div class="mix-row">
             <strong>${idx + 1}. ${esc(name)}</strong>
-            ${ib(`Remove ${name} from this game`, 'remove-player', 'trash', `data-index="${idx}"`)}
+            ${ib(`Remove ${name}`, 'remove-player', 'trash', `data-index="${idx}"`)}
           </div>
         `).join('')}
       </div>
-      <div class="actions" style="margin-top:14px">
-        ${b('Add sample player', 'add-player', 'full', '', 'plus')}
+      <div class="actions" style="margin-top:12px">
+        ${b('Add player', 'add-player', 'full', '', 'plus')}
       </div>
     </section>
     <footer class="dock">
-      <p>Automatic reserve follows ceil(roster ÷ 2) unless overridden.</p>
-      <div class="actions">
-        ${b('Back to preview', 'preview', 'primary', 'id="step-action"', 'arrow')}
-      </div>
+      <div class="actions">${b('Return to preview', 'preview', 'primary', 'id="step-action"', 'arrow')}</div>
     </footer>
   `;
 }
@@ -1313,12 +1435,11 @@ function renderPlayersScreen(g) {
 function renderChipsScreen(g) {
   return `
     ${header('Chip set', g, 'preview')}
-    ${notice('Approved #34 paired rows. Changing quantities or values recomputes Distribution preview without issuing chips and preserves your requested depth (' + g.fields.depth + ' BB).')}
     <div class="stack">
       ${g.rows.map((r, i) => `
         <section class="card" aria-label="Denomination ${i + 1}">
           <div class="row-heading">
-            <div class="mix-chip">${chipSymbol(r)}<div><strong>Denomination ${i + 1}</strong><span>${chipColor(r.color).name}</span></div></div>
+            <div class="mix-chip">${chipSymbol(r)}<strong>${chipColor(r.color).name}</strong></div>
             ${ib(`Remove denomination ${i + 1}`, 'remove-chip', 'trash', `data-id="${r.id}"`)}
           </div>
           <div class="field-pair">
@@ -1336,10 +1457,7 @@ function renderChipsScreen(g) {
       ${b('Add denomination', 'add-chip', 'full', '', 'plus')}
     </div>
     <footer class="dock">
-      <p>Return to preview revalidates the whole plan.</p>
-      <div class="actions">
-        ${b('Return to preview', 'preview', 'primary', 'id="step-action"', 'arrow')}
-      </div>
+      <div class="actions">${b('Return to preview', 'preview', 'primary', 'id="step-action"', 'arrow')}</div>
     </footer>
   `;
 }
@@ -1348,7 +1466,6 @@ function renderSettingsScreen(g) {
   const autoReserve = Math.ceil(g.names.length / 2);
   return `
     ${header('Game settings', g, 'preview')}
-    ${notice('Approved #33 all-visible settings. Edits preserve your requested depth unless you change it directly, and revalidate any alternative-depth acceptance.')}
     <section class="card">
       <div class="field-pair">
         <label class="field" for="set-mode">
@@ -1367,38 +1484,30 @@ function renderSettingsScreen(g) {
         <label class="field" for="set-depth">
           <span class="field-title">Starting stack (BB)</span>
           <span class="input-wrap"><input id="set-depth" type="text" inputmode="numeric" data-setting="depth" value="${esc(g.fields.depth)}"></span>
-          <span class="hint">100 BB recommended</span>
         </label>
         <label class="field" for="set-coverage">
-          <span class="field-title">Blind-payment coverage</span>
+          <span class="field-title">Blind coverage (pairs)</span>
           <span class="input-wrap"><input id="set-coverage" type="text" inputmode="numeric" data-setting="coverage" value="${esc(g.fields.coverage)}"></span>
-          <span class="hint">Payments of each blind (default 4)</span>
         </label>
       </div>
       <label class="field" for="set-reserve">
-        <span class="field-title">Chip reserve (qualifying stacks)</span>
+        <span class="field-title">Chip reserve (stacks)</span>
         <span class="input-wrap"><input id="set-reserve" type="text" inputmode="numeric" data-setting="reserve" value="${esc(g.fields.reserve)}"></span>
-        <span class="hint">${g.fields.reserveCustom ? `Custom override (${g.fields.reserve} stacks)` : `Automatic default: ceil(${g.names.length} ÷ 2) = ${autoReserve} stacks`}</span>
+        <span class="hint">${g.fields.reserveCustom ? `Custom (${g.fields.reserve})` : `Automatic (${autoReserve})`}</span>
       </label>
       ${g.fields.reserveCustom ? b(`Use automatic (${autoReserve})`, 'auto-reserve', 'quiet') : ''}
-      <fieldset style="border:0;padding:0;margin:16px 0 0">
+      <fieldset style="border:0;padding:0;margin:14px 0 0">
         <legend class="field-title">Distribution preference</legend>
         ${['Fewer chips', 'More chips'].map(pref => `
           <label class="choice">
             <input type="radio" name="preference" value="${pref}" ${g.fields.preference === pref ? 'checked' : ''}>
-            <span>
-              <strong>${pref}</strong>
-              <small>${pref === 'Fewer chips' ? 'Minimize initial physical chips handed out.' : 'Maximize initial physical chips handed out.'}</small>
-            </span>
+            <span><strong>${pref}</strong></span>
           </label>
         `).join('')}
       </fieldset>
     </section>
     <footer class="dock">
-      <p>Return to preview revalidates the whole plan.</p>
-      <div class="actions">
-        ${b('Return to preview', 'preview', 'primary', 'id="step-action"', 'arrow')}
-      </div>
+      <div class="actions">${b('Return to preview', 'preview', 'primary', 'id="step-action"', 'arrow')}</div>
     </footer>
   `;
 }
@@ -1406,13 +1515,11 @@ function renderSettingsScreen(g) {
 function renderPayoutsScreen(g) {
   return `
     ${header('Payout schedule', g, 'preview')}
-    ${notice('Handoff boundary to #39 (Design tournament payout setup and starting). Toggle valid vs invalid schedule below to test whole-plan validation in Distribution preview.')}
     <section class="card">
-      <h3>Selected schedule: ${esc(g.payoutSchedule)}</h3>
-      <p class="small">Status: <strong>${g.payoutValid ? 'Valid (sums to 100%, 3 paid places ≤ 6 players)' : 'Invalid (' + esc(g.payoutReason) + ')'}</strong></p>
+      <h3>${esc(g.payoutSchedule)}</h3>
       <div class="stack" style="margin-top:12px">
-        ${b('Use valid Top 3 schedule (50 / 30 / 20)', 'payout-valid', g.payoutValid ? 'primary' : '')}
-        ${b('Simulate invalid schedule (Top 4 after dropping to 3 players)', 'payout-invalid', !g.payoutValid ? 'danger' : '')}
+        ${b('Valid Top 3 (50 / 30 / 20)', 'payout-valid', g.payoutValid ? 'primary' : '')}
+        ${b('Invalid Top 4 (too many places)', 'payout-invalid', !g.payoutValid ? 'danger' : '')}
       </div>
     </section>
     <footer class="dock">
@@ -1425,23 +1532,18 @@ function renderStartedPlayScreen(g) {
   const snap = g.startedSnapshot;
   return `
     ${header('Play', g, 'games')}
-    ${notice(`Game started at ${snap.startedAt}. Initial stacks (${snap.issuedChips} chips) and ${g.names.length} initial buy-ins are now recorded, and setup is locked. Detailed in-progress Play controls belong to #36.`, 'ok', 'In progress · Initial distribution recorded')}
+    ${notice(`Initial stacks (${snap.issuedChips} chips) recorded and setup locked.`, 'ok', 'In progress')}
     <section class="card">
-      <div class="row-heading">
-        <h3>Recorded initial terms (locked)</h3>
-        <span class="badge ok">${icon('lock')} Locked</span>
-      </div>
       <dl class="facts">
-        <div><dt>Accepted depth &amp; blinds</dt><dd>${snap.acceptedDepth} BB${snap.acceptedDepth !== snap.requestedDepth ? ` (accepted from requested ${snap.requestedDepth} BB)` : ''} · ${snap.sb} / ${snap.bb} chip units</dd></div>
-        <div><dt>Initial stack issued per player</dt><dd>${snap.stackUnits.toLocaleString('en')} chip units (${snap.perPlayerChips} chips each)</dd></div>
+        <div><dt>Starting stack</dt><dd>${snap.stackUnits.toLocaleString('en')} units (${snap.acceptedDepth} BB)</dd></div>
+        <div><dt>Blinds</dt><dd>${snap.sb} / ${snap.bb} chip units</dd></div>
         ${g.mode === 'cash'
-          ? `<div><dt>Fixed cash-game rate</dt><dd>${esc(snap.rateLabel)} per chip unit · ${DistributionStudy.formatEurCents(snap.buyinCents)} buy-in</dd></div>`
-          : `<div><dt>Locked tournament terms</dt><dd>${DistributionStudy.formatEurCents(snap.buyinCents * g.names.length)} prize pool · ${esc(g.payoutSchedule)}</dd></div>`}
-        <div><dt>Current unissued bank</dt><dd>${snap.initialMix.map(r => `${r.bankRem} × ${r.numVal} (${chipColor(r.color).name})`).join(' · ')}</dd></div>
-        <div><dt>Shared reserve target</dt><dd>${snap.reserveRemaining} of ${snap.reserveTarget} qualifying stacks remaining</dd></div>
+          ? `<div><dt>Fixed rate</dt><dd>${esc(snap.rateLabel)} / unit · ${DistributionStudy.formatEurCents(snap.buyinCents)} buy-in</dd></div>`
+          : `<div><dt>Prize pool</dt><dd>${DistributionStudy.formatEurCents(snap.buyinCents * g.names.length)}</dd></div>`}
+        <div><dt>Reserve target</dt><dd>${snap.reserveRemaining} of ${snap.reserveTarget} stacks remaining</dd></div>
       </dl>
-      <div class="actions" style="margin-top:16px">
-        ${b('Inspect locked Game details', 'go-details', 'primary full', '', 'lock')}
+      <div class="actions" style="margin-top:14px">
+        ${b('Locked Game details', 'go-details', 'primary full', '', 'lock')}
       </div>
     </section>
   `;
@@ -1451,22 +1553,17 @@ function renderStartedDetailsScreen(g) {
   const snap = g.startedSnapshot;
   return `
     ${header('Game details', g, 'go-play')}
-    <p class="badge ok">${icon('lock')} Setup locked while In progress</p>
-    ${notice('Mode, initial participants and buy-ins, chip set, blinds, accepted stack depth, fixed cash-game rate, and reserve target are locked even when no post-Start events have been recorded yet.')}
+    <p class="badge ok">${icon('lock')} Setup locked</p>
     <section class="card">
-      <h3>Recorded initial stack mix (${g.names.length} players)</h3>
-      <div class="mix-list">
+      <h3>Recorded initial stack (${snap.stackUnits.toLocaleString('en')} units)</h3>
+      <div class="bank-strip">
         ${snap.initialMix.filter(r => r.perPlayer > 0).map(r => `
-          <div class="mix-row">
-            <div class="mix-chip">${chipSymbol(r)}<div><strong>${r.numVal} ${unitLabel(r.numVal)} (${chipColor(r.color).name})</strong><span>${r.perPlayer} per player · ${r.issuedTotal} issued initially</span></div></div>
-            <div class="mix-counts"><strong>${r.bankRem} in bank</strong><small>of ${r.numQty} owned</small></div>
-          </div>
+          <span class="bank-pill">${chipSymbol(r)}<strong>×${r.perPlayer}</strong><span class="small">(${r.numVal})</span></span>
         `).join('')}
       </div>
     </section>
     <section class="card">
-      <h3>Want to change setup or redistribute chips?</h3>
-      <p class="small">Locked setup cannot be edited in place. Use <strong>Return to Planning</strong> in the game-actions menu to clear recorded play and initial issuances, keep your current roster and setup settings, and recalculate a fresh preview. You must physically gather and redistribute the chips.</p>
+      <p class="small">To change setup, use <strong>Return to Planning</strong>. It clears recorded play and initial issuances, preserves the roster and settings, and requires physically gathering and redistributing chips.</p>
       <div class="actions">
         ${b('Return to Planning…', 'open-reset', 'danger full', '', 'lock')}
         ${b('Back to Play', 'go-play', 'full', '', 'back')}
@@ -1478,12 +1575,11 @@ function renderStartedDetailsScreen(g) {
 function renderGamesScreen(g) {
   return `
     ${header('Games', g, 'games')}
-    <p class="small">Select this game to open its phase-specific workspace (${g.phase === 'Planning' ? 'Distribution preview' : 'Play'}).</p>
     <button type="button" data-action="resume-game" class="card full" style="text-align:left">
       <span class="badge">${modeLabel(g)}</span>
       <span class="badge ${g.phase === 'In progress' ? 'ok' : 'info'}">${esc(g.phase)}</span>
       <strong style="display:block;font-size:1.15em;margin:8px 0">${esc(g.names.join(', '))}</strong>
-      <span class="small">${esc(g.created)} · Tap to open ${g.phase === 'Planning' ? 'saved setup step (Distribution preview)' : 'Play workspace'} →</span>
+      <span class="small">Open ${g.phase === 'Planning' ? 'Distribution preview' : 'Play'} →</span>
     </button>
   `;
 }
@@ -1499,18 +1595,14 @@ function renderDialog() {
   let html = '';
   if (m.type === 'confirm-start') {
     const p = m.plan;
-    const isAlt = m.isAlt;
     html = `
       <h2 id="dialog-title">Start ${g.mode === 'cash' ? 'cash game' : 'tournament'}?</h2>
-      <p id="dialog-description">Starting records the initial chip distribution for all ${p.N} players and locks setup. Make sure you are ready to hand out the physical starting stacks.</p>
-      <dl class="facts" style="margin:14px 0">
-        <div><dt>Players &amp; buy-in</dt><dd>${p.N} players × ${DistributionStudy.formatEurCents(p.buyinCents)}</dd></div>
-        <div><dt>Starting stack each</dt><dd>${p.stackUnits.toLocaleString('en')} chip units (${p.depth} BB${isAlt ? `, accepted from ${m.requestedDepth} BB` : ''})</dd></div>
-        <div><dt>Blinds (SB / BB)</dt><dd>${p.sb} / ${p.bb} chip units${p.exactHalf ? '' : ' (rounded SB)'}</dd></div>
-        ${g.mode === 'cash'
-          ? `<div><dt>Fixed cash-game rate</dt><dd>${DistributionStudy.formatRate(p.buyinCents, p.stackUnits)} / chip unit</dd></div>`
-          : `<div><dt>Prize pool</dt><dd>${DistributionStudy.formatEurCents(p.buyinCents * p.N)} (chips have no EUR value)</dd></div>`}
-        <div><dt>Bank &amp; reserve</dt><dd>${p.bankChips} chips in bank · ${p.R} reserved stack${p.R === 1 ? '' : 's'}</dd></div>
+      <p id="dialog-description">Records initial stacks for ${p.N} players and locks setup.</p>
+      <dl class="facts" style="margin:12px 0">
+        <div><dt>Each starting stack</dt><dd>${p.stackUnits.toLocaleString('en')} units (${p.depth} BB)</dd></div>
+        <div><dt>Blinds</dt><dd>${p.sb} / ${p.bb} chip units</dd></div>
+        <div><dt>Buy-in</dt><dd>${DistributionStudy.formatEurCents(p.buyinCents)} × ${p.N}</dd></div>
+        <div><dt>Reserve</dt><dd>${p.R} stack${p.R === 1 ? '' : 's'}</dd></div>
       </dl>
       <div class="actions">
         ${b('Cancel', 'cancel-modal')}
@@ -1519,35 +1611,32 @@ function renderDialog() {
     `;
   } else if (m.type === 'blocked-start') {
     html = `
-      <h2 id="dialog-title">Cannot start game yet</h2>
+      <h2 id="dialog-title">Cannot start yet</h2>
       <p id="dialog-description">${esc(m.reason)}</p>
-      <div class="actions">
-        ${b('Close', 'cancel-modal', 'primary')}
-      </div>
+      <div class="actions">${b('Close', 'cancel-modal', 'primary')}</div>
     `;
   } else if (m.type === 'steps') {
     const blockers = DistributionStudy.validateSetup(g);
     const stepStatus = step => {
       const bItem = blockers.find(x => x.step === step);
-      return bItem ? `Needs attention · ${bItem.title}` : 'Complete inputs';
+      return bItem ? `Needs attention · ${bItem.title}` : 'Complete';
     };
     html = `
       <h2 id="dialog-title">Setup steps</h2>
-      <p id="dialog-description">Select any step to inspect or edit it. Editing from Distribution preview uses Return to preview and revalidates the whole plan.</p>
       ${['players', 'chips', 'settings', ...(g.mode === 'tournament' ? ['payouts'] : []), 'preview'].map(st => `
         <button type="button" class="step-link" data-action="step-jump" data-step="${st}">
           <strong>${esc({players:'1. Players', chips:'2. Chip set', settings:'3. Game settings', payouts:'4. Payout schedule', preview:(g.mode === 'cash' ? '4' : '5') + '. Distribution preview'}[st])}</strong>
-          <small>${esc(st === 'preview' ? 'Current step · whole-plan check & Start' : stepStatus(st))}</small>
+          <small>${esc(st === 'preview' ? 'Current step' : stepStatus(st))}</small>
         </button>
       `).join('')}
       <div class="actions" style="margin-top:12px">${b('Close', 'cancel-modal')}</div>
     `;
-  } else if (m.type === 'game-menu' || m.type === 'reset') {
+  } else if (m.type === 'game-menu') {
     html = `
-      <h2 id="dialog-title">${g.phase === 'In progress' ? 'Return to Planning?' : 'Game lifecycle actions'}</h2>
+      <h2 id="dialog-title">${g.phase === 'In progress' ? 'Return to Planning?' : 'Game actions'}</h2>
       <p id="dialog-description">${g.phase === 'In progress'
-        ? 'Returning to Planning clears all recorded post-Start play, results, and initial chip issuances, restores all physical chips to unissued inventory, preserves the current roster and setup settings, and recalculates a fresh preview. You must physically gather and redistribute the chips.'
-        : 'While in Planning, no chips have been issued yet. You can edit any setup step freely or return to Games.'}</p>
+        ? 'Clears recorded play and initial issuances, preserves the roster and settings, and recalculates a fresh preview. Gather and redistribute physical chips.'
+        : 'No chips have been issued yet while in Planning.'}</p>
       <div class="actions">
         ${b('Cancel', 'cancel-modal')}
         ${g.phase === 'In progress' ? b('Return to Planning', 'confirm-reset', 'danger') : ''}
@@ -1569,22 +1658,14 @@ function renderInspector() {
     <details open>
       <summary>Live state inspector · review only</summary>
       <dl>
-        <dt>Active screen &amp; layout variant</dt>
+        <dt>Active screen &amp; visual design</dt>
         <dd>${esc(state.page)} · variant=<code>${esc(variant)}</code></dd>
-        <dt>Game lifecycle phase &amp; mode</dt>
-        <dd><strong>${esc(g.phase)}</strong> · ${modeLabel(g)}</dd>
-        <dt>Chips issued in app records</dt>
-        <dd>${g.phase === 'In progress' && g.startedSnapshot
-          ? `Yes — ${g.startedSnapshot.issuedChips} chips issued across ${g.names.length} players; ${g.startedSnapshot.initialMix.reduce((a, r) => a + r.bankRem, 0)} in bank`
-          : '<strong>0 chips issued</strong> (Planning preview only)'}</dd>
+        <dt>Phase &amp; issued status</dt>
+        <dd><strong>${esc(g.phase)}</strong> · ${g.phase === 'In progress' ? 'Initial stacks recorded & locked' : '0 chips issued (preview only)'}</dd>
         <dt>Requested vs. accepted depth</dt>
-        <dd>Requested: <code>${esc(g.fields.depth)} BB</code> · Accepted alternative: <code>${g.acceptedAltDepth !== null ? g.acceptedAltDepth + ' BB' : 'None'}</code></dd>
-        <dt>Reserve configuration</dt>
-        <dd><code>${esc(g.fields.reserve)}</code> stacks (${g.fields.reserveCustom ? 'Custom override' : `Automatic ceil(${g.names.length}/2)`})</dd>
-        <dt>Evaluation outcome</dt>
-        <dd><code>${esc(evalRes.status)}</code>${p ? ` · ${p.depth} BB · SB/BB ${p.sb}/${p.bb} · T=${p.stackUnits}u · ${p.perPlayerChips} chips/player` : ''}</dd>
-        ${p ? `<dt>Common initial stack mix</dt><dd>${p.sortedRows.map((r, i) => `${p.mix[i]} × ${r.numVal} (${chipColor(r.color).name})`).join(' / ')}</dd>
-               <dt>Unissued bank preview</dt><dd>${p.sortedRows.map((r, i) => `${p.bankRem[i]} × ${r.numVal} (${chipColor(r.color).name})`).join(' / ')}</dd>` : ''}
+        <dd>Requested: <code>${esc(g.fields.depth)} BB</code> · Accepted: <code>${g.acceptedAltDepth !== null ? g.acceptedAltDepth + ' BB' : 'None'}</code></dd>
+        <dt>Evaluation</dt>
+        <dd><code>${esc(evalRes.status)}</code>${p ? ` · ${p.stackUnits} units · SB/BB ${p.sb}/${p.bb} · mix: ${p.sortedRows.map((r, i) => `×${p.mix[i]}(${r.numVal})`).join(' ')}` : ''}</dd>
       </dl>
     </details>
   `;
@@ -1628,12 +1709,21 @@ document.addEventListener('click', e => {
   const g = state.game;
   state.message = '';
 
+  if (action === 'stack-scope') {
+    g.stackScope = btn.dataset.scope;
+    render();
+    return;
+  }
+  if (action === 'rack-tab') {
+    g.rackTab = btn.dataset.tab;
+    render();
+    return;
+  }
   if (action === 'accept-alt') {
     const evalRes = DistributionStudy.evaluateDistribution(g);
     if (evalRes.status === 'feasible-alternative') {
       g.acceptedAltDepth = evalRes.plan.depth;
       g.declinedAltDepth = null;
-      state.message = `Accepted ${evalRes.plan.depth} BB alternative depth (requested ${evalRes.requestedDepth} BB preserved). Start is now available.`;
       render('step-action');
     }
     return;
@@ -1642,7 +1732,6 @@ document.addEventListener('click', e => {
     const evalRes = DistributionStudy.evaluateDistribution(g);
     g.acceptedAltDepth = null;
     g.declinedAltDepth = evalRes.plan?.depth || null;
-    state.message = 'Alternative depth is not accepted. No chips were issued and Start remains blocked.';
     render('accept-alt-btn');
     return;
   }
@@ -1651,8 +1740,7 @@ document.addEventListener('click', e => {
     const canStart = evalRes.status === 'feasible-exact' || (evalRes.status === 'feasible-alternative' && g.acceptedAltDepth === evalRes.plan.depth);
     dialogTrigger = btn;
     if (!canStart) {
-      const reason = $('#start-status')?.textContent || 'Complete setup and accept any alternative depth before starting.';
-      state.modal = {type:'blocked-start', reason};
+      state.modal = {type:'blocked-start', reason:$('#start-status')?.textContent || 'Complete setup and accept any alternative depth first.'};
     } else {
       state.modal = {type:'confirm-start', plan:evalRes.plan, isAlt:evalRes.status === 'feasible-alternative', requestedDepth:evalRes.requestedDepth};
     }
@@ -1676,7 +1764,6 @@ document.addEventListener('click', e => {
         issuedChips:p.issuedChips,
         buyinCents:p.buyinCents,
         rateLabel:DistributionStudy.formatRate(p.buyinCents, p.stackUnits),
-        bbMoneyLabel:DistributionStudy.formatEurCents(Math.round(p.buyinCents / p.depth)),
         reserveTarget:p.R,
         reserveRemaining:p.R,
         initialMix:p.sortedRows.map((r, i) => ({...r, perPlayer:p.mix[i], issuedTotal:p.N * p.mix[i], bankRem:p.bankRem[i]}))
@@ -1694,7 +1781,6 @@ document.addEventListener('click', e => {
     if (!g.fields.reserveCustom) g.fields.reserve = String(Math.ceil(g.names.length / 2));
     state.modal = null;
     state.page = 'preview';
-    state.message = 'Returned to Planning: cleared recorded issuances, restored full chip set as unissued inventory, and recomputed a fresh preview.';
     render('heading');
     return;
   }
@@ -1704,24 +1790,9 @@ document.addEventListener('click', e => {
     dialogTrigger?.focus();
     return;
   }
-  if (action === 'steps') {
-    dialogTrigger = btn;
-    state.modal = {type:'steps'};
-    render();
-    return;
-  }
-  if (action === 'step-jump') {
-    state.modal = null;
-    state.page = btn.dataset.step;
-    render('heading');
-    return;
-  }
-  if (action === 'game-menu' || action === 'open-reset') {
-    dialogTrigger = btn;
-    state.modal = {type:'game-menu'};
-    render();
-    return;
-  }
+  if (action === 'steps') { dialogTrigger = btn; state.modal = {type:'steps'}; render(); return; }
+  if (action === 'step-jump') { state.modal = null; state.page = btn.dataset.step; render('heading'); return; }
+  if (action === 'game-menu' || action === 'open-reset') { dialogTrigger = btn; state.modal = {type:'game-menu'}; render(); return; }
   if (action === 'go-players') { state.page = 'players'; render('heading'); return; }
   if (action === 'go-chips') { state.page = 'chips'; render('heading'); return; }
   if (action === 'go-settings' || action === 'prev-step') { state.page = g.mode === 'tournament' && action === 'prev-step' ? 'payouts' : 'settings'; render('heading'); return; }
@@ -1733,16 +1804,14 @@ document.addEventListener('click', e => {
   if (action === 'resume-game') { state.page = g.phase === 'In progress' ? 'play' : 'preview'; render('heading'); return; }
   if (action === 'add-player') {
     const pool = ['Chris', 'Robin', 'Taylor', 'Jamie', 'Morgan', 'Casey', 'Jordan', 'Riley'];
-    const nextName = pool.find(n => !g.names.includes(n)) || `Player ${g.names.length + 1}`;
-    g.names.push(nextName);
+    g.names.push(pool.find(n => !g.names.includes(n)) || `Player ${g.names.length + 1}`);
     if (!g.fields.reserveCustom) g.fields.reserve = String(Math.ceil(g.names.length / 2));
     invalidateAcceptanceOnEdit(g);
     render();
     return;
   }
   if (action === 'remove-player') {
-    const idx = Number(btn.dataset.index);
-    g.names.splice(idx, 1);
+    g.names.splice(Number(btn.dataset.index), 1);
     if (!g.fields.reserveCustom) g.fields.reserve = String(Math.ceil(Math.max(1, g.names.length) / 2));
     invalidateAcceptanceOnEdit(g);
     render();
@@ -1767,20 +1836,8 @@ document.addEventListener('click', e => {
     render();
     return;
   }
-  if (action === 'payout-valid') {
-    g.payoutValid = true;
-    g.payoutSchedule = '50% / 30% / 20% (Top 3)';
-    g.payoutReason = '';
-    render();
-    return;
-  }
-  if (action === 'payout-invalid') {
-    g.payoutValid = false;
-    g.payoutSchedule = '50% / 25% / 15% / 10% (Top 4)';
-    g.payoutReason = '4 paid places exceed the 3 players in the roster. Reduce paid places or add players.';
-    render();
-    return;
-  }
+  if (action === 'payout-valid') { g.payoutValid = true; g.payoutSchedule = '50% / 30% / 20% (Top 3)'; g.payoutReason = ''; render(); return; }
+  if (action === 'payout-invalid') { g.payoutValid = false; g.payoutSchedule = '50% / 25% / 15% / 10% (Top 4)'; g.payoutReason = '4 paid places exceed 3 players.'; render(); return; }
 });
 
 document.addEventListener('input', e => {
@@ -1795,9 +1852,8 @@ document.addEventListener('input', e => {
     }
   } else if (input.dataset.setting) {
     const field = input.dataset.setting;
-    if (field === 'mode') {
-      g.mode = input.value;
-    } else {
+    if (field === 'mode') g.mode = input.value;
+    else {
       g.fields[field] = input.value;
       if (field === 'reserve') g.fields.reserveCustom = true;
     }
@@ -1820,12 +1876,7 @@ document.addEventListener('change', e => {
 });
 
 window.addEventListener('resize', fitAllCases);
-$('#dialog').addEventListener('cancel', e => {
-  e.preventDefault();
-  state.modal = null;
-  render();
-  dialogTrigger?.focus();
-});
+$('#dialog').addEventListener('cancel', e => { e.preventDefault(); state.modal = null; render(); dialogTrigger?.focus(); });
 
 function setVariant(nextVar) {
   variant = nextVar;
@@ -1851,7 +1902,7 @@ document.querySelectorAll('[data-preset]').forEach(btn => {
     const p = btn.dataset.preset;
     if (p === 'restart') {
       state.modal = null;
-      state.message = 'Simulated restart: saved setup inputs, requested depth, and accepted state restored without issuing chips.';
+      state.message = 'Simulated restart: setup and preview state restored.';
       render('heading');
       return;
     }
@@ -1865,35 +1916,31 @@ document.querySelectorAll('[data-preset]').forEach(btn => {
 
 const scenarios = {
   feasible:{
-    label:'1. Feasible & Start',
-    description:'Review an exact 100 BB distribution, switch between More/Fewer chips, then explicitly confirm Start game to record initial stacks and lock setup.',
+    label:'1. Visual stack & Start',
+    description:'Compare 1-player vs All-N-players counts on the visual stack, switch between Fewer/More chips, and confirm Start.',
     steps:[
-      ['Load 6-player cash game at 100 BB (reserve 3)', () => { state = DistributionStudy.makePreset('feasible'); render('heading'); }],
-      ['Switch preference to More chips in Game settings and return', () => { state.game.fields.preference = 'More chips'; state.message = 'Preference changed to More chips: initial stacks now use more small chips while keeping 200 chip units.'; render('heading'); }],
-      ['Open Start cash game confirmation dialog (still unissued)', () => { document.querySelector('[data-action="start-game"]')?.click(); }],
-      ['Cancel confirmation: game stays in Planning with 0 chips issued', () => { document.querySelector('[data-action="cancel-modal"]')?.click(); }],
-      ['Confirm Start cash game: records initial stacks and enters locked In progress', () => { document.querySelector('[data-action="start-game"]')?.click(); document.querySelector('[data-action="confirm-start"]')?.click(); }],
-      ['Inspect locked Game details and Return to Planning route', () => { state.page = 'details'; render('heading'); }]
+      ['Show 1-player starting stack (200 chip units: ×15, ×2, ×3, ×1)', () => { state = DistributionStudy.makePreset('feasible'); render('heading'); }],
+      ['Toggle to All 6 players pull counts (1,200 chip units)', () => { state.game.stackScope = 'all'; render(); }],
+      ['Switch preference to More chips (×15, ×12, ×5)', () => { state.game.stackScope = 'one'; state.game.fields.preference = 'More chips'; render(); }],
+      ['Confirm Start cash game → enters locked In progress', () => { document.querySelector('[data-action="start-game"]')?.click(); document.querySelector('[data-action="confirm-start"]')?.click(); }]
     ]
   },
   alt:{
     label:'2. Alternative depth (98 BB)',
-    description:'When requested 100 BB is infeasible, the nearest feasible depth (98 BB) is offered for explicit acceptance. Editing setup preserves 100 BB and clears stale acceptance.',
+    description:'Offer nearest feasible depth (98 BB) when 100 BB is impossible; require explicit acceptance before Start.',
     steps:[
-      ['Load 100 BB request where nearest feasible depth is 98 BB', () => { state = DistributionStudy.makePreset('alt-98'); render('heading'); }],
-      ['Try Start game before accepting: blocked with explanation', () => { document.querySelector('[data-action="start-game"]')?.click(); }],
-      ['Close blocker and explicitly Accept 98 BB', () => { state.modal = null; document.querySelector('[data-action="accept-alt"]')?.click(); }],
-      ['Edit chip set (+20 blue 25-unit chips): preserves requested 100 BB and revalidates to exact 100 BB!', () => { state.game.rows[2].quantity = '64'; state.game.acceptedAltDepth = null; state.message = 'Edited chip set: requested 100 BB was preserved and is now directly feasible!'; render('heading'); }]
+      ['Load 98 BB alternative proposal (Start is blocked)', () => { state = DistributionStudy.makePreset('alt-98'); render('heading'); }],
+      ['Accept 98 BB → unlocks Start', () => { document.querySelector('[data-action="accept-alt"]')?.click(); }],
+      ['Edit chip set (+20 blue 25s) → restores exact 100 BB', () => { state.game.rows[2].quantity = '83'; state.game.acceptedAltDepth = null; render('heading'); }]
     ]
   },
   shortfalls:{
-    label:'3. No valid distribution & recovery',
-    description:'Compare the four distinct physical infeasibility reasons and use direct step-correction routes with Return to preview.',
+    label:'3. Infeasibility & recovery',
+    description:'Test simultaneous-reserve failure, coverage shortage, and explicit zero reserve.',
     steps:[
-      ['Show Simultaneous reserve failure (initial works alone, reserve fails)', () => { state = DistributionStudy.makePreset('fail-reserve'); render('heading'); }],
-      ['Edit Game settings to 0 reserve (explicit zero reserve) and Return to preview', () => { state.game.fields.reserve = '0'; state.game.fields.reserveCustom = true; state.message = 'Set reserve to 0 stacks: exact 20 BB distribution is now feasible.'; render('heading'); }],
-      ['Show Scarce blind-paying chips failure (coverage k=4 unmet)', () => { state = DistributionStudy.makePreset('fail-coverage'); render('heading'); }],
-      ['Show Tournament preview (same layout, no chip-to-money rate)', () => { state = DistributionStudy.makePreset('tournament'); render('heading'); }]
+      ['Simultaneous reserve failure', () => { state = DistributionStudy.makePreset('fail-reserve'); render('heading'); }],
+      ['Set reserve to 0 → unlocks exact 20 BB', () => { state.game.fields.reserve = '0'; state.game.fields.reserveCustom = true; render('heading'); }],
+      ['Scarce blind-paying chips failure', () => { state = DistributionStudy.makePreset('fail-coverage'); render('heading'); }]
     ]
   }
 };
@@ -1903,8 +1950,8 @@ function renderWalkthrough() {
   tabs.innerHTML = Object.entries(scenarios).map(([id, sc]) => `<button type="button" role="tab" aria-selected="${id === activeScenario}" data-scenario="${id}">${esc(sc.label)}</button>`).join('');
   const sc = scenarios[activeScenario];
   $('#walkthrough').innerHTML = `<p>${esc(sc.description)}</p><div class="walk-buttons">${sc.steps.map(([label], idx) => `<button type="button" data-walk-idx="${idx}">${idx + 1}. ${esc(label)}</button>`).join('')}</div>`;
-  tabs.querySelectorAll('[data-scenario]').forEach(b => b.addEventListener('click', () => { activeScenario = b.dataset.scenario; walkStep = 0; renderWalkthrough(); }));
-  $('#walkthrough').querySelectorAll('[data-walk-idx]').forEach(b => b.addEventListener('click', () => { const idx = Number(b.dataset.walkIdx); sc.steps[idx][1](); }));
+  tabs.querySelectorAll('[data-scenario]').forEach(b => b.addEventListener('click', () => { activeScenario = b.dataset.scenario; renderWalkthrough(); }));
+  $('#walkthrough').querySelectorAll('[data-walk-idx]').forEach(b => b.addEventListener('click', () => { sc.steps[Number(b.dataset.walkIdx)][1](); }));
 }
 
 renderWalkthrough();
