@@ -348,6 +348,45 @@
     color: #b3c0ca;
     margin-top: 2px;
   }
+  .metric-tile.adjusted {
+    border-color: var(--warn);
+    background: linear-gradient(180deg, #2d2312 0%, #1c1b18 100%);
+    box-shadow: inset 0 0 0 1px #e2b85744;
+  }
+  .metric-tile.adjusted dt {
+    color: var(--warn);
+    display: flex;
+    align-items: center;
+    gap: 4px;
+  }
+  .diff-old {
+    color: #9baab6;
+    text-decoration: line-through;
+    font-weight: 500;
+    margin-right: 2px;
+  }
+  .diff-val {
+    color: var(--warn) !important;
+    font-weight: 700;
+  }
+  .hero-diff-pill {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    margin-top: 5px;
+    padding: 3px 9px;
+    border-radius: 100px;
+    border: 1px solid var(--warn);
+    background: #362912;
+    color: var(--warn);
+    font-size: .74em;
+    font-weight: 700;
+    font-variant-numeric: tabular-nums;
+  }
+  .hero-diff-pill s {
+    color: #d0c3a4;
+    font-weight: 500;
+  }
 
   /* Compact Bank chip strip */
   .bank-strip {
@@ -490,9 +529,9 @@
 <div class="workshop">
   <header>
     <p class="eyebrow">Throwaway interaction study · #35 · Current / Lavender</p>
-    <p class="revision" id="review-revision">Review v4 · 3D Chip Towers + Notice-Only Alternative Depth &amp; Reserve</p>
+    <p class="revision" id="review-revision">Review v5 · 3D Chip Towers + Inline Strikethrough Adjustment Diffs</p>
     <h1>One glance: total units and how many of each chip.</h1>
-    <p class="intro">Selected <strong>A · 3D Chip Towers</strong> for 1 starting stack. Alternative stack depth (e.g. 98 BB) and reduced reserve capacity (e.g. 1 of 3 stacks) show a clear notice with <strong>Edit setup</strong> while leaving <strong>Start game</strong> directly available.</p>
+    <p class="intro">Selected <strong>A · 3D Chip Towers</strong> for 1 starting stack. Alternative stack depth (<code>100 BB → 98 BB</code>) and reduced reserve (<code>3 → 1 stack</code>) highlight directly on the metrics with zero blocking banners or extra Edit buttons.</p>
     <details class="review">
       <summary>Review controls, state presets &amp; guided walkthroughs</summary>
       <p>Switch states below or edit players, chip quantities, or settings directly inside the prototype. All state is in memory; reload resets fixtures.</p>
@@ -1202,32 +1241,9 @@ function header(title, g, back = 'games') {
   return `<div class="topline">${b(back === 'games' ? 'Games' : 'Back', back, 'quiet', '', back === 'games' ? 'home' : 'back')}${ib('Game actions and lifecycle menu', 'game-menu', 'more')}</div><p class="context"><span class="badge">${modeLabel(g)}</span><span class="badge ${g.phase === 'In progress' ? 'ok' : 'info'}">${esc(g.phase)}</span><span class="badge">${g.names.length} players</span></p><h2 tabindex="-1">${esc(title)}</h2>`;
 }
 
-function renderAlternativeBanner(evalRes, g) {
-  if (evalRes.status !== 'feasible-alternative' && evalRes.status !== 'feasible-reduced-reserve') return '';
-  const p = evalRes.plan;
-  const req = evalRes.requestedDepth;
-  const isReducedReserve = evalRes.status === 'feasible-reduced-reserve';
-  const badgeText = isReducedReserve
-    ? `Reserve: ${p.achievableR} of ${p.R} stacks possible`
-    : `Closest depth: ${p.depth} BB (requested ${req} BB)`;
-  const headingText = isReducedReserve
-    ? `Only ${p.achievableR} of ${p.R} reserve stacks possible`
-    : `Using ${p.depth} BB instead of ${req} BB`;
-
-  return `<section class="card proposal" aria-label="Distribution adjustment notice">
-    <div class="row-heading">
-      <span class="badge warn">${icon('alert')} ${esc(badgeText)}</span>
-    </div>
-    <h3>${esc(headingText)}</h3>
-    <p class="small">${esc(evalRes.whyRequestedFailed)}</p>
-    <div class="actions">
-      ${b('Edit chip set', 'go-chips', '', '', 'edit')}
-      ${b('Edit settings', 'go-settings', '', '', 'edit')}
-    </div>
-  </section>`;
-}
-
-function renderVisualStackShowcase(p, g) {
+function renderVisualStackShowcase(p, g, evalRes) {
+  const isAltDepth = evalRes && evalRes.status === 'feasible-alternative';
+  const reqDepth = evalRes ? evalRes.requestedDepth : p.depth;
   const activeMixRows = p.sortedRows.map((r, i) => ({
     ...r,
     perPlayer: p.mix[i],
@@ -1291,7 +1307,10 @@ function renderVisualStackShowcase(p, g) {
   return `
     <section class="stack-showcase" aria-label="Starting stack overview">
       <div class="stack-hero-bar">
-        <span class="stack-hero-label">1 starting stack</span>
+        <div>
+          <span class="stack-hero-label">1 starting stack</span>
+          ${isAltDepth ? `<div class="hero-diff-pill" aria-label="Adjusted depth ${p.depth} BB from requested ${reqDepth} BB">${icon('alert')} <s>${reqDepth} BB</s> → ${p.depth} BB</div>` : ''}
+        </div>
         <div class="stack-hero-units">${p.stackUnits.toLocaleString('en')}<small>chip units</small></div>
       </div>
       ${visualCenter}
@@ -1301,39 +1320,53 @@ function renderVisualStackShowcase(p, g) {
 
 function renderFeasibleBody(evalRes, g) {
   const p = evalRes.plan;
+  const isAltDepth = evalRes.status === 'feasible-alternative';
+  const reqDepth = evalRes.requestedDepth;
+  const achR = p.achievableR ?? p.R;
+  const isReducedReserve = achR < p.R;
+
   const activeMixRows = p.sortedRows.map((r, i) => ({
     ...r,
     perPlayer: p.mix[i],
     bankRem: p.bankRem[i]
   }));
 
-  const blindSub = p.exactHalf ? `${p.depth} BB depth` : `Rounded SB · ${p.depth} BB`;
+  const blindSubHtml = isAltDepth
+    ? `<small class="diff-val"><span class="diff-old">${reqDepth} BB</span> → ${p.depth} BB</small>`
+    : `<small>${esc(p.exactHalf ? `${p.depth} BB depth` : `Rounded SB · ${p.depth} BB`)}</small>`;
+
   const moneyTile = g.mode === 'cash'
     ? `<div class="metric-tile"><dt>Cash value</dt><dd>${DistributionStudy.formatEurCents(p.buyinCents)}</dd><small>${DistributionStudy.formatRate(p.buyinCents, p.stackUnits)} / unit</small></div>`
     : `<div class="metric-tile"><dt>Prize pool</dt><dd>${DistributionStudy.formatEurCents(p.buyinCents * p.N)}</dd><small>No chip money value</small></div>`;
-  const achR = p.achievableR ?? p.R;
-  const reserveVal = achR < p.R ? `${achR} of ${p.R}` : `${p.R} stack${p.R === 1 ? '' : 's'}`;
-  const reserveSub = p.R === 0 ? 'Explicit 0 reserve' : achR < p.R ? 'Reduced reserve capacity' : 'Shared in bank';
+
+  const reserveDdHtml = isReducedReserve
+    ? `<dd><span class="diff-old">${p.R}</span> → ${achR} stack${achR === 1 ? '' : 's'}</dd>`
+    : `<dd>${p.R} stack${p.R === 1 ? '' : 's'}</dd>`;
+  const reserveSubHtml = p.R === 0
+    ? `<small>0 stacks</small>`
+    : isReducedReserve
+      ? `<small class="diff-val">${achR} of ${p.R} possible</small>`
+      : `<small>Shared in bank</small>`;
 
   return `
-    ${renderVisualStackShowcase(p, g)}
+    ${renderVisualStackShowcase(p, g, evalRes)}
     <dl class="metric-strip" aria-label="Game terms summary">
-      <div class="metric-tile">
-        <dt>Blinds</dt>
+      <div class="metric-tile ${isAltDepth ? 'adjusted' : ''}">
+        <dt>${isAltDepth ? icon('alert') : ''}Blinds</dt>
         <dd>${p.sb} / ${p.bb}</dd>
-        <small>${esc(blindSub)}</small>
+        ${blindSubHtml}
       </div>
       ${moneyTile}
-      <div class="metric-tile">
-        <dt>Reserve</dt>
-        <dd>${esc(reserveVal)}</dd>
-        <small>${esc(reserveSub)}</small>
+      <div class="metric-tile ${isReducedReserve ? 'adjusted' : ''}">
+        <dt>${isReducedReserve ? icon('alert') : ''}Reserve</dt>
+        ${reserveDdHtml}
+        ${reserveSubHtml}
       </div>
     </dl>
     <section class="card" aria-label="Unissued bank">
       <div class="row-heading">
         <h3>Unissued bank (${p.bankChips} chips)</h3>
-        <span class="small">${achR > 0 ? `Covers ${achR} reserved stack${achR === 1 ? '' : 's'} · not prepacked` : 'Unreserved bank'}</span>
+        <span class="small">${achR > 0 ? `Covers ${achR} reserved stack${achR === 1 ? '' : 's'}` : '0 reserved'}</span>
       </div>
       <div class="bank-strip" role="list" aria-label="Remaining bank quantities">
         ${activeMixRows.map(r => `
@@ -1387,29 +1420,21 @@ function renderPreviewScreen(g) {
   const evalRes = DistributionStudy.evaluateDistribution(g);
   const totalSteps = g.mode === 'cash' ? 5 : 6;
   const canStart = ['feasible-exact', 'feasible-alternative', 'feasible-reduced-reserve'].includes(evalRes.status);
-  let startBlockerReason = 'Preview only · no chips issued yet.';
+  let startBlockerReason = '';
   if (evalRes.status === 'invalid-setup') startBlockerReason = 'Fix setup inputs before starting.';
   else if (evalRes.status === 'no-valid') startBlockerReason = 'No valid distribution for current setup.';
-  else if (evalRes.status === 'feasible-alternative') startBlockerReason = `Using closest depth ${evalRes.plan.depth} BB (requested ${evalRes.requestedDepth} BB) · no chips issued yet.`;
-  else if (evalRes.status === 'feasible-reduced-reserve') startBlockerReason = `Using ${evalRes.plan.achievableR} of ${evalRes.plan.R} reserve stacks · no chips issued yet.`;
 
   let bodyHtml = '';
   if (evalRes.status === 'invalid-setup') bodyHtml = renderInvalidSetupBody(evalRes);
   else if (evalRes.status === 'no-valid') bodyHtml = renderNoValidBody(evalRes, g);
-  else bodyHtml = renderAlternativeBanner(evalRes, g) + renderFeasibleBody(evalRes, g);
+  else bodyHtml = renderFeasibleBody(evalRes, g);
 
   return `
     ${header('Distribution preview', g, 'prev-step')}
     ${b(`Step ${totalSteps} of ${totalSteps} · Setup steps`, 'steps', 'quiet step-button')}
     ${bodyHtml}
-    <div class="pill-row" style="margin-top:12px">
-      ${b('Players', 'go-players', 'quiet', '', 'edit')}
-      ${b('Chip set', 'go-chips', 'quiet', '', 'edit')}
-      ${b('Settings', 'go-settings', 'quiet', '', 'edit')}
-      ${g.mode === 'tournament' ? b('Payouts', 'go-payouts', 'quiet', '', 'edit') : ''}
-    </div>
     <footer class="dock">
-      <p id="start-status">${esc(startBlockerReason)}</p>
+      ${startBlockerReason ? `<p id="start-status">${esc(startBlockerReason)}</p>` : ''}
       <div class="actions">
         ${b('Back', 'prev-step', '', '', 'back')}
         ${b(canStart ? `Start ${g.mode === 'cash' ? 'cash game' : 'tournament'}` : 'Start game', 'start-game', 'primary', `id="step-action" ${canStart ? '' : 'aria-disabled="true"'}`, 'play')}
