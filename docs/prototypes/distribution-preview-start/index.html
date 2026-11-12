@@ -2,7 +2,7 @@
 <html lang="en">
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Distribution preview &amp; Start · Review v3 · 3D Chip Towers</title>
+<title>Distribution preview &amp; Start · Review v4 · 3D Chip Towers + Notice-Only Depth &amp; Reserve</title>
 <style>
   * { box-sizing: border-box; }
   :root {
@@ -490,19 +490,19 @@
 <div class="workshop">
   <header>
     <p class="eyebrow">Throwaway interaction study · #35 · Current / Lavender</p>
-    <p class="revision" id="review-revision">Review v3 · Selected 3D Chip Towers (1 starting stack)</p>
+    <p class="revision" id="review-revision">Review v4 · 3D Chip Towers + Notice-Only Alternative Depth &amp; Reserve</p>
     <h1>One glance: total units and how many of each chip.</h1>
-    <p class="intro">Selected <strong>A · 3D Chip Towers</strong> on a radial-lit plinth, showing one player’s starting stack: total chip units at the top and each denomination’s 3D tower and chip count below, with the combined-stack toggle removed.</p>
+    <p class="intro">Selected <strong>A · 3D Chip Towers</strong> for 1 starting stack. Alternative stack depth (e.g. 98 BB) and reduced reserve capacity (e.g. 1 of 3 stacks) show a clear notice with <strong>Edit setup</strong> while leaving <strong>Start game</strong> directly available.</p>
     <details class="review">
       <summary>Review controls, state presets &amp; guided walkthroughs</summary>
       <p>Switch states below or edit players, chip quantities, or settings directly inside the prototype. All state is in memory; reload resets fixtures.</p>
       <div class="review-controls">
         <button data-preset="feasible">Feasible (100 BB)</button>
         <button data-preset="zero-reserve">Explicit zero reserve (0 stacks)</button>
-        <button data-preset="alt-98">Alternative depth (98 BB vs 100 BB)</button>
+        <button data-preset="alt-98">Alternative depth notice (98 BB vs 100 BB)</button>
         <button data-preset="alt-101">Closer higher depth (101 BB vs 98 BB)</button>
+        <button data-preset="fail-reserve">Reduced reserve notice (1 of 3 stacks)</button>
         <button data-preset="rounded-sb">Rounded small blind (2 / 5)</button>
-        <button data-preset="fail-reserve">No valid: Simultaneous reserve</button>
         <button data-preset="fail-coverage">No valid: Blind-paying chips</button>
         <button data-preset="fail-value">No valid: Total chip value</button>
         <button data-preset="fail-denom">No valid: Unsuitable denominations</button>
@@ -780,81 +780,104 @@ const DistributionStudy = (() => {
       if (requestedDepth + delta <= 250) candidateDepths.push(requestedDepth + delta);
     }
 
-    let bestCandidate = null;
-    let exactAtRequested = null;
-    let failedOnlyByReserveAtRequested = false;
-    let failedByCoverageAtRequested = false;
+    // Helper to find best candidate for a given required reserve count `targetR`
+    function findBestForReserve(targetR) {
+      let best = null;
+      let exact = null;
+      let failedByReserveAtReq = false;
+      let failedByCoverageAtReq = false;
 
-    for (const depth of candidateDepths) {
-      if (bestCandidate && Math.abs(depth - requestedDepth) > Math.abs(bestCandidate.depth - requestedDepth)) {
-        break;
-      }
-      for (const {sb, bb, exactHalf} of validPairs) {
-        const T = depth * bb;
-        if (totalUnits < N * T) continue;
-        const maxInitialPerStack = qtys.map(q => Math.floor(q / N));
-        const maxPossibleOneStack = maxInitialPerStack.reduce((acc, q, i) => acc + q * vals[i], 0);
-        if (maxPossibleOneStack < T) continue;
-
-        const qualifyingInitial = findQualifyingMixes(T, vals, maxInitialPerStack, sb, bb, k);
-        if (!qualifyingInitial.length) {
-          if (depth === requestedDepth) failedByCoverageAtRequested = true;
-          continue;
-        }
-        qualifyingInitial.sort((mA, mB) => {
-          const cA = mA.reduce((a, b) => a + b, 0);
-          const cB = mB.reduce((a, b) => a + b, 0);
-          if (cA !== cB) return preference === 'More chips' ? cB - cA : cA - cB;
-          for (let i = 0; i < mA.length; i++) {
-            if (mA[i] !== mB[i]) return mB[i] - mA[i];
-          }
-          return 0;
-        });
-        for (const mix of qualifyingInitial) {
-          const bankRem = qtys.map((q, i) => q - N * mix[i]);
-          const reserveOk = canSupplySimultaneousReserve(R, T, vals, bankRem, sb, bb, k);
-          if (!reserveOk) {
-            if (depth === requestedDepth) failedOnlyByReserveAtRequested = true;
-            continue;
-          }
-          const perPlayerChips = mix.reduce((a, b) => a + b, 0);
-          const cand = {
-            depth, sb, bb, exactHalf, stackUnits: T, mix, bankRem,
-            perPlayerChips, issuedChips: N * perPlayerChips,
-            bankChips: bankRem.reduce((a, b) => a + b, 0),
-            bankUnits: bankRem.reduce((acc, q, i) => acc + q * vals[i], 0),
-            sortedRows, buyinCents, N, R, k, preference
-          };
-          if (!bestCandidate || compareCandidates(cand, bestCandidate, requestedDepth, preference) < 0) {
-            bestCandidate = cand;
-          }
-          if (depth === requestedDepth && (!exactAtRequested || compareCandidates(cand, exactAtRequested, requestedDepth, preference) < 0)) {
-            exactAtRequested = cand;
-          }
+      for (const depth of candidateDepths) {
+        if (best && Math.abs(depth - requestedDepth) > Math.abs(best.depth - requestedDepth)) {
           break;
         }
+        for (const {sb, bb, exactHalf} of validPairs) {
+          const T = depth * bb;
+          if (totalUnits < N * T) continue;
+          const maxInitialPerStack = qtys.map(q => Math.floor(q / N));
+          const maxPossibleOneStack = maxInitialPerStack.reduce((acc, q, i) => acc + q * vals[i], 0);
+          if (maxPossibleOneStack < T) continue;
+
+          const qualifyingInitial = findQualifyingMixes(T, vals, maxInitialPerStack, sb, bb, k);
+          if (!qualifyingInitial.length) {
+            if (depth === requestedDepth) failedByCoverageAtReq = true;
+            continue;
+          }
+          qualifyingInitial.sort((mA, mB) => {
+            const cA = mA.reduce((a, b) => a + b, 0);
+            const cB = mB.reduce((a, b) => a + b, 0);
+            if (cA !== cB) return preference === 'More chips' ? cB - cA : cA - cB;
+            for (let i = 0; i < mA.length; i++) {
+              if (mA[i] !== mB[i]) return mB[i] - mA[i];
+            }
+            return 0;
+          });
+          for (const mix of qualifyingInitial) {
+            const bankRem = qtys.map((q, i) => q - N * mix[i]);
+            const reserveOk = canSupplySimultaneousReserve(targetR, T, vals, bankRem, sb, bb, k);
+            if (!reserveOk) {
+              if (depth === requestedDepth) failedByReserveAtReq = true;
+              continue;
+            }
+            const perPlayerChips = mix.reduce((a, b) => a + b, 0);
+            const cand = {
+              depth, sb, bb, exactHalf, stackUnits: T, mix, bankRem,
+              perPlayerChips, issuedChips: N * perPlayerChips,
+              bankChips: bankRem.reduce((a, b) => a + b, 0),
+              bankUnits: bankRem.reduce((acc, q, i) => acc + q * vals[i], 0),
+              sortedRows, buyinCents, N, R, achievableR: targetR, k, preference
+            };
+            if (!best || compareCandidates(cand, best, requestedDepth, preference) < 0) {
+              best = cand;
+            }
+            if (depth === requestedDepth && (!exact || compareCandidates(cand, exact, requestedDepth, preference) < 0)) {
+              exact = cand;
+            }
+            break;
+          }
+        }
       }
+      return {best, exact, failedByReserveAtReq, failedByCoverageAtReq};
     }
 
-    if (exactAtRequested) return {status:'feasible-exact', plan:exactAtRequested, requestedDepth};
+    const fullReserveAttempt = findBestForReserve(R);
+    if (fullReserveAttempt.exact) {
+      return {status:'feasible-exact', plan:fullReserveAttempt.exact, requestedDepth};
+    }
 
-    let whyRequestedFailed = failedOnlyByReserveAtRequested
-      ? `${requestedDepth} BB fits ${N} starting stacks, but not ${R} simultaneous reserved stacks.`
-      : failedByCoverageAtRequested
+    let whyRequestedFailed = fullReserveAttempt.failedByReserveAtReq
+      ? `${requestedDepth} BB fits ${N} starting stacks, but not all ${R} reserved stacks at the same time.`
+      : fullReserveAttempt.failedByCoverageAtReq
         ? `${requestedDepth} BB lacks enough small blind-paying chips for ${k} blind pairs per stack.`
         : `${requestedDepth} BB exceeds available chip quantities for ${N} stacks${R > 0 ? ` + ${R} reserve` : ''}.`;
 
-    if (bestCandidate) {
-      return {status:'feasible-alternative', plan:bestCandidate, requestedDepth, whyRequestedFailed};
+    if (fullReserveAttempt.best) {
+      return {
+        status:'feasible-alternative',
+        plan:fullReserveAttempt.best,
+        requestedDepth,
+        whyRequestedFailed
+      };
     }
 
-    const minOneDepthTotal = (N + R) * validPairs[0].bb;
-    const anyInitialQualifiesAtAnyDepth = candidateDepths.some(d =>
-      validPairs.some(({sb, bb}) => {
-        const maxPer = qtys.map(q => Math.floor(q / N));
-        return findQualifyingMixes(d * bb, vals, maxPer, sb, bb, k).length > 0;
-      })
-    );
+    // If no depth satisfied all R reserve stacks (R > 0), find the highest achievable reserve count r < R
+    if (R > 0) {
+      for (let r = R - 1; r >= 0; r--) {
+        const reducedAttempt = findBestForReserve(r);
+        const chosen = reducedAttempt.exact || reducedAttempt.best;
+        if (chosen) {
+          const depthNote = chosen.depth !== requestedDepth ? ` and uses closest depth ${chosen.depth} BB (requested ${requestedDepth} BB)` : '';
+          return {
+            status:'feasible-reduced-reserve',
+            plan:chosen,
+            requestedDepth,
+            whyRequestedFailed:`Remaining chips in the bank can supply ${r} of the ${R} requested reserve stacks${depthNote}. You can start with ${r} reserve stack${r === 1 ? '' : 's'} or edit setup.`
+          };
+        }
+      }
+    }
+
+    const minOneDepthTotal = N * validPairs[0].bb;
     const anyInitialQualifiesWithK1 = candidateDepths.some(d =>
       validPairs.some(({sb, bb}) => {
         const maxPer = qtys.map(q => Math.floor(q / N));
@@ -869,11 +892,7 @@ const DistributionStudy = (() => {
     if (totalUnits < minOneDepthTotal) {
       reasonCode = 'total-value';
       reasonTitle = 'Insufficient total chip value';
-      reasonDetail = `${totalUnits.toLocaleString('en')} total chip units cannot supply ${N} stacks${R > 0 ? ` + ${R} reserve` : ''} even at 1 BB (${minOneDepthTotal} units needed).`;
-    } else if (anyInitialQualifiesAtAnyDepth && R > 0) {
-      reasonCode = 'reserve';
-      reasonTitle = 'Simultaneous chip reserve not feasible';
-      reasonDetail = `Chips can build ${N} starting stacks alone, but not ${R} simultaneous reserved stacks at ${k} blind-payment coverage.`;
+      reasonDetail = `${totalUnits.toLocaleString('en')} total chip units cannot supply ${N} starting stacks even at 1 BB (${minOneDepthTotal} units needed).`;
     } else if (anyInitialQualifiesWithK1 && k > 1) {
       const maxPer = qtys.map(q => Math.floor(q / N));
       reasonCode = 'coverage';
@@ -969,7 +988,7 @@ const DistributionStudy = (() => {
       ];
       game.fields.depth = '10';
     } else if (preset === 'fail-value') {
-      game.rows = [{id:'c1', value:'1', quantity:'14', color:'grey'}];
+      game.rows = [{id:'c1', value:'1', quantity:'10', color:'grey'}];
     } else if (preset === 'fail-denom') {
       game.rows = [
         {id:'c1', value:'5', quantity:'6', color:'red'},
@@ -1184,33 +1203,26 @@ function header(title, g, back = 'games') {
 }
 
 function renderAlternativeBanner(evalRes, g) {
-  if (evalRes.status !== 'feasible-alternative') return '';
-  const alt = evalRes.plan.depth;
+  if (evalRes.status !== 'feasible-alternative' && evalRes.status !== 'feasible-reduced-reserve') return '';
+  const p = evalRes.plan;
   const req = evalRes.requestedDepth;
-  const accepted = g.acceptedAltDepth === alt;
-  if (accepted) {
-    return `<section class="card prominent" aria-label="Accepted alternative stack depth">
-      <div class="row-heading">
-        <span class="badge ok">${icon('check')} Accepted ${alt} BB</span>
-        <span class="small">Requested ${req} BB</span>
-      </div>
-      <p class="small" style="margin-bottom:10px">${esc(evalRes.whyRequestedFailed)}</p>
-      <div class="actions">
-        ${b('Withdraw acceptance', 'decline-alt', '')}
-        ${b('Edit setup', 'go-settings', 'quiet', '', 'edit')}
-      </div>
-    </section>`;
-  }
-  return `<section class="card proposal" aria-label="Alternative stack depth proposal">
+  const isReducedReserve = evalRes.status === 'feasible-reduced-reserve';
+  const badgeText = isReducedReserve
+    ? `Reserve: ${p.achievableR} of ${p.R} stacks possible`
+    : `Closest depth: ${p.depth} BB (requested ${req} BB)`;
+  const headingText = isReducedReserve
+    ? `Only ${p.achievableR} of ${p.R} reserve stacks possible`
+    : `Using ${p.depth} BB instead of ${req} BB`;
+
+  return `<section class="card proposal" aria-label="Distribution adjustment notice">
     <div class="row-heading">
-      <span class="badge warn">${icon('alert')} ${req} BB unavailable</span>
-      <span class="small">Closest feasible: ${alt} BB</span>
+      <span class="badge warn">${icon('alert')} ${esc(badgeText)}</span>
     </div>
-    <h3>Use ${alt} BB instead of ${req} BB?</h3>
+    <h3>${esc(headingText)}</h3>
     <p class="small">${esc(evalRes.whyRequestedFailed)}</p>
     <div class="actions">
-      ${b(`Accept ${alt} BB`, 'accept-alt', 'primary', 'id="accept-alt-btn"', 'check')}
-      ${b('Keep unaccepted', 'decline-alt', '')}
+      ${b('Edit chip set', 'go-chips', '', '', 'edit')}
+      ${b('Edit settings', 'go-settings', '', '', 'edit')}
     </div>
   </section>`;
 }
@@ -1299,6 +1311,9 @@ function renderFeasibleBody(evalRes, g) {
   const moneyTile = g.mode === 'cash'
     ? `<div class="metric-tile"><dt>Cash value</dt><dd>${DistributionStudy.formatEurCents(p.buyinCents)}</dd><small>${DistributionStudy.formatRate(p.buyinCents, p.stackUnits)} / unit</small></div>`
     : `<div class="metric-tile"><dt>Prize pool</dt><dd>${DistributionStudy.formatEurCents(p.buyinCents * p.N)}</dd><small>No chip money value</small></div>`;
+  const achR = p.achievableR ?? p.R;
+  const reserveVal = achR < p.R ? `${achR} of ${p.R}` : `${p.R} stack${p.R === 1 ? '' : 's'}`;
+  const reserveSub = p.R === 0 ? 'Explicit 0 reserve' : achR < p.R ? 'Reduced reserve capacity' : 'Shared in bank';
 
   return `
     ${renderVisualStackShowcase(p, g)}
@@ -1311,14 +1326,14 @@ function renderFeasibleBody(evalRes, g) {
       ${moneyTile}
       <div class="metric-tile">
         <dt>Reserve</dt>
-        <dd>${p.R} stack${p.R === 1 ? '' : 's'}</dd>
-        <small>${p.R === 0 ? 'Explicit 0 reserve' : 'Shared in bank'}</small>
+        <dd>${esc(reserveVal)}</dd>
+        <small>${esc(reserveSub)}</small>
       </div>
     </dl>
     <section class="card" aria-label="Unissued bank">
       <div class="row-heading">
         <h3>Unissued bank (${p.bankChips} chips)</h3>
-        <span class="small">${p.R > 0 ? `Covers ${p.R} reserved stack${p.R === 1 ? '' : 's'} · not prepacked` : 'Unreserved bank'}</span>
+        <span class="small">${achR > 0 ? `Covers ${achR} reserved stack${achR === 1 ? '' : 's'} · not prepacked` : 'Unreserved bank'}</span>
       </div>
       <div class="bank-strip" role="list" aria-label="Remaining bank quantities">
         ${activeMixRows.map(r => `
@@ -1371,11 +1386,12 @@ function renderInvalidSetupBody(evalRes) {
 function renderPreviewScreen(g) {
   const evalRes = DistributionStudy.evaluateDistribution(g);
   const totalSteps = g.mode === 'cash' ? 5 : 6;
-  const canStart = evalRes.status === 'feasible-exact' || (evalRes.status === 'feasible-alternative' && g.acceptedAltDepth === evalRes.plan.depth);
+  const canStart = ['feasible-exact', 'feasible-alternative', 'feasible-reduced-reserve'].includes(evalRes.status);
   let startBlockerReason = 'Preview only · no chips issued yet.';
   if (evalRes.status === 'invalid-setup') startBlockerReason = 'Fix setup inputs before starting.';
   else if (evalRes.status === 'no-valid') startBlockerReason = 'No valid distribution for current setup.';
-  else if (evalRes.status === 'feasible-alternative' && !canStart) startBlockerReason = `Accept ${evalRes.plan.depth} BB (or edit setup) to enable Start.`;
+  else if (evalRes.status === 'feasible-alternative') startBlockerReason = `Using closest depth ${evalRes.plan.depth} BB (requested ${evalRes.requestedDepth} BB) · no chips issued yet.`;
+  else if (evalRes.status === 'feasible-reduced-reserve') startBlockerReason = `Using ${evalRes.plan.achievableR} of ${evalRes.plan.R} reserve stacks · no chips issued yet.`;
 
   let bodyHtml = '';
   if (evalRes.status === 'invalid-setup') bodyHtml = renderInvalidSetupBody(evalRes);
@@ -1588,14 +1604,17 @@ function renderDialog() {
   let html = '';
   if (m.type === 'confirm-start') {
     const p = m.plan;
+    const achR = p.achievableR ?? p.R;
+    const depthLabel = p.depth !== m.requestedDepth ? `${p.depth} BB (closest to ${m.requestedDepth} BB)` : `${p.depth} BB`;
+    const reserveLabel = achR < p.R ? `${achR} of ${p.R} requested stacks` : `${p.R} stack${p.R === 1 ? '' : 's'}`;
     html = `
       <h2 id="dialog-title">Start ${g.mode === 'cash' ? 'cash game' : 'tournament'}?</h2>
       <p id="dialog-description">Records initial stacks for ${p.N} players and locks setup.</p>
       <dl class="facts" style="margin:12px 0">
-        <div><dt>Each starting stack</dt><dd>${p.stackUnits.toLocaleString('en')} units (${p.depth} BB)</dd></div>
+        <div><dt>Each starting stack</dt><dd>${p.stackUnits.toLocaleString('en')} units (${esc(depthLabel)})</dd></div>
         <div><dt>Blinds</dt><dd>${p.sb} / ${p.bb} chip units</dd></div>
         <div><dt>Buy-in</dt><dd>${DistributionStudy.formatEurCents(p.buyinCents)} × ${p.N}</dd></div>
-        <div><dt>Reserve</dt><dd>${p.R} stack${p.R === 1 ? '' : 's'}</dd></div>
+        <div><dt>Reserve</dt><dd>${esc(reserveLabel)}</dd></div>
       </dl>
       <div class="actions">
         ${b('Cancel', 'cancel-modal')}
@@ -1730,12 +1749,12 @@ document.addEventListener('click', e => {
   }
   if (action === 'start-game') {
     const evalRes = DistributionStudy.evaluateDistribution(g);
-    const canStart = evalRes.status === 'feasible-exact' || (evalRes.status === 'feasible-alternative' && g.acceptedAltDepth === evalRes.plan.depth);
+    const canStart = ['feasible-exact', 'feasible-alternative', 'feasible-reduced-reserve'].includes(evalRes.status);
     dialogTrigger = btn;
     if (!canStart) {
-      state.modal = {type:'blocked-start', reason:$('#start-status')?.textContent || 'Complete setup and accept any alternative depth first.'};
+      state.modal = {type:'blocked-start', reason:$('#start-status')?.textContent || 'Complete setup first.'};
     } else {
-      state.modal = {type:'confirm-start', plan:evalRes.plan, isAlt:evalRes.status === 'feasible-alternative', requestedDepth:evalRes.requestedDepth};
+      state.modal = {type:'confirm-start', plan:evalRes.plan, requestedDepth:evalRes.requestedDepth};
     }
     render();
     return;
@@ -1744,6 +1763,7 @@ document.addEventListener('click', e => {
     const evalRes = DistributionStudy.evaluateDistribution(g);
     if (evalRes.plan) {
       const p = evalRes.plan;
+      const achR = p.achievableR ?? p.R;
       g.phase = 'In progress';
       g.startedSnapshot = {
         startedAt:'10 Nov 2026 · 20:25',
@@ -1757,8 +1777,8 @@ document.addEventListener('click', e => {
         issuedChips:p.issuedChips,
         buyinCents:p.buyinCents,
         rateLabel:DistributionStudy.formatRate(p.buyinCents, p.stackUnits),
-        reserveTarget:p.R,
-        reserveRemaining:p.R,
+        reserveTarget:achR,
+        reserveRemaining:achR,
         initialMix:p.sortedRows.map((r, i) => ({...r, perPlayer:p.mix[i], issuedTotal:p.N * p.mix[i], bankRem:p.bankRem[i]}))
       };
       state.modal = null;
@@ -1919,21 +1939,21 @@ const scenarios = {
     ]
   },
   alt:{
-    label:'2. Alternative depth (98 BB)',
-    description:'Offer nearest feasible depth (98 BB) when 100 BB is impossible; require explicit acceptance before Start.',
+    label:'2. Alternative depth & reserve notices',
+    description:'When 100 BB or full reserve cannot be met, show a clear notice with Edit setup while keeping Start directly available.',
     steps:[
-      ['Load 98 BB alternative proposal (Start is blocked)', () => { state = DistributionStudy.makePreset('alt-98'); render('heading'); }],
-      ['Accept 98 BB → unlocks Start', () => { document.querySelector('[data-action="accept-alt"]')?.click(); }],
-      ['Edit chip set (+20 blue 25s) → restores exact 100 BB', () => { state.game.rows[2].quantity = '83'; state.game.acceptedAltDepth = null; render('heading'); }]
+      ['Show 98 BB alternative depth notice (Start is directly enabled)', () => { state = DistributionStudy.makePreset('alt-98'); render('heading'); }],
+      ['Edit chip set (+20 blue 25s) → restores exact 100 BB (preserved request)', () => { state.game.rows[2].quantity = '83'; render('heading'); }],
+      ['Show reduced reserve notice (1 of 3 reserve stacks possible; Start remains enabled)', () => { state = DistributionStudy.makePreset('fail-reserve'); render('heading'); }]
     ]
   },
   shortfalls:{
-    label:'3. Infeasibility & recovery',
-    description:'Test simultaneous-reserve failure, coverage shortage, and explicit zero reserve.',
+    label:'3. Hard infeasibility & recovery',
+    description:'Test scarce blind-paying chips, insufficient value, unsuitable denominations, and incomplete setup.',
     steps:[
-      ['Simultaneous reserve failure', () => { state = DistributionStudy.makePreset('fail-reserve'); render('heading'); }],
-      ['Set reserve to 0 → unlocks exact 20 BB', () => { state.game.fields.reserve = '0'; state.game.fields.reserveCustom = true; render('heading'); }],
-      ['Scarce blind-paying chips failure', () => { state = DistributionStudy.makePreset('fail-coverage'); render('heading'); }]
+      ['Scarce blind-paying chips (coverage k=4 unmet for starting stacks)', () => { state = DistributionStudy.makePreset('fail-coverage'); render('heading'); }],
+      ['Insufficient total chip value', () => { state = DistributionStudy.makePreset('fail-value'); render('heading'); }],
+      ['Unsuitable denominations for blinds', () => { state = DistributionStudy.makePreset('fail-denom'); render('heading'); }]
     ]
   }
 };
