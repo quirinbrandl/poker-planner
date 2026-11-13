@@ -1,0 +1,474 @@
+<!doctype html>
+<html lang="en">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="icon" href="data:,">
+<title>Cash-game Play · Review v1 · Throwaway prototype</title>
+<style>
+  * { box-sizing: border-box; }
+  :root { color-scheme: dark; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; background: #0b1117; color: #f1f4f5; --accent: #c9b5ff; --on-accent: #2b1e45; --tint: #322b45; }
+  body { margin: 0; padding: 24px 16px 130px; }
+  button, input, select { font: inherit; }
+  button { min-width: 48px; min-height: 48px; padding: 10px 15px; border: 1px solid #7c90a0; border-radius: 14px; background: #1e2a34; color: #f1f4f5; cursor: pointer; line-height: 1.35; }
+  button:active { background: #364653; }
+  button[aria-disabled="true"] { border-style: dashed; color: #b3c0ca; cursor: help; }
+  :focus-visible { outline: 3px solid var(--accent); outline-offset: 3px; }
+  a { color: var(--accent); }
+  h1, h2, h3, p { margin-top: 0; }
+  p { line-height: 1.5; }
+  .workshop { max-width: 1000px; margin: auto; }
+  .workshop > header { max-width: 800px; margin: 0 auto 24px; }
+  .workshop h1 { font-size: 28px; letter-spacing: -.04em; margin-bottom: 8px; }
+  .eyebrow { color: #b3c0ca; text-transform: uppercase; font-size: 12px; letter-spacing: .1em; margin-bottom: 10px; }
+  .revision { display: inline-block; padding: 6px 12px; color: var(--accent); border: 1px solid var(--accent); border-radius: 12px; font-size: 14px; margin-bottom: 12px; }
+  .intro, .review { color: #b3c0ca; font-size: 14px; }
+  .layout { display: grid; grid-template-columns: minmax(0, 430px) minmax(0, 1fr); gap: 28px; align-items: start; }
+  .review { background: #111920; border: 1px solid #364653; border-radius: 20px; padding: 0 16px 16px; min-width: 0; }
+  summary { cursor: pointer; min-height: 48px; padding: 14px 0; color: #f1f4f5; font-weight: 650; }
+  .review-controls { display: grid; gap: 12px; }
+  select, input { min-height: 48px; min-width: 0; max-width: 100%; padding: 12px; color: #f1f4f5; background: #111920; border: 1px solid #7c90a0; border-radius: 12px; }
+  label { display: grid; gap: 6px; }
+  .review p { margin: 0; }
+  #app, dialog { --scale: 1; font-size: calc(16px * var(--scale)); line-height: 1.5; color: #f1f4f5; overflow-wrap: anywhere; }
+  #app { min-height: 790px; min-width: 0; background: #111920; border: 1px solid #364653; border-radius: 26px; box-shadow: 0 20px 70px #0004; }
+  .page { padding: 20px 18px 28px; }
+  .topline, .between { display: flex; justify-content: space-between; align-items: center; gap: 8px; flex-wrap: wrap; }
+  .topline { margin-bottom: 10px; }
+  .context, .small { font-size: .78em; color: #b3c0ca; }
+  .context { margin: 0 0 8px; }
+  #app h2 { font-size: 2.35em; line-height: 1.08; letter-spacing: -.045em; margin-bottom: 12px; }
+  #app h3 { font-size: 1.1em; letter-spacing: -.02em; line-height: 1.3; margin-bottom: 8px; }
+  .quiet { background: transparent; border-color: transparent; }
+  .primary { background: var(--accent); border-color: var(--accent); color: var(--on-accent); font-weight: 700; border-radius: 100px; }
+  .primary:active { background: var(--accent); filter: brightness(.92); }
+  .danger { background: #3d2427; border-color: #ffb3aa; color: #ffb3aa; }
+  .full { width: 100%; }
+  .nav { display: grid; grid-template-columns: 1fr 1fr 1.4fr; gap: 4px; margin: 12px 0 22px; padding: 4px; border: 1px solid #364653; border-radius: 17px; }
+  .nav button { padding: 9px 5px; background: transparent; border-color: transparent; font-size: .78em; }
+  .nav [aria-current="page"] { color: var(--accent); background: var(--tint); border-color: var(--accent); }
+  .actions { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 14px; }
+  .actions > button { flex: 1; }
+  .card { background: #1e2a34; border: 1px solid #364653; border-radius: 22px; padding: 16px; margin: 14px 0; min-width: 0; }
+  .badge { display: inline-block; padding: 3px 9px; border: 1px solid #7c90a0; border-radius: 100px; font-size: .71em; margin: 0 4px 6px 0; }
+  .badge.ok { background: #20372b; color: #b8dfbd; border-color: #b8dfbd; }
+  .badge.info { background: var(--tint); color: var(--accent); border-color: var(--accent); }
+  .badge.warn { background: #383020; color: #f2d08a; border-color: #f2d08a; }
+  .notice { padding: 12px 14px; border-left: 3px solid var(--accent); background: var(--tint); border-radius: 0 13px 13px 0; color: var(--accent); font-size: .85em; margin: 14px 0; }
+  .notice.warn { background: #383020; border-color: #f2d08a; color: #f2d08a; }
+  .notice.error { background: #3d2427; border-color: #ffb3aa; color: #ffb3aa; }
+  .notice.ok { background: #20372b; border-color: #b8dfbd; color: #b8dfbd; }
+  .notice strong { display: block; }
+  .terms { display: flex; flex-wrap: wrap; gap: 6px 18px; color: #b3c0ca; font-size: .8em; margin: 6px 0 16px; }
+  .terms b { color: #f1f4f5; }
+  .mini-stats { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin: 16px 0; }
+  .mini-stats > div { min-width: 0; }
+  .mini-stats strong { display: block; font-size: 1.3em; font-variant-numeric: tabular-nums; line-height: 1.2; }
+  .mini-stats span { font-size: .72em; color: #b3c0ca; }
+  .bank-link { display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 6px; width: 100%; text-align: left; font-size: .8em; border-color: #364653; background: transparent; margin-bottom: 16px; }
+  .player-row { display: flex; gap: 8px; align-items: center; padding: 8px 0; border-bottom: 1px solid #364653; }
+  .player-main { flex: 1; min-width: 0; text-align: left; border: 0; border-radius: 10px; padding: 8px 6px; background: transparent; }
+  .player-main strong { display: block; font-size: 1.05em; }
+  .player-main .small { display: block; }
+  .rebuy-small { border-radius: 100px; font-size: .8em; color: var(--accent); background: var(--tint); border-color: var(--accent); }
+  .section-title { margin-top: 24px; }
+  .player-card { position: relative; padding: 18px; }
+  .player-card .name-link { border: 0; background: transparent; padding: 0; text-align: left; font-weight: 700; font-size: 1.25em; }
+  .player-card .actions { display: grid; grid-template-columns: 1fr 1fr; }
+  .player-card .actions button { font-size: .8em; }
+  .hero { border-color: #6b5d8a; background: radial-gradient(130% 100% at 0 0, #322b45, #1e2a34 80%); }
+  .hero .hero-number { font-size: 3.2em; letter-spacing: -.06em; line-height: 1; font-weight: 750; }
+  .command-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+  .command-grid button { text-align: left; min-height: 100px; border-radius: 20px; }
+  .command-grid button:first-child { grid-column: 1 / -1; min-height: 76px; font-size: 1.3em; }
+  .metric-line { display: flex; justify-content: space-between; gap: 12px; flex-wrap: wrap; padding: 9px 0; border-bottom: 1px solid #364653; }
+  .metric-line span { color: #b3c0ca; }
+  .metric-line strong { font-variant-numeric: tabular-nums; }
+  .stack { margin: 16px 0; padding: 14px 12px; border: 1px solid #3f5263; border-radius: 22px; background: radial-gradient(120% 95% at 50% 0, #293847, #141e27 62%, #0c1319); }
+  .stack-top { display: flex; justify-content: space-between; gap: 8px; flex-wrap: wrap; padding-bottom: 10px; border-bottom: 1px solid #364653; font-size: .85em; }
+  .towers { display: grid; grid-template-columns: repeat(auto-fit, minmax(64px, 1fr)); gap: 10px 4px; align-items: end; margin-top: 10px; }
+  .tower { min-width: 0; text-align: center; }
+  .tower svg { display: block; width: 100%; max-width: 100px; margin: auto; height: auto; }
+  .tower b { display: block; font-variant-numeric: tabular-nums; font-size: 1.15em; }
+  .tower .small { font-size: .68em; }
+  .chip { width: 38px; height: 38px; flex-shrink: 0; }
+  .pills { display: flex; flex-wrap: wrap; gap: 7px; }
+  .chip-pill { display: flex; align-items: center; gap: 7px; padding: 7px 10px 7px 6px; background: #111920; border: 1px solid #364653; border-radius: 100px; font-size: .8em; }
+  .chip-pill span { min-width: 0; }
+  .chip-pill small { display: block; font-size: .85em; color: #b3c0ca; }
+  .list-buttons { display: grid; gap: 9px; }
+  .list-buttons button { width: 100%; text-align: left; }
+  .list-buttons button span { display: block; }
+  .list-buttons [aria-pressed="true"] { border-color: var(--accent); background: var(--tint); color: var(--accent); }
+  .footer { margin-top: 24px; }
+  dialog { background: #1e2a34; border: 1px solid #7c90a0; border-radius: 24px; padding: 22px; width: min(390px, calc(100vw - 28px)); max-height: calc(100dvh - 32px); overflow-y: auto; }
+  dialog::backdrop { background: #000b; }
+  dialog h2 { font-size: 1.5em; line-height: 1.15; letter-spacing: -.03em; }
+  dialog .actions { display: grid; }
+  dialog input { width: 100%; }
+  .switcher { position: fixed; bottom: 16px; left: 50%; transform: translateX(-50%); z-index: 10; display: flex; align-items: center; gap: 4px; max-width: calc(100vw - 20px); padding: 5px; border: 1px solid #c9b5ff; border-radius: 100px; background: #ede4ff; color: #2b1e45; box-shadow: 0 8px 28px #0008; }
+  .switcher button { border-radius: 100px; background: #2b1e45; color: #f1f4f5; border: 0; padding: 8px; }
+  .switcher span { font-size: 13px; padding: 0 8px; text-align: center; min-width: 0; }
+  pre { white-space: pre-wrap; overflow-wrap: anywhere; font-size: 12px; max-height: 430px; overflow-y: auto; color: #b8dfbd; padding: 12px; background: #0b1117; border-radius: 12px; }
+  .walks { display: grid; gap: 8px; }
+  .walks button { text-align: left; font-size: 13px; }
+  #announcement { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); }
+  @media (max-width: 760px) { body { padding: 16px 8px 130px; } .layout { grid-template-columns: minmax(0, 430px); justify-content: center; } .workshop > header { max-width: 430px; } .workshop h1 { font-size: 25px; } .review { order: -1; } }
+  @media (max-width: 350px) { .page { padding: 18px 12px 24px; } .player-row { flex-wrap: wrap; } .player-main { flex-basis: 145px; } }
+  [data-large="true"] .nav { grid-template-columns: 1fr; }
+  [data-large="true"] .player-row { flex-wrap: wrap; }
+  [data-large="true"] .player-main { flex-basis: 100%; }
+  [data-large="true"] .mini-stats, [data-large="true"] .command-grid, [data-large="true"] .player-card .actions { grid-template-columns: 1fr; }
+  [data-large="true"] .towers { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  @media (prefers-reduced-motion: reduce) { *, *::before, *::after { transition: none !important; animation: none !important; } }
+</style>
+<main class="workshop">
+  <header>
+    <div class="revision">Review v1 · Not yet approved</div>
+    <h1>Cash-game Play, rebuys &amp; late entry</h1>
+    <p class="intro">Compare three Play layouts in the approved Current / Lavender style. Everything is an in-memory fixture. Results/correction editors are labelled handoffs, not proposed designs for those later decisions.</p>
+  </header>
+  <div class="layout">
+    <section id="app" aria-label="Phone prototype"></section>
+    <aside class="review">
+      <details id="review-tools">
+        <summary>Prototype controls &amp; scenarios</summary>
+        <div class="review-controls">
+          <label>Play layout<select id="variant"><option value="A">A · Quick rows</option><option value="B">B · Player cards</option><option value="C">C · Action hub</option></select></label>
+          <label>Bank / history fixture<select id="fixture"><option value="normal">Normal · 2 reserve stacks remain</option><option value="exhausted">Reserve exhausted · full stack still available</option><option value="zero-target">Started with zero reserve · feasible</option><option value="reduced">Reduced coverage · 3 of 4</option><option value="zero">Zero coverage · 0 of 4</option><option value="impossible">No exact mix · bank value is sufficient</option><option value="shortage">Not enough bank value</option></select></label>
+          <label>App text<select id="scale"><option value="1">100%</option><option value="1.5">150%</option><option value="2">200%</option></select></label>
+          <button data-review="reset">Reset this fixture</button>
+          <button data-review="interrupt">Simulate app interruption (no acceptance)</button>
+          <p id="fixture-note"></p>
+          <details><summary>Try these walkthroughs</summary><div class="walks">
+            <button data-walk="normal">1 · Ben → Rebuy → inspect actual mix → Issue rebuy → see contribution/bank/reserve effects</button>
+            <button data-walk="reduced">2 · Reduced coverage → Rebuy → decline, then explicitly accept 3 of 4</button>
+            <button data-walk="zero">3 · Zero coverage → Rebuy → warning says 0 of 4, not “no rebuy”</button>
+            <button data-walk="impossible">4 · No exact mix → Rebuy; then Add player → Nora → Review entry → nothing added</button>
+            <button data-walk="exhausted">5 · Reserve exhausted → Rebuy → full qualification, no fallback warning</button>
+            <button data-walk="normal" data-target="entry">6 · Add player → Nora → Review entry → Add player & issue stack</button>
+            <button data-walk="normal" data-target="return">7 · Alice (confirmed result) → Return to play → explicit result-removal handoff</button>
+          </div></details>
+          <details><summary>Live record / inventory inspector</summary><pre id="inspector"></pre></details>
+          <p>Fixtures check exact mixes for this one 1 / 2-blind example. This is not a production solver or a persistence prototype. Reload resets everything. Use interruption to check that navigation never accepts a pending action.</p>
+        </div>
+      </details>
+    </aside>
+  </div>
+</main>
+<div class="switcher" aria-label="Prototype layout switcher"><button id="previous" aria-label="Previous layout">←</button><span id="variant-label"></span><button id="next" aria-label="Next layout">→</button></div>
+<div id="announcement" role="status" aria-live="polite"></div>
+<dialog id="modal" aria-labelledby="modal-title"></dialog>
+<script>
+// THROWAWAY: three Play hierarchies, one shared fixture workflow. No network or storage.
+const params = new URLSearchParams(location.search);
+const names = { A: 'Quick rows', B: 'Player cards', C: 'Action hub' };
+let variant = names[params.get('variant')] ? params.get('variant') : 'A';
+let scale = ['1', '1.5', '2'].includes(params.get('scale')) ? params.get('scale') : '1';
+let fixture = params.get('fixture') || 'normal';
+const denoms = [
+  { value: 1, color: 'White', fill: '#e9e8e4', ink: '#26323a', edge: '#a1a5a6' },
+  { value: 5, color: 'Red', fill: '#d35959', ink: '#fff4e8', edge: '#7c303a' },
+  { value: 25, color: 'Blue', fill: '#4c84c6', ink: '#f4f7ff', edge: '#2b4c7f' },
+  { value: 100, color: 'Black', fill: '#28323e', ink: '#ecedf0', edge: '#111820' },
+  { value: 500, color: 'Green', fill: '#4b9d79', ink: '#f4fff8', edge: '#2a5b46' },
+];
+const initialMix = [15, 2, 3, 1, 0];
+const sum = a => a.reduce((x, y) => x + y, 0);
+const units = a => sum(a.map((n, i) => n * denoms[i].value));
+const plus = (a, b) => a.map((n, i) => n + b[i]);
+const minus = (a, b) => a.map((n, i) => n - b[i]);
+const eur = n => `EUR ${(n / 100).toFixed(2)}`;
+const esc = s => String(s).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+const b = (label, action, cls = '', extra = '') => `<button type="button" data-action="${action}" class="${cls}" ${extra}>${esc(label)}</button>`;
+const notice = (text, kind = '', title = '') => `<div class="notice ${kind}">${title ? `<strong>${esc(title)}</strong>` : ''}${esc(text)}</div>`;
+let state, modal = null, opener = null;
+const notes = {
+  normal: 'One past rebuy and Alice’s confirmed 250-unit return. 2 of 3 started reserve stacks remain. Bank includes a 500-unit chip that cannot be split for a 200-unit stack.',
+  exhausted: 'Started reserve target 1; one past rebuy has consumed it. Current bank can still issue a fully qualifying stack. No warning merely because the target is exhausted.',
+  'zero-target': 'Started reserve target 0. A feasible stack is still allowed; reserve is not a request limit.',
+  reduced: 'Two additional historical rebuys leave only ten 1-unit chips. Best exact stack covers 3 of 4 payments of each blind. Reserve target is already consumed.',
+  zero: 'After the reduced-coverage rebuy, only larger denominations remain. Two 100-unit chips make an exact stack with zero blind-payment coverage.',
+  impossible: 'After a further zero-coverage rebuy, usable chips total 180 units. Including one 500-unit chip the bank totals 680, but no exact 200-unit mix exists.',
+  shortage: 'Same history, with no configured 500-unit chip: bank has only 180 units for a required 200-unit stack.',
+};
+function reset(next = fixture) {
+  fixture = notes[next] ? next : 'normal';
+  if (document.querySelector('#modal').open) document.querySelector('#modal').close();
+  modal = null;
+  state = {
+    page: 'play', player: null, phase: 'In progress', target: fixture === 'zero-target' ? 0 : fixture === 'exhausted' ? 1 : 3,
+    players: ['Alice', 'Ben', 'Clara', 'David', 'Emma', 'Felix'].map((name, i) => ({ id: `p${i}`, name, result: i === 0 ? [15, 2, 5, 1, 0] : null, draft: i === 2 })),
+    rebuys: [{ player: 'p1', mix: [...initialMix], historical: false }],
+    bank: [45, 12, 11, 6, 1], configured: [135, 24, 27, 12, 1],
+    saved: ['Alice', 'Ben', 'Clara', 'David', 'Emma', 'Felix', 'Nora', 'Jonas'], selected: null, proposal: null, feedback: null,
+  };
+  if (['reduced', 'zero', 'impossible', 'shortage'].includes(fixture)) {
+    for (const [player, mix] of [['p3', initialMix], ['p4', [20, 1, 3, 1, 0]]]) {
+      state.rebuys.push({ player, mix: [...mix], historical: true });
+      state.bank = minus(state.bank, mix);
+    }
+  }
+  if (['zero', 'impossible', 'shortage'].includes(fixture)) {
+    const mix = [10, 3, 3, 1, 0];
+    state.rebuys.push({ player: 'p1', mix, coverage: 3 });
+    state.bank = minus(state.bank, mix);
+  }
+  if (['impossible', 'shortage'].includes(fixture)) {
+    const mix = [0, 0, 0, 2, 0];
+    state.rebuys.push({ player: 'p1', mix, coverage: 0 });
+    state.bank = minus(state.bank, mix);
+  }
+  if (fixture === 'shortage') { state.bank[4] = 0; state.configured[4] = 0; }
+  updateURL(); render();
+}
+const playerById = id => state.players.find(p => p.id === id);
+const rebuyCount = id => state.rebuys.filter(r => r.player === id).length;
+const contributions = () => (state.players.length + state.rebuys.length) * 2000;
+const consumption = () => state.rebuys.length + state.players.filter(p => p.late).length;
+const remaining = () => Math.max(0, state.target - consumption());
+const contribution = p => eur((1 + rebuyCount(p.id)) * 2000);
+// For these fixtures only, SB=1 and BB=2; only 1-unit chips can pay either.
+const coverage = mix => Math.min(4, Math.floor(mix[0] / 3));
+const mixesCache = new Map();
+function exactMixes(bank) {
+  const key = bank.join(',');
+  if (mixesCache.has(key)) return mixesCache.get(key);
+  const found = [];
+  function visit(i, left, mix) {
+    if (i === denoms.length) { if (left === 0) found.push(mix); return; }
+    for (let n = 0; n <= Math.min(bank[i], Math.floor(left / denoms[i].value)); n++) visit(i + 1, left - n * denoms[i].value, [...mix, n]);
+  }
+  visit(0, 200, []);
+  found.sort((a, b) => sum(a) - sum(b) || a.reduce((v, n, i) => v || b[i] - n, 0));
+  mixesCache.set(key, found); return found;
+}
+const reserveMemo = new Map();
+function supports(bank, n) {
+  if (n <= 0) return true;
+  if (units(bank) < 200 * n || bank[0] < 12 * n) return false;
+  const key = `${bank}:${n}`;
+  if (!reserveMemo.has(key)) reserveMemo.set(key, exactMixes(bank).some(m => coverage(m) === 4 && supports(minus(bank, m), n - 1)));
+  return reserveMemo.get(key);
+}
+function achievable() {
+  for (let n = remaining(); n >= 0; n--) if (supports(state.bank, n)) return n;
+  return 0;
+}
+function allocation(kind) {
+  const all = exactMixes(state.bank);
+  const protect = Math.max(0, achievable() - 1);
+  const full = all.find(m => coverage(m) === 4 && supports(minus(state.bank, m), protect));
+  if (full) return { kind, mix: [...full], coverage: 4, bank: [...state.bank] };
+  if (kind === 'entry') return { kind, error: all.length ? 'coverage' : 'exact' };
+  if (!all.length) return { kind, error: 'exact' };
+  const best = [...all].sort((a, b) => coverage(b) - coverage(a) || sum(a) - sum(b) || a.reduce((v, n, i) => v || b[i] - n, 0)).find(m => supports(minus(state.bank, m), protect));
+  return best ? { kind, mix: [...best], coverage: coverage(best), bank: [...state.bank] } : { kind, error: 'reserve' };
+}
+function chip(d) {
+  return `<svg class="chip" viewBox="0 0 72 72" aria-hidden="true"><circle cx="36" cy="36" r="33" fill="${d.fill}" stroke="#b3c0ca"/><circle cx="36" cy="36" r="27" fill="none" stroke="${d.ink}" stroke-width="6" stroke-dasharray="8 14"/><text x="36" y="42" text-anchor="middle" fill="${d.ink}" font-size="${d.value > 99 ? 15 : 20}" font-weight="700">${d.value}</text></svg>`;
+}
+function tower(d, count) {
+  let discs = '';
+  for (let i = 0; i < Math.min(20, count); i++) {
+    const y = 154 - i * 5.4;
+    discs += `<path d="M17 ${y} A33 11.5 0 0 0 83 ${y} v5.6 A33 11.5 0 0 1 17 ${y + 5.6} Z" fill="${d.edge}" stroke="#080d12" stroke-width=".7"/><path d="M28 ${y + 2}v5 M50 ${y + 11}v5 M72 ${y + 2}v5" stroke="${d.ink}" stroke-opacity=".72" stroke-width="3.6"/><ellipse cx="50" cy="${y}" rx="33" ry="11.5" fill="${d.fill}" stroke="${(i + 1) % 5 === 0 ? '#c9b5ff' : '#ffffff44'}"/>`;
+    if (i === Math.min(20, count) - 1) discs += `<ellipse cx="50" cy="${y}" rx="27" ry="9" fill="none" stroke="${d.ink}" stroke-width="3" stroke-dasharray="6 9"/><text x="50" y="${y + 3}" text-anchor="middle" fill="${d.ink}" font-size="12" font-weight="800">${d.value}</text>`;
+  }
+  return `<div class="tower" role="listitem" aria-label="${count} chips of value ${d.value}, ${d.color}"><svg viewBox="0 0 100 174" aria-hidden="true"><ellipse cx="50" cy="163" rx="38" ry="10" fill="#04080c"/>${discs}</svg><b>×${count}</b><span class="small">${d.value} · ${d.color}</span></div>`;
+}
+function stack(mix, label = 'Stack to hand out') {
+  return `<div class="stack"><div class="stack-top"><span>${esc(label)}</span><strong>${units(mix)} chip units</strong></div><div class="towers" role="list" aria-label="Actual denomination mix">${mix.map((n, i) => n ? tower(denoms[i], n) : '').join('')}</div></div>`;
+}
+function bankPills(mix) {
+  return `<div class="pills">${mix.map((n, i) => `<div class="chip-pill">${chip(denoms[i])}<span>×${n}<small>${denoms[i].value} · ${denoms[i].color}</small></span></div>`).join('')}</div>`;
+}
+function header(title, nav = true, back = null) {
+  return `<div class="topline">${b(back ? '← Back to Play' : '← Games', back || 'games', 'quiet')}${b('⋯', 'menu', 'quiet', 'aria-label="Game actions"')}</div><p class="context">Cash game · 13 Nov, 19:30</p><span class="badge info">${state.phase}</span><h2>${esc(title)}</h2>${nav ? `<nav class="nav" aria-label="Game workspace">${[['play', 'Play'], ['results', 'Results'], ['details', 'Game details']].map(([key, label]) => b(label, key, '', state.page === key ? 'aria-current="page"' : '')).join('')}</nav>` : ''}`;
+}
+function reserveLabel() { return remaining() ? `${achievable()} reserve ${achievable() === 1 ? 'stack' : 'stacks'} available` : 'Reserve used · more stacks may be possible'; }
+function statusBadge(p) { return p.result ? '<span class="badge ok">Result confirmed</span>' : p.draft ? '<span class="badge warn">Count draft</span>' : ''; }
+function row(p, rebuy = true) {
+  return `<div class="player-row">${b(`<name>`, 'player', 'player-main', `data-id="${p.id}"`).replace('&lt;name&gt;', `<strong>${esc(p.name)}</strong><span class="small">${contribution(p)} contribution${rebuyCount(p.id) ? ` · ${rebuyCount(p.id)} ${rebuyCount(p.id) === 1 ? 'rebuy' : 'rebuys'}` : ''}</span>${statusBadge(p)}`)}${rebuy && !p.result ? b('+ Rebuy', 'rebuy', 'rebuy-small', `data-id="${p.id}" aria-label="Rebuy for ${esc(p.name)}"`) : ''}</div>`;
+}
+function feedback() { return state.feedback ? notice(state.feedback.text, state.feedback.kind, state.feedback.title) : ''; }
+function play() {
+  const active = state.players.filter(p => !p.result), finished = state.players.filter(p => p.result);
+  const terms = '<div class="terms"><span>Blinds <b>1 / 2</b></span><span>Rebuy <b>EUR 20.00</b></span><span><b>200</b> chip units</span></div>';
+  const bankLink = b(`${reserveLabel()} ↗`, 'bank', 'bank-link');
+  if (variant === 'A') return header('Play') + terms + bankLink + feedback() + `<div class="between"><h3>Playing · ${active.length}</h3>${b('+ Add player', 'entry', 'quiet')}</div>${active.map(p => row(p)).join('')}<h3 class="section-title">Finished playing · ${finished.length}</h3>${finished.map(p => row(p, false)).join('')}<p class="small footer">${eur(contributions())} total contributions · Stakes, not money collected.</p>`;
+  if (variant === 'B') return header('At the table') + `<div class="card hero"><div class="between"><div><span class="hero-number">${active.length}</span> <span>playing</span></div>${b('+ Add player', 'entry', 'primary')}</div><div class="mini-stats"><div><strong>${eur(contributions())}</strong><span>Total contributions</span></div><div><strong>${achievable()}</strong><span>Reserve stacks available</span></div></div>${terms}</div>` + feedback() + bankLink + active.map(p => `<article class="card player-card"><div class="between">${b(p.name, 'player', 'name-link', `data-id="${p.id}"`)}${statusBadge(p)}</div><p class="small">${contribution(p)} contribution · ${rebuyCount(p.id)} rebuys</p><div class="actions">${b('+ Rebuy', 'rebuy', '', `data-id="${p.id}"`)}${b('Count chips', 'count', '', `data-id="${p.id}"`)}</div></article>`).join('') + `<h3 class="section-title">Finished playing · ${finished.length}</h3>${finished.map(p => row(p, false)).join('')}`;
+  return header('Play') + `<div class="command-grid">${b('+ Issue a rebuy', 'choose-rebuy', 'primary')}${b('+ Add player', 'entry')}${b('▤ Record result', 'choose-count')}</div>` + feedback() + `<div class="mini-stats"><div><strong>${active.length} playing</strong><span>${finished.length} confirmed result</span></div><div><strong>${eur(contributions())}</strong><span>Total contributions</span></div></div>` + b('Bank & reserve ↗', 'bank', 'bank-link') + `<h3>Players</h3>${active.map(p => row(p, false)).join('')}<h3 class="section-title">Finished playing</h3>${finished.map(p => row(p, false)).join('')}<div class="footer">${terms}</div>`;
+}
+function playerPage() {
+  const p = playerById(state.player);
+  return header(p.name, false, 'play') + statusBadge(p) + `<div class="card"><div class="metric-line"><span>Total contribution</span><strong>${contribution(p)}</strong></div><div class="metric-line"><span>Initial buy-in</span><strong>EUR 20.00</strong></div><div class="metric-line"><span>Rebuys</span><strong>${rebuyCount(p.id)}</strong></div></div>` + (p.result ? stack(p.result, 'Confirmed final chips') + notice(`${units(p.result)} chip units · ${eur(units(p.result) * 10)} chip value. Money remains provisional until whole-game validation and Payments.`, '', 'Final result confirmed') + b('Return to play…', 'return', 'full', `data-id="${p.id}"`) + `<div class="actions">${b('View / correct result', 'count', '', `data-id="${p.id}"`)}</div>` : `<div class="actions">${b('+ Rebuy · EUR 20.00', 'rebuy', 'primary', `data-id="${p.id}"`)}${b(p.draft ? 'Resume chip count' : 'Count final chips', 'count', '', `data-id="${p.id}"`)}</div>`) + `<div class="footer">${b('Rebuy records / corrections', 'records', 'full', `data-id="${p.id}"`)}</div>`;
+}
+function proposalPage() {
+  const p = state.proposal, entry = p.kind === 'entry', name = entry ? state.selected : playerById(state.player).name;
+  if (p.error) {
+    let reason = 'No exact 200-unit stack can be formed from the bank.';
+    if (p.error === 'coverage') reason = 'An exact stack exists, but it cannot cover all 4 payments of each blind. Reduced coverage is available for rebuys only, never for late entry.';
+    else if (p.error === 'reserve') reason = 'This allocation would use chips needed for the remaining reserve guarantee.';
+    else if (units(state.bank) < 200) reason = `The bank has ${units(state.bank)} chip units; this stack requires exactly 200.`;
+    else reason += ` Only ${units(state.bank.map((n, i) => denoms[i].value <= 200 ? n : 0))} units are in denominations no larger than 200. The 500-unit chip cannot be split.`;
+    return header(entry ? 'Cannot add player' : 'Cannot issue rebuy', false, 'play') + notice(reason, 'error', name) + notice(entry ? `${name} has not joined. No contribution recorded; bank and reserve unchanged.` : 'No contribution or rebuy recorded. Bank and reserve unchanged.') + `<div class="card"><h3>Current bank · ${units(state.bank)} units</h3>${bankPills(state.bank)}</div><p class="small">Confirmed final chip returns may make another stack possible. Setup stays locked; do not record a return unless the player is actually finishing.</p><div class="actions">${b(entry ? 'Back to player selection' : 'Back to Play', entry ? 'entry-back' : 'play', 'primary')}${b('View bank', 'bank')}</div>`;
+  }
+  const reduced = p.coverage < 4;
+  return header(entry ? `Add ${name}` : `Rebuy for ${name}`, false, 'play') + `<span class="badge ${reduced ? 'warn' : 'ok'}">${reduced ? 'Reduced blind-payment coverage' : 'Full blind-payment coverage'}</span>` + stack(p.mix) + (reduced ? notice(`Only ${p.coverage} of 4 payments of each blind can be made with separate chips. Change from other players may be needed. Price, stack value and game terms stay unchanged.`, 'warn', p.coverage === 0 ? '0 of 4 · Cannot pay either blind without change' : `${p.coverage} of 4 · Change may be needed`) : '') + `<div class="card"><div class="metric-line"><span>${entry ? 'Initial contribution' : 'Additional contribution'}</span><strong>EUR 20.00</strong></div><div class="metric-line"><span>${entry ? name + ' contribution' : 'Contribution after rebuy'}</span><strong>${entry ? 'EUR 20.00' : eur((2 + rebuyCount(state.player)) * 2000)}</strong></div><div class="metric-line"><span>Bank</span><strong>−${sum(p.mix)} chips · −200 units</strong></div><div class="metric-line"><span>Unconsumed reserve</span><strong>${remaining()} → ${Math.max(0, remaining() - 1)}</strong></div></div><p class="small">${remaining() ? 'Uses one shared reserve stack. Remaining guarantee is protected.' : 'Reserve target is already used. This feasible stack is still allowed.'}</p><div class="actions">${b(reduced ? 'Decline' : 'Cancel', 'decline')}${b(reduced ? 'Accept reduced coverage & issue' : entry ? 'Add player & issue stack' : 'Issue rebuy', 'accept', 'primary')}</div><p class="small footer">Hand out the displayed mix when you confirm. No money movement or payment receipt is recorded.</p>`;
+}
+function entryPage() {
+  return header('Add player', false, 'play') + `<div class="terms"><span>Buy-in <b>EUR 20.00</b></span><span>Stack <b>200 units</b></span><span>Blinds <b>1 / 2</b></span></div><p class="small">Existing terms · Full coverage required. Joining uses the same reserve as rebuys.</p><div class="list-buttons" aria-label="Saved players">${state.saved.map(name => {
+    const exists = state.players.some(p => p.name.toLowerCase() === name.toLowerCase());
+    return b(name, exists ? 'already-added' : 'select', '', `data-name="${esc(name)}" ${exists ? 'aria-disabled="true"' : `aria-pressed="${state.selected === name}"`}`).replace(esc(name) + '</button>', `<span>${esc(name)}</span>${exists ? '<span class="small">Already in this game</span>' : ''}</button>`);
+  }).join('')}</div><div class="actions">${b('+ New saved player', 'new-name')}</div>${state.feedback?.entry ? notice(state.feedback.text, 'error') : ''}<div class="footer">${b('Review entry →', 'review-entry', 'primary full')}</div>`;
+}
+function bankPage() {
+  return header('Bank & reserve', false, 'play') + `<div class="card"><h3>${sum(state.bank)} available chips</h3>${bankPills(state.bank)}<p class="small footer">${units(state.bank)} chip units in the bank. Total value alone does not prove a 200-unit stack is possible.</p></div><div class="card"><h3>Shared reserve</h3><div class="metric-line"><span>Started target</span><strong>${state.target} stacks</strong></div><div class="metric-line"><span>Rebuys + late entries</span><strong>${consumption()}</strong></div><div class="metric-line"><span>Unconsumed target</span><strong>${remaining()}</strong></div><div class="metric-line"><span>Simultaneously achievable</span><strong>${achievable()} of ${remaining()}</strong></div></div><p class="small">Shared bank capacity, not prepacked stacks or a limit on rebuys. Chip returns add available chips; they do not reset reserve consumption.</p>${b('Back to Play', 'play', 'primary full')}`;
+}
+function resultsPage() {
+  const done = state.players.filter(p => p.result);
+  return header('Results') + notice(`${done.length} of ${state.players.length} results confirmed. ${units(done.reduce((a, p) => plus(a, p.result), [0, 0, 0, 0, 0]))} of ${(state.players.length + state.rebuys.length) * 200} cumulative issued units counted.`, '', 'Results incomplete — not a chip shortage') + state.players.map(p => `<div class="player-row">${b(p.name, 'count', 'player-main', `data-id="${p.id}"`)}${statusBadge(p) || '<span class="badge">Uncounted</span>'}</div>`).join('') + `<p class="small footer">Result entry and correction controls are the next design decision. Recording the last result does not automatically complete the game.</p>${b('Calculate Payments…', 'payments-handoff', 'full')}`;
+}
+function detailsPage() {
+  return header('Game details') + notice('Started setup is read-only. To change game terms, use Game actions → Return to Planning; that separately confirmed reset clears recorded play and requires gathering and redistributing chips.', '', 'Setup locked') + `<div class="card">${[['Buy-in / rebuy', 'EUR 20.00'], ['Starting stack', '200 units · 100 BB'], ['Small / big blind', '1 / 2 units'], ['Cash-game rate', 'EUR 0.10 / unit'], ['Blind-payment coverage', '4 payments of each blind'], ['Distribution preference', 'Fewer chips'], ['Started reserve target', `${state.target} stacks`]].map(([a, z]) => `<div class="metric-line"><span>${a}</span><strong>${z}</strong></div>`).join('')}</div>` + stack(initialMix, 'Recorded initial mix per player') + `<div class="card"><h3>Configured chip set (locked)</h3>${bankPills(state.configured)}</div>${b('View current bank & reserve', 'bank', 'full')}`;
+}
+function recordsPage() {
+  const p = playerById(state.player), records = state.rebuys.filter(r => r.player === p.id);
+  return header(`${p.name} · Rebuys`, false, 'play') + `<p class="small">Recorded actual mixes, not new allocation recommendations.</p>` + (records.length ? records.map((r, i) => `<div class="card"><h3>Rebuy ${i + 1} · EUR 20.00</h3>${bankPills(r.mix)}<div class="actions">${b('Correct recorded rebuy…', 'history-handoff')}</div></div>`).join('') : notice('No rebuys recorded.')) + b('Record a forgotten historical rebuy…', 'history-handoff', 'full') + notice('Historical corrections use the actual mix already handed out. A fresh rebuy request above asks the app to choose a new stack now.');
+}
+function handoffPage() {
+  const kind = state.handoff, p = playerById(state.player);
+  const copy = kind === 'remove' ? [`Remove ${p.name}’s final result`, 'Explicit correction handoff', 'This reverses the recorded chip return and makes the player uncounted. It must check dependent issuances before acceptance. Initial buy-in and earlier rebuys are preserved. No result has been removed in this prototype.'] : kind === 'history' ? ['Correct recorded rebuy', 'Historical correction handoff', 'Record the actual denomination mix already handed out, or correct/remove a recorded rebuy. Do not use today’s suggested mix as past history. Detailed editor and dependency recovery are decided separately.'] : kind === 'payments' ? ['Calculate Payments', 'Completion handoff', 'Payments remain unavailable while players are uncounted. Detailed validation, correction and final settlement screens are decided separately.'] : kind === 'delete' ? ['Delete game', 'Lifecycle safety handoff', 'Permanent deletion requires a separate confirmation. This prototype does not delete the game.'] : [`${p?.name} · Final chip count`, p?.result ? 'Confirmed result · correction handoff' : p?.draft ? 'Saved count draft · entry handoff' : 'Uncounted · entry handoff', 'Denomination-based count entry and explicit confirmation belong to the next design decision. Opening or resuming this screen returns no chips and changes no confirmed record.'];
+  return header(copy[0], false, 'play') + notice(copy[2], '', copy[1]) + (p?.result && !['history', 'payments', 'delete'].includes(kind) ? stack(p.result, 'Existing confirmed result stays effective') : '') + b('Back to Play', 'play', 'primary full');
+}
+function render() {
+  const app = document.querySelector('#app');
+  app.style.setProperty('--scale', scale); app.dataset.large = String(Number(scale) > 1.4);
+  const views = { play, player: playerPage, proposal: proposalPage, entry: entryPage, bank: bankPage, results: resultsPage, details: detailsPage, records: recordsPage, handoff: handoffPage,
+    games: () => `<div class="page">${header('Games', false)}<div class="card"><span class="badge info">In progress · Cash game</span><h3>13 Nov, 19:30</h3><p>${state.players.map(p => esc(p.name)).join(', ')}</p>${b('Resume Play', 'play', 'primary full')}</div></div>`,
+    planning: () => header('Planning', false) + notice('Reset demonstration only. Play, rebuys, results and issuances were cleared; the current roster and setup remain. Gather all chips and redistribute before starting a new plan. The Planning wizard is not implemented here.') + `<p>${state.players.map(p => esc(p.name)).join(', ')}</p>`,
+  };
+  app.innerHTML = `<div class="page">${(views[state.page] || play)()}</div>`;
+  document.querySelector('#variant').value = variant; document.querySelector('#fixture').value = fixture; document.querySelector('#scale').value = scale;
+  document.querySelector('#variant-label').textContent = `${variant} · ${names[variant]}`;
+  document.querySelector('#fixture-note').textContent = notes[fixture];
+  document.querySelector('#inspector').textContent = JSON.stringify({ layout: variant, page: state.page, phase: state.phase, participantCount: state.players.length, players: state.players, totalContributions: eur(contributions()), rebuyRecords: state.rebuys, currentBank: state.bank, reserve: { target: state.target, consumed: consumption(), unconsumed: remaining(), simultaneouslyAchievable: state.phase === 'In progress' ? achievable() : null }, proposal: state.proposal, selectedLateArrival: state.selected }, null, 2);
+  window.reviewState = state;
+}
+function updateURL() {
+  const url = new URL(location.href); url.searchParams.set('variant', variant); url.searchParams.set('fixture', fixture); url.searchParams.set('scale', scale);
+  history.replaceState(null, '', url);
+}
+function nav(page) { state.page = page; state.feedback = null; render(); }
+function openModal(type, data = {}) {
+  const el = document.querySelector('#modal');
+  if (!el.open) opener = document.activeElement;
+  modal = { type, ...data };
+  el.style.setProperty('--scale', scale);
+  let html = '';
+  if (type === 'menu') html = `<h2 id="modal-title">Game actions</h2><div class="list-buttons">${b('Game details', 'modal-details')}${b('Return to Planning…', 'reset-dialog')}${b('Delete game…', 'delete-handoff')}${b('Cancel', 'cancel-modal', 'quiet')}</div>`;
+  if (type === 'reset') html = `<h2 id="modal-title">Return to Planning?</h2><p>Clear all rebuys, final results and recorded chip movements, including initial issuances. Keep the entire current roster, initial buy-ins and setup.</p><p><strong>Gather and redistribute the physical chips before using the new plan.</strong></p><div class="actions">${b('Cancel', 'cancel-modal')}${b('Return to Planning', 'confirm-reset', 'danger')}</div>`;
+  if (type === 'return') html = `<h2 id="modal-title">${esc(playerById(state.player).name)} has a final result</h2><p>Remove that result explicitly before a new rebuy. Removal reverses its chip return and may be blocked by later issuances that depend on those chips.</p><p>No result is removed and no rebuy issued by continuing to the correction screen.</p><div class="actions">${b('Cancel', 'cancel-modal')}${b('Go to result removal', 'remove-handoff', 'primary')}</div>`;
+  if (type === 'choose-rebuy' || type === 'choose-count') html = `<h2 id="modal-title">${type === 'choose-rebuy' ? 'Who needs a rebuy?' : 'Whose final chips?'}</h2><div class="list-buttons">${state.players.map(p => b(p.name + (p.result ? ' · result confirmed' : ''), type === 'choose-rebuy' ? 'modal-rebuy' : 'modal-count', '', `data-id="${p.id}"`)).join('')}${b('Cancel', 'cancel-modal', 'quiet')}</div>`;
+  if (type === 'new-name') html = `<h2 id="modal-title">New saved player</h2><p class="small">Save a reusable name and select it for entry. This does not yet add a participant or contribution.</p><label>Player name<input id="new-name" autocomplete="off" value="${esc(data.raw || '')}" ${data.error ? 'aria-invalid="true" aria-describedby="name-error"' : ''}></label>${data.error ? `<p id="name-error" class="notice error">${esc(data.error)}</p>` : ''}<div class="actions">${b('Cancel', 'cancel-new-name')}${b('Save and select', 'save-name', 'primary')}</div>`;
+  if (type === 'discard-name') html = `<h2 id="modal-title">Discard unsaved name?</h2><p>The name has not been saved or added to this game.</p><div class="actions">${b('Keep editing', 'keep-name', 'primary')}${b('Discard changes', 'cancel-modal', 'danger')}</div>`;
+  el.innerHTML = html;
+  if (!el.open) el.showModal();
+  (el.querySelector(type === 'new-name' ? 'input' : '[data-action="cancel-modal"]') || el.querySelector('button')).focus();
+}
+function closeModal() { document.querySelector('#modal').close(); modal = null; if (opener?.isConnected) opener.focus(); }
+function issue(kind, id) {
+  if (state.phase !== 'In progress') return;
+  if (id) state.player = id;
+  if (kind === 'rebuy' && playerById(state.player).result) { openModal('return'); return; }
+  state.proposal = allocation(kind); state.feedback = null; state.page = 'proposal'; render();
+}
+function accept() {
+  const old = state.proposal;
+  if (!old?.mix || state.phase !== 'In progress') return;
+  const now = allocation(old.kind);
+  if (now.error || JSON.stringify(now.mix) !== JSON.stringify(old.mix) || (old.kind === 'rebuy' && playerById(state.player).result)) {
+    state.proposal = now; render(); document.querySelector('#announcement').textContent = 'Bank changed. Review the current proposal; nothing was recorded.'; return;
+  }
+  const name = old.kind === 'entry' ? state.selected : playerById(state.player).name;
+  if (old.kind === 'entry') {
+    if (!name || state.players.some(p => p.name.toLowerCase() === name.toLowerCase())) return;
+    state.players.push({ id: `p${state.players.length}`, name, result: null, draft: false, late: true, mix: [...old.mix] });
+  } else state.rebuys.push({ player: state.player, mix: [...old.mix], coverage: old.coverage });
+  state.bank = minus(state.bank, old.mix); state.proposal = null; state.selected = null; state.page = 'play';
+  state.feedback = { kind: 'ok', title: old.kind === 'entry' ? `${name} joined` : `Rebuy issued · ${name}`, text: `+EUR 20.00 contribution · 200 units issued${old.coverage < 4 ? ` · coverage ${old.coverage} of 4 accepted` : ''}.` };
+  render(); document.querySelector('#announcement').textContent = state.feedback.title + '. ' + state.feedback.text;
+}
+function action(a, el) {
+  const id = el?.dataset.id;
+  if (['play', 'results', 'details', 'bank', 'games'].includes(a)) { nav(a); return; }
+  if (a === 'player') { state.player = id; nav('player'); }
+  if (a === 'rebuy') issue('rebuy', id);
+  if (a === 'accept') accept();
+  if (a === 'decline') { const reduced = state.proposal.coverage < 4, entry = state.proposal.kind === 'entry'; state.proposal = null; state.page = 'play'; state.feedback = { title: reduced ? 'Rebuy declined' : entry ? 'Entry cancelled' : 'Rebuy cancelled', text: 'No contribution recorded. Bank and reserve unchanged.', kind: '' }; render(); }
+  if (a === 'entry') { state.selected = null; nav('entry'); }
+  if (a === 'entry-back') nav('entry');
+  if (a === 'select') { state.selected = el.dataset.name; state.feedback = null; render(); }
+  if (a === 'already-added') { document.querySelector('#announcement').textContent = `${el.dataset.name} is already in this game. Select a different player.`; }
+  if (a === 'review-entry') {
+    if (!state.selected) { state.feedback = { entry: true, text: 'Select a player before reviewing entry.' }; render(); document.querySelector('#app .notice')?.setAttribute('role', 'alert'); return; }
+    issue('entry');
+  }
+  if (a === 'menu') openModal('menu');
+  if (a === 'cancel-modal') closeModal();
+  if (a === 'modal-details') { closeModal(); nav('details'); }
+  if (a === 'reset-dialog') openModal('reset');
+  if (a === 'confirm-reset') { closeModal(); state.phase = 'Planning'; state.rebuys = []; state.players.forEach(p => { p.result = null; p.draft = false; p.late = false; delete p.mix; }); state.bank = [...state.configured]; state.target = fixture === 'exhausted' || fixture === 'zero-target' ? state.target : Math.ceil(state.players.length / 2); state.proposal = null; nav('planning'); }
+  if (a === 'return') { state.player = id; openModal('return'); }
+  if (a === 'remove-handoff') { closeModal(); state.handoff = 'remove'; nav('handoff'); }
+  if (a === 'count') { state.player = id; state.handoff = 'count'; nav('handoff'); }
+  if (a === 'records') { state.player = id; nav('records'); }
+  if (a === 'history-handoff') { state.handoff = 'history'; nav('handoff'); }
+  if (a === 'payments-handoff') { state.handoff = 'payments'; nav('handoff'); }
+  if (a === 'delete-handoff') { closeModal(); state.handoff = 'delete'; nav('handoff'); }
+  if (['choose-rebuy', 'choose-count', 'new-name'].includes(a)) openModal(a);
+  if (a === 'modal-rebuy' || a === 'modal-count') { closeModal(); if (a === 'modal-rebuy') issue('rebuy', id); else { state.player = id; state.handoff = 'count'; nav('handoff'); } }
+  if (a === 'save-name') {
+    const raw = document.querySelector('#new-name').value, name = raw.trim();
+    if (!name || state.saved.some(n => n.toLowerCase() === name.toLowerCase())) { openModal('new-name', { raw, error: !name ? 'Enter a player name.' : 'That name already exists. Use a distinguishing name.' }); return; }
+    state.saved.push(name); state.selected = name; closeModal(); render();
+  }
+  if (a === 'cancel-new-name') {
+    const raw = document.querySelector('#new-name').value;
+    if (raw) openModal('discard-name', { raw }); else closeModal();
+  }
+  if (a === 'keep-name') openModal('new-name', { raw: modal.raw });
+}
+document.addEventListener('click', e => {
+  const el = e.target.closest('[data-action]'); if (el) action(el.dataset.action, el);
+  const tool = e.target.closest('[data-review]');
+  if (tool?.dataset.review === 'reset') reset();
+  if (tool?.dataset.review === 'interrupt') {
+    if (document.querySelector('#modal').open) closeModal();
+    if (state.page === 'proposal') { state.proposal = null; state.page = 'play'; }
+    state.feedback = { title: 'Resumed · no pending action accepted', text: 'Accepted records and saved count drafts remain unchanged. This button simulates interruption; real reload resets this demo.', kind: '' }; render();
+  }
+  const walk = e.target.closest('[data-walk]');
+  if (walk) { reset(walk.dataset.walk); if (walk.dataset.target === 'entry') nav('entry'); if (walk.dataset.target === 'return') { state.player = 'p0'; nav('player'); } }
+});
+document.querySelector('#modal').addEventListener('cancel', e => {
+  e.preventDefault();
+  if (modal?.type === 'new-name' && document.querySelector('#new-name').value) openModal('discard-name', { raw: document.querySelector('#new-name').value });
+  else if (modal?.type === 'discard-name') openModal('new-name', { raw: modal.raw });
+  else closeModal();
+});
+function setVariant(next) { variant = next; updateURL(); render(); document.querySelector('#announcement').textContent = `Layout ${variant}, ${names[variant]}. Game records unchanged.`; }
+function cycle(delta) { const keys = Object.keys(names); setVariant(keys[(keys.indexOf(variant) + delta + keys.length) % keys.length]); }
+document.querySelector('#previous').onclick = () => cycle(-1);
+document.querySelector('#next').onclick = () => cycle(1);
+document.querySelector('#variant').onchange = e => setVariant(e.target.value);
+document.querySelector('#fixture').onchange = e => reset(e.target.value);
+document.querySelector('#scale').onchange = e => { scale = e.target.value; updateURL(); render(); if (document.querySelector('#modal').open) document.querySelector('#modal').style.setProperty('--scale', scale); };
+document.addEventListener('keydown', e => {
+  if (e.target.matches('input, textarea, select, [contenteditable]') || document.querySelector('#modal').open) return;
+  if (e.key === 'ArrowLeft') { e.preventDefault(); cycle(-1); }
+  if (e.key === 'ArrowRight') { e.preventDefault(); cycle(1); }
+});
+reset(fixture);
+</script>
+</html>
