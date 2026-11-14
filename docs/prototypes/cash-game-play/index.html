@@ -3,7 +3,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <link rel="icon" href="data:,">
-<title>Cash-game Play · Review v1 · Throwaway prototype</title>
+<title>Cash-game Play · Review v2 · Refined rows &amp; Spotlight</title>
 <style>
   * { box-sizing: border-box; }
   :root { color-scheme: dark; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; background: #0b1117; color: #f1f4f5; --accent: #c9b5ff; --on-accent: #2b1e45; --tint: #322b45; }
@@ -70,6 +70,74 @@
   .player-main strong { display: block; font-size: 1.05em; }
   .player-main .small { display: block; }
   .rebuy-small { border-radius: 100px; font-size: .8em; color: var(--accent); background: var(--tint); border-color: var(--accent); }
+  .row-actions { display: flex; flex-shrink: 0; gap: 6px; }
+  .row-actions button { font-size: .76em; padding: 10px 12px; }
+  .result-small { border-radius: 100px; color: #f1f4f5; background: #1e2a34; }
+  .game-terms { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); border: 1px solid #637084; border-radius: 22px; background: linear-gradient(135deg, #29313f, #1a2530); margin: 4px 0 12px; padding: 18px 0; }
+  .term { min-width: 0; padding: 0 12px; border-left: 1px solid #46515f; }
+  .term:first-child { border-left: 0; }
+  .term > span { display: block; font-size: .72em; font-weight: 600; color: #c4ced6; margin-bottom: 8px; }
+  .term strong { display: block; font-size: 1.65em; font-weight: 750; line-height: 1.1; letter-spacing: -.045em; font-variant-numeric: tabular-nums; }
+  .term small { display: block; color: #b3c0ca; font-size: .67em; margin-top: 6px; }
+  .term:first-child strong { color: var(--accent); }
+  .result-row .player-main { display: grid; grid-template-columns: minmax(0, 1fr) auto; align-items: center; gap: 12px; width: 100%; }
+  .result-person, .result-overview { min-width: 0; }
+  .result-overview { text-align: right; }
+  .result-overview strong { font-size: 1.35em; font-weight: 750; letter-spacing: -.04em; font-variant-numeric: tabular-nums; }
+  .result-overview .result-label { display: block; font-size: .72em; color: #b3c0ca; }
+  .gain .net-amount { color: #b8dfbd; }
+  .loss .net-amount { color: #ffb3aa; }
+  .even .net-amount { color: #e3d9fc; }
+  .result-hero { padding: 22px 18px; border: 1px solid #6d8e7a; border-radius: 24px; margin: 12px 0 20px; background: radial-gradient(130% 100% at 100% 0, #294638, #19272b 90%); }
+  .result-hero.loss { border-color: #aa777a; background: radial-gradient(130% 100% at 100% 0, #482d35, #241f2b 90%); }
+  .result-hero.even { border-color: #85749e; background: radial-gradient(130% 100% at 100% 0, #3a304a, #211f30 90%); }
+  .result-hero .outcome { display: block; font-size: .85em; font-weight: 650; margin-bottom: 6px; }
+  .result-hero .net-amount { display: block; font-size: 2.8em; line-height: 1.1; font-weight: 780; letter-spacing: -.055em; font-variant-numeric: tabular-nums; margin-bottom: 18px; }
+  .result-hero .metric-line { font-size: .8em; border-color: #52615e; }
+  .result-hero .small { margin: 12px 0 0; }
+  /* D is an editorial, high-contrast composition, not another card-grid palette. */
+  #app[data-variant="D"] { background: #10151e; }
+  #app[data-variant="D"] .nav { border: 0; border-radius: 0; padding: 0; margin: 18px 0 24px; border-bottom: 1px solid #45515f; }
+  #app[data-variant="D"] .nav button { border-radius: 0; border: 0; border-bottom: 3px solid transparent; font-weight: 650; background: transparent; }
+  #app[data-variant="D"] .nav [aria-current="page"] { border-bottom-color: var(--accent); }
+  .spotlight-heading { display: flex; align-items: flex-end; justify-content: space-between; gap: 12px; margin-bottom: 18px; }
+  #app .spotlight-heading h2 { font-size: 4.7em; letter-spacing: -.085em; line-height: .9; font-weight: 850; margin: 0; }
+  .spotlight-phase { color: var(--accent); font-size: .7em; border: 1px solid #7f6f9f; padding: 6px 10px; border-radius: 100px; margin-bottom: 3px; }
+  .spotlight-hero { position: relative; isolation: isolate; overflow: hidden; border-radius: 4px 28px 4px 28px; background: #c9b5ff; color: #24193b; border: 1px solid #e1d4ff; padding: 20px; box-shadow: 0 14px 45px #9c72e021; }
+  .spotlight-hero::before { content: ''; position: absolute; z-index: -1; top: -80px; right: -70px; width: 230px; height: 370px; transform: rotate(29deg); border-left: 1px solid #ffffff80; border-right: 35px solid #ffffff22; background: linear-gradient(90deg, #ffffff30, #e5c4ff77, #ffffff08); }
+  .spotlight-hero::after { content: ''; position: absolute; z-index: -1; top: -40px; right: -7px; width: 80px; height: 300px; transform: rotate(29deg); background: #a283d638; }
+  .spotlight-kicker { display: block; font-size: .69em; font-weight: 750; letter-spacing: .13em; text-transform: uppercase; }
+  .spotlight-blinds { font-size: 5.1em; line-height: 1.02; letter-spacing: -.075em; font-weight: 820; font-variant-numeric: tabular-nums; margin: 5px 0; }
+  .spotlight-blinds span { color: #63488a; font-weight: 350; }
+  .spotlight-hero .blind-unit { font-size: .72em; color: #4c3669; margin: 0 0 20px; }
+  .spotlight-subterms { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; padding-top: 14px; border-top: 1px solid #80689f; }
+  .spotlight-subterms > div { min-width: 0; }
+  .spotlight-subterms span { display: block; font-size: .69em; color: #4c3669; margin-bottom: 2px; }
+  .spotlight-subterms strong { font-size: 1.42em; font-weight: 760; letter-spacing: -.04em; font-variant-numeric: tabular-nums; }
+  .spotlight-subterms small { font-size: .52em; font-weight: 650; letter-spacing: 0; }
+  .spotlight-bank { display: grid; grid-template-columns: auto minmax(0, 1fr) auto; align-items: center; gap: 14px; width: 100%; border: 0; border-bottom: 1px solid #526071; border-radius: 0; padding: 12px 4px 16px; background: transparent; text-align: left; }
+  .spotlight-bank .reserve-number { font-size: 2.7em; font-weight: 650; letter-spacing: -.06em; line-height: 1; color: var(--accent); font-variant-numeric: tabular-nums; }
+  .spotlight-bank .small { display: block; }
+  .spotlight-bank .bank-arrow { font-size: 1.7em; color: var(--accent); }
+  .spotlight-roster { display: flex; align-items: baseline; gap: 8px; }
+  #app .spotlight-roster h3 { font-size: 1.9em; font-weight: 720; letter-spacing: -.05em; margin: 0; }
+  .spotlight-roster .roster-count { font-size: .85em; color: #b3c0ca; }
+  .spotlight-toolbar { margin: 24px 0 16px; }
+  .spotlight-toolbar button { border-radius: 100px; font-size: .76em; padding: 10px 12px; }
+  .spotlight-players { display: grid; gap: 12px; }
+  .spotlight-player { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 12px; padding: 14px; background: linear-gradient(120deg, #29303f, #1b2430 78%); border: 1px solid #45515f; border-radius: 4px 22px 4px 22px; box-shadow: 0 7px 20px #0003; }
+  .spotlight-player .player-main { padding: 0; align-self: center; }
+  .spotlight-player .player-main strong { font-size: 1.3em; letter-spacing: -.04em; }
+  .spotlight-player .row-actions { display: grid; gap: 6px; }
+  .spotlight-player .row-actions button { min-width: 88px; border-radius: 100px; }
+  .spotlight-player .result-small { background: #d6c6ff; color: #2b1e45; border-color: #d6c6ff; }
+  .spotlight-player .rebuy-small { background: transparent; }
+  #app[data-variant="D"] .result-row { border: 1px solid #5a6b63; border-radius: 4px 22px 4px 22px; margin-top: 12px; padding: 12px; background: linear-gradient(120deg, #26382f, #192329); }
+  #app[data-variant="D"] .result-row.loss { border-color: #7e5a64; background: linear-gradient(120deg, #3b2830, #211f29); }
+  #app[data-variant="D"] .result-row .result-overview strong { font-size: 1.85em; }
+  #app[data-variant="D"] .result-row .player-main { padding: 4px 0; }
+  .spotlight-total { display: flex; align-items: baseline; flex-wrap: wrap; gap: 6px 14px; border-top: 1px solid #45515f; margin-top: 26px; padding-top: 16px; }
+  .spotlight-total strong { font-size: 1.7em; letter-spacing: -.05em; font-variant-numeric: tabular-nums; }
   .section-title { margin-top: 24px; }
   .player-card { position: relative; padding: 18px; }
   .player-card .name-link { border: 0; background: transparent; padding: 0; text-align: left; font-weight: 700; font-size: 1.25em; }
@@ -119,13 +187,27 @@
   [data-large="true"] .player-main { flex-basis: 100%; }
   [data-large="true"] .mini-stats, [data-large="true"] .command-grid, [data-large="true"] .player-card .actions { grid-template-columns: 1fr; }
   [data-large="true"] .towers { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  [data-large="true"] .game-terms { grid-template-columns: 1fr; padding: 0 16px; }
+  [data-large="true"] .term { border-left: 0; border-top: 1px solid #46515f; padding: 14px 0; }
+  [data-large="true"] .term:first-child { border-top: 0; }
+  [data-large="true"] .result-row .player-main { grid-template-columns: 1fr; }
+  [data-large="true"] .result-overview { text-align: left; }
+  [data-large="true"] .row-actions { flex-wrap: wrap; }
+  [data-large="true"] .spotlight-heading { flex-wrap: wrap; }
+  #app[data-large="true"] .spotlight-heading h2 { font-size: 3.3em; }
+  [data-large="true"] .spotlight-blinds { font-size: 3em; }
+  [data-large="true"] .spotlight-subterms { grid-template-columns: 1fr; }
+  [data-large="true"] .spotlight-player { grid-template-columns: 1fr; }
+  [data-large="true"] .spotlight-player .row-actions { display: flex; flex-wrap: wrap; }
+  [data-large="true"] .spotlight-bank { grid-template-columns: auto minmax(0, 1fr); }
+  [data-large="true"] .spotlight-bank .bank-arrow { display: none; }
   @media (prefers-reduced-motion: reduce) { *, *::before, *::after { transition: none !important; animation: none !important; } }
 </style>
 <main class="workshop">
   <header>
-    <div class="revision">Review v1 · Not yet approved</div>
+    <div class="revision">Review v2 · Your feedback applied</div>
     <h1>Cash-game Play, rebuys &amp; late entry</h1>
-    <p class="intro">Compare three Play layouts in the approved Current / Lavender style. Everything is an in-memory fixture. Results/correction editors are labelled handoffs, not proposed designs for those later decisions.</p>
+    <p class="intro">A refines your preferred rows; D · Spotlight pushes the visual character further. Both add prominent game terms, direct result shortcuts and provisional win/loss. Everything is an in-memory fixture; detailed result/correction editors remain later design decisions.</p>
   </header>
   <div class="layout">
     <section id="app" aria-label="Phone prototype"></section>
@@ -133,8 +215,8 @@
       <details id="review-tools">
         <summary>Prototype controls &amp; scenarios</summary>
         <div class="review-controls">
-          <label>Play layout<select id="variant"><option value="A">A · Quick rows</option><option value="B">B · Player cards</option><option value="C">C · Action hub</option></select></label>
-          <label>Bank / history fixture<select id="fixture"><option value="normal">Normal · 2 reserve stacks remain</option><option value="exhausted">Reserve exhausted · full stack still available</option><option value="zero-target">Started with zero reserve · feasible</option><option value="reduced">Reduced coverage · 3 of 4</option><option value="zero">Zero coverage · 0 of 4</option><option value="impossible">No exact mix · bank value is sufficient</option><option value="shortage">Not enough bank value</option></select></label>
+          <label>Play layout<select id="variant"><optgroup label="Review v2"><option value="A">A · Refined rows</option><option value="D">D · Spotlight</option></optgroup><optgroup label="Earlier layout explorations"><option value="B">B · Player cards</option><option value="C">C · Action hub</option></optgroup></select></label>
+          <label>Bank / history fixture<select id="fixture"><option value="normal">Normal · Alice won EUR 5</option><option value="mixed-results">Won / lost · two confirmed results</option><option value="break-even">Break-even · confirmed zero balance</option><option value="exhausted">Reserve exhausted · full stack still available</option><option value="zero-target">Started with zero reserve · feasible</option><option value="reduced">Reduced coverage · 3 of 4</option><option value="zero">Zero coverage · 0 of 4</option><option value="impossible">No exact mix · bank value is sufficient</option><option value="shortage">Not enough bank value</option></select></label>
           <label>App text<select id="scale"><option value="1">100%</option><option value="1.5">150%</option><option value="2">200%</option></select></label>
           <button data-review="reset">Reset this fixture</button>
           <button data-review="interrupt">Simulate app interruption (no acceptance)</button>
@@ -159,9 +241,10 @@
 <div id="announcement" role="status" aria-live="polite"></div>
 <dialog id="modal" aria-labelledby="modal-title"></dialog>
 <script>
-// THROWAWAY: three Play hierarchies, one shared fixture workflow. No network or storage.
+// THROWAWAY: refined A versus editorial D; B/C retained as earlier explorations.
 const params = new URLSearchParams(location.search);
-const names = { A: 'Quick rows', B: 'Player cards', C: 'Action hub' };
+const names = { A: 'Refined rows', D: 'Spotlight', B: 'Player cards', C: 'Action hub' };
+const comparison = ['A', 'D'];
 let variant = names[params.get('variant')] ? params.get('variant') : 'A';
 let scale = ['1', '1.5', '2'].includes(params.get('scale')) ? params.get('scale') : '1';
 let fixture = params.get('fixture') || 'normal';
@@ -184,6 +267,8 @@ const notice = (text, kind = '', title = '') => `<div class="notice ${kind}">${t
 let state, modal = null, opener = null;
 const notes = {
   normal: 'One past rebuy and Alice’s confirmed 250-unit return. 2 of 3 started reserve stacks remain. Bank includes a 500-unit chip that cannot be split for a 200-unit stack.',
+  'mixed-results': 'Alice’s confirmed 250 units give a provisional EUR 5 win after her EUR 20 contribution. Felix’s confirmed 150 units give a provisional EUR 5 loss. Active players have no invented win/loss amount.',
+  'break-even': 'Alice’s confirmed 200 units equal her EUR 20 contribution. The overview and detail show Break-even, not a gain/loss or an uncounted zero.',
   exhausted: 'Started reserve target 1; one past rebuy has consumed it. Current bank can still issue a fully qualifying stack. No warning merely because the target is exhausted.',
   'zero-target': 'Started reserve target 0. A feasible stack is still allowed; reserve is not a request limit.',
   reduced: 'Two additional historical rebuys leave only ten 1-unit chips. Best exact stack covers 3 of 4 payments of each blind. Reserve target is already consumed.',
@@ -219,6 +304,15 @@ function reset(next = fixture) {
     state.bank = minus(state.bank, mix);
   }
   if (fixture === 'shortage') { state.bank[4] = 0; state.configured[4] = 0; }
+  if (fixture === 'mixed-results') {
+    state.players[5].result = [15, 2, 1, 1, 0];
+    state.bank = plus(state.bank, state.players[5].result);
+  }
+  if (fixture === 'break-even') {
+    state.bank = minus(state.bank, state.players[0].result);
+    state.players[0].result = [...initialMix];
+    state.bank = plus(state.bank, state.players[0].result);
+  }
   updateURL(); render();
 }
 const playerById = id => state.players.find(p => p.id === id);
@@ -227,6 +321,11 @@ const contributions = () => (state.players.length + state.rebuys.length) * 2000;
 const consumption = () => state.rebuys.length + state.players.filter(p => p.late).length;
 const remaining = () => Math.max(0, state.target - consumption());
 const contribution = p => eur((1 + rebuyCount(p.id)) * 2000);
+// A displayed In progress balance is provisional, never a final payment instruction.
+const provisionalBalance = p => p.result ? units(p.result) * 10 - (1 + rebuyCount(p.id)) * 2000 : null;
+const signedEur = n => `${n > 0 ? '+' : n < 0 ? '−' : ''}${eur(Math.abs(n))}`;
+const balanceTone = p => provisionalBalance(p) > 0 ? 'gain' : provisionalBalance(p) < 0 ? 'loss' : 'even';
+const outcome = p => provisionalBalance(p) > 0 ? 'Won' : provisionalBalance(p) < 0 ? 'Lost' : 'Break-even';
 // For these fixtures only, SB=1 and BB=2; only 1-unit chips can pay either.
 const coverage = mix => Math.min(4, Math.floor(mix[0] / 3));
 const mixesCache = new Map();
@@ -285,23 +384,43 @@ function bankPills(mix) {
 function header(title, nav = true, back = null) {
   return `<div class="topline">${b(back ? '← Back to Play' : '← Games', back || 'games', 'quiet')}${b('⋯', 'menu', 'quiet', 'aria-label="Game actions"')}</div><p class="context">Cash game · 13 Nov, 19:30</p><span class="badge info">${state.phase}</span><h2>${esc(title)}</h2>${nav ? `<nav class="nav" aria-label="Game workspace">${[['play', 'Play'], ['results', 'Results'], ['details', 'Game details']].map(([key, label]) => b(label, key, '', state.page === key ? 'aria-current="page"' : '')).join('')}</nav>` : ''}`;
 }
+function workspaceNav() {
+  return `<nav class="nav" aria-label="Game workspace">${[['play', 'Play'], ['results', 'Results'], ['details', 'Game details']].map(([key, label]) => b(label, key, '', state.page === key ? 'aria-current="page"' : '')).join('')}</nav>`;
+}
+function prominentTerms() {
+  return '<section class="game-terms" aria-label="Locked game terms"><div class="term"><span>Blinds</span><strong>1 / 2</strong><small>chip units</small></div><div class="term"><span>Rebuy</span><strong>20.00</strong><small>EUR</small></div><div class="term"><span>Stack</span><strong>200</strong><small>chip units</small></div></section>';
+}
 function reserveLabel() { return remaining() ? `${achievable()} reserve ${achievable() === 1 ? 'stack' : 'stacks'} available` : 'Reserve used · more stacks may be possible'; }
 function statusBadge(p) { return p.result ? '<span class="badge ok">Result confirmed</span>' : p.draft ? '<span class="badge warn">Count draft</span>' : ''; }
+function playerActions(p) {
+  return `<div class="row-actions">${b('+ Rebuy', 'rebuy', 'rebuy-small', `data-id="${p.id}" aria-label="Rebuy for ${esc(p.name)}"`)}${b(p.draft ? '▤ Resume' : '▤ Result', 'count', 'result-small', `data-id="${p.id}" aria-label="${p.draft ? 'Resume' : 'Record'} final chip count for ${esc(p.name)}"`)}</div>`;
+}
+function resultOverview(p) {
+  return `<span class="result-overview"><strong class="net-amount">${signedEur(provisionalBalance(p))}</strong><span class="result-label">${outcome(p)} · provisional</span></span>`;
+}
+function resultHero(p) {
+  return `<section class="result-hero ${balanceTone(p)}" aria-label="${esc(p.name)} provisional win or loss"><span class="outcome">${outcome(p)} · provisional</span><strong class="net-amount">${signedEur(provisionalBalance(p))}</strong><div class="metric-line"><span>Confirmed chip value</span><strong>${eur(units(p.result) * 10)}</strong></div><div class="metric-line"><span>Total contributions</span><strong>−${contribution(p)}</strong></div><p class="small">Chip value minus all buy-ins and rebuys. Final cents and Payments follow whole-game validation.</p></section>`;
+}
 function row(p, rebuy = true) {
-  return `<div class="player-row">${b(`<name>`, 'player', 'player-main', `data-id="${p.id}"`).replace('&lt;name&gt;', `<strong>${esc(p.name)}</strong><span class="small">${contribution(p)} contribution${rebuyCount(p.id) ? ` · ${rebuyCount(p.id)} ${rebuyCount(p.id) === 1 ? 'rebuy' : 'rebuys'}` : ''}</span>${statusBadge(p)}`)}${rebuy && !p.result ? b('+ Rebuy', 'rebuy', 'rebuy-small', `data-id="${p.id}" aria-label="Rebuy for ${esc(p.name)}"`) : ''}</div>`;
+  const identity = `<span class="result-person"><strong>${esc(p.name)}</strong><span class="small">${contribution(p)} contribution${rebuyCount(p.id) ? ` · ${rebuyCount(p.id)} ${rebuyCount(p.id) === 1 ? 'rebuy' : 'rebuys'}` : ''}</span>${statusBadge(p)}</span>`;
+  return `<div class="player-row ${p.result ? `result-row ${balanceTone(p)}` : ''}"><button type="button" data-action="player" data-id="${p.id}" class="player-main">${identity}${p.result ? resultOverview(p) : ''}</button>${rebuy && !p.result ? playerActions(p) : ''}</div>`;
 }
 function feedback() { return state.feedback ? notice(state.feedback.text, state.feedback.kind, state.feedback.title) : ''; }
+function spotlightPlay(active, finished) {
+  return `<div class="topline">${b('← Games', 'games', 'quiet')}${b('⋯', 'menu', 'quiet', 'aria-label="Game actions"')}</div><p class="context">Cash game · 13 Nov, 19:30</p><div class="spotlight-heading"><h2>Play.</h2><span class="spotlight-phase">${state.phase}</span></div><section class="spotlight-hero" aria-label="Locked game terms"><span class="spotlight-kicker">Blinds</span><div class="spotlight-blinds">1 <span>/</span> 2</div><p class="blind-unit">chip units · 100 BB starting depth</p><div class="spotlight-subterms"><div><span>Rebuy</span><strong><small>EUR</small> 20.00</strong></div><div><span>Starting stack</span><strong>200 <small>chip units</small></strong></div></div></section><button type="button" data-action="bank" class="spotlight-bank"><span class="reserve-number">${achievable()}</span><span>Reserve stacks<span class="small">${remaining() ? `${remaining()} still targeted · shared bank` : 'Target used · further stacks may be possible'}</span></span><span class="bank-arrow" aria-hidden="true">↗</span></button>${workspaceNav()}${feedback()}<div class="between spotlight-toolbar"><div class="spotlight-roster"><h3>Playing</h3><span class="roster-count">/ ${active.length}</span></div>${b('+ Add player', 'entry', 'quiet')}</div><div class="spotlight-players">${active.map(p => `<article class="spotlight-player"><button type="button" data-action="player" data-id="${p.id}" class="player-main"><strong>${esc(p.name)}</strong><span class="small">${contribution(p)} contribution</span>${statusBadge(p)}</button>${playerActions(p)}</article>`).join('')}</div><div class="spotlight-roster section-title"><h3>Results</h3><span class="roster-count">/ ${finished.length} confirmed</span></div>${finished.map(p => row(p, false)).join('')}<div class="spotlight-total"><strong>${eur(contributions())}</strong><span class="small">Total contributions<br>Stakes, not money collected</span></div>`;
+}
 function play() {
   const active = state.players.filter(p => !p.result), finished = state.players.filter(p => p.result);
   const terms = '<div class="terms"><span>Blinds <b>1 / 2</b></span><span>Rebuy <b>EUR 20.00</b></span><span><b>200</b> chip units</span></div>';
   const bankLink = b(`${reserveLabel()} ↗`, 'bank', 'bank-link');
-  if (variant === 'A') return header('Play') + terms + bankLink + feedback() + `<div class="between"><h3>Playing · ${active.length}</h3>${b('+ Add player', 'entry', 'quiet')}</div>${active.map(p => row(p)).join('')}<h3 class="section-title">Finished playing · ${finished.length}</h3>${finished.map(p => row(p, false)).join('')}<p class="small footer">${eur(contributions())} total contributions · Stakes, not money collected.</p>`;
+  if (variant === 'A') return header('Play') + prominentTerms() + bankLink + feedback() + `<div class="between"><h3>Playing · ${active.length}</h3>${b('+ Add player', 'entry', 'quiet')}</div>${active.map(p => row(p)).join('')}<h3 class="section-title">Finished playing · ${finished.length}</h3>${finished.map(p => row(p, false)).join('')}<p class="small footer">${eur(contributions())} total contributions · Stakes, not money collected.</p>`;
+  if (variant === 'D') return spotlightPlay(active, finished);
   if (variant === 'B') return header('At the table') + `<div class="card hero"><div class="between"><div><span class="hero-number">${active.length}</span> <span>playing</span></div>${b('+ Add player', 'entry', 'primary')}</div><div class="mini-stats"><div><strong>${eur(contributions())}</strong><span>Total contributions</span></div><div><strong>${achievable()}</strong><span>Reserve stacks available</span></div></div>${terms}</div>` + feedback() + bankLink + active.map(p => `<article class="card player-card"><div class="between">${b(p.name, 'player', 'name-link', `data-id="${p.id}"`)}${statusBadge(p)}</div><p class="small">${contribution(p)} contribution · ${rebuyCount(p.id)} rebuys</p><div class="actions">${b('+ Rebuy', 'rebuy', '', `data-id="${p.id}"`)}${b('Count chips', 'count', '', `data-id="${p.id}"`)}</div></article>`).join('') + `<h3 class="section-title">Finished playing · ${finished.length}</h3>${finished.map(p => row(p, false)).join('')}`;
   return header('Play') + `<div class="command-grid">${b('+ Issue a rebuy', 'choose-rebuy', 'primary')}${b('+ Add player', 'entry')}${b('▤ Record result', 'choose-count')}</div>` + feedback() + `<div class="mini-stats"><div><strong>${active.length} playing</strong><span>${finished.length} confirmed result</span></div><div><strong>${eur(contributions())}</strong><span>Total contributions</span></div></div>` + b('Bank & reserve ↗', 'bank', 'bank-link') + `<h3>Players</h3>${active.map(p => row(p, false)).join('')}<h3 class="section-title">Finished playing</h3>${finished.map(p => row(p, false)).join('')}<div class="footer">${terms}</div>`;
 }
 function playerPage() {
   const p = playerById(state.player);
-  return header(p.name, false, 'play') + statusBadge(p) + `<div class="card"><div class="metric-line"><span>Total contribution</span><strong>${contribution(p)}</strong></div><div class="metric-line"><span>Initial buy-in</span><strong>EUR 20.00</strong></div><div class="metric-line"><span>Rebuys</span><strong>${rebuyCount(p.id)}</strong></div></div>` + (p.result ? stack(p.result, 'Confirmed final chips') + notice(`${units(p.result)} chip units · ${eur(units(p.result) * 10)} chip value. Money remains provisional until whole-game validation and Payments.`, '', 'Final result confirmed') + b('Return to play…', 'return', 'full', `data-id="${p.id}"`) + `<div class="actions">${b('View / correct result', 'count', '', `data-id="${p.id}"`)}</div>` : `<div class="actions">${b('+ Rebuy · EUR 20.00', 'rebuy', 'primary', `data-id="${p.id}"`)}${b(p.draft ? 'Resume chip count' : 'Count final chips', 'count', '', `data-id="${p.id}"`)}</div>`) + `<div class="footer">${b('Rebuy records / corrections', 'records', 'full', `data-id="${p.id}"`)}</div>`;
+  return header(p.name, false, 'play') + statusBadge(p) + (p.result ? resultHero(p) : '') + `<div class="card"><div class="metric-line"><span>Total contribution</span><strong>${contribution(p)}</strong></div><div class="metric-line"><span>Initial buy-in</span><strong>EUR 20.00</strong></div><div class="metric-line"><span>Rebuys</span><strong>${rebuyCount(p.id)}</strong></div></div>` + (p.result ? stack(p.result, 'Confirmed final chips') + b('Return to play…', 'return', 'full', `data-id="${p.id}"`) + `<div class="actions">${b('View / correct result', 'count', '', `data-id="${p.id}"`)}</div>` : `<div class="actions">${b('+ Rebuy · EUR 20.00', 'rebuy', 'primary', `data-id="${p.id}"`)}${b(p.draft ? 'Resume chip count' : 'Count final chips', 'count', '', `data-id="${p.id}"`)}</div>`) + `<div class="footer">${b('Rebuy records / corrections', 'records', 'full', `data-id="${p.id}"`)}</div>`;
 }
 function proposalPage() {
   const p = state.proposal, entry = p.kind === 'entry', name = entry ? state.selected : playerById(state.player).name;
@@ -327,7 +446,7 @@ function bankPage() {
 }
 function resultsPage() {
   const done = state.players.filter(p => p.result);
-  return header('Results') + notice(`${done.length} of ${state.players.length} results confirmed. ${units(done.reduce((a, p) => plus(a, p.result), [0, 0, 0, 0, 0]))} of ${(state.players.length + state.rebuys.length) * 200} cumulative issued units counted.`, '', 'Results incomplete — not a chip shortage') + state.players.map(p => `<div class="player-row">${b(p.name, 'count', 'player-main', `data-id="${p.id}"`)}${statusBadge(p) || '<span class="badge">Uncounted</span>'}</div>`).join('') + `<p class="small footer">Result entry and correction controls are the next design decision. Recording the last result does not automatically complete the game.</p>${b('Calculate Payments…', 'payments-handoff', 'full')}`;
+  return header('Results') + notice(`${done.length} of ${state.players.length} results confirmed. ${units(done.reduce((a, p) => plus(a, p.result), [0, 0, 0, 0, 0]))} of ${(state.players.length + state.rebuys.length) * 200} cumulative issued units counted.`, '', 'Results incomplete — not a chip shortage') + state.players.map(p => p.result ? row(p, false) : `<div class="player-row">${b(p.name, 'count', 'player-main', `data-id="${p.id}"`)}${statusBadge(p) || '<span class="badge">Uncounted</span>'}</div>`).join('') + `<p class="small footer">Result entry and correction controls are the next design decision. Recording the last result does not automatically complete the game.</p>${b('Calculate Payments…', 'payments-handoff', 'full')}`;
 }
 function detailsPage() {
   return header('Game details') + notice('Started setup is read-only. To change game terms, use Game actions → Return to Planning; that separately confirmed reset clears recorded play and requires gathering and redistributing chips.', '', 'Setup locked') + `<div class="card">${[['Buy-in / rebuy', 'EUR 20.00'], ['Starting stack', '200 units · 100 BB'], ['Small / big blind', '1 / 2 units'], ['Cash-game rate', 'EUR 0.10 / unit'], ['Blind-payment coverage', '4 payments of each blind'], ['Distribution preference', 'Fewer chips'], ['Started reserve target', `${state.target} stacks`]].map(([a, z]) => `<div class="metric-line"><span>${a}</span><strong>${z}</strong></div>`).join('')}</div>` + stack(initialMix, 'Recorded initial mix per player') + `<div class="card"><h3>Configured chip set (locked)</h3>${bankPills(state.configured)}</div>${b('View current bank & reserve', 'bank', 'full')}`;
@@ -339,11 +458,11 @@ function recordsPage() {
 function handoffPage() {
   const kind = state.handoff, p = playerById(state.player);
   const copy = kind === 'remove' ? [`Remove ${p.name}’s final result`, 'Explicit correction handoff', 'This reverses the recorded chip return and makes the player uncounted. It must check dependent issuances before acceptance. Initial buy-in and earlier rebuys are preserved. No result has been removed in this prototype.'] : kind === 'history' ? ['Correct recorded rebuy', 'Historical correction handoff', 'Record the actual denomination mix already handed out, or correct/remove a recorded rebuy. Do not use today’s suggested mix as past history. Detailed editor and dependency recovery are decided separately.'] : kind === 'payments' ? ['Calculate Payments', 'Completion handoff', 'Payments remain unavailable while players are uncounted. Detailed validation, correction and final settlement screens are decided separately.'] : kind === 'delete' ? ['Delete game', 'Lifecycle safety handoff', 'Permanent deletion requires a separate confirmation. This prototype does not delete the game.'] : [`${p?.name} · Final chip count`, p?.result ? 'Confirmed result · correction handoff' : p?.draft ? 'Saved count draft · entry handoff' : 'Uncounted · entry handoff', 'Denomination-based count entry and explicit confirmation belong to the next design decision. Opening or resuming this screen returns no chips and changes no confirmed record.'];
-  return header(copy[0], false, 'play') + notice(copy[2], '', copy[1]) + (p?.result && !['history', 'payments', 'delete'].includes(kind) ? stack(p.result, 'Existing confirmed result stays effective') : '') + b('Back to Play', 'play', 'primary full');
+  return header(copy[0], false, 'play') + notice(copy[2], '', copy[1]) + (p?.result && !['history', 'payments', 'delete'].includes(kind) ? resultHero(p) + stack(p.result, 'Existing confirmed result stays effective') : '') + b('Back to Play', 'play', 'primary full');
 }
 function render() {
   const app = document.querySelector('#app');
-  app.style.setProperty('--scale', scale); app.dataset.large = String(Number(scale) > 1.4);
+  app.style.setProperty('--scale', scale); app.dataset.large = String(Number(scale) > 1.4); app.dataset.variant = variant;
   const views = { play, player: playerPage, proposal: proposalPage, entry: entryPage, bank: bankPage, results: resultsPage, details: detailsPage, records: recordsPage, handoff: handoffPage,
     games: () => `<div class="page">${header('Games', false)}<div class="card"><span class="badge info">In progress · Cash game</span><h3>13 Nov, 19:30</h3><p>${state.players.map(p => esc(p.name)).join(', ')}</p>${b('Resume Play', 'play', 'primary full')}</div></div>`,
     planning: () => header('Planning', false) + notice('Reset demonstration only. Play, rebuys, results and issuances were cleared; the current roster and setup remain. Gather all chips and redistribute before starting a new plan. The Planning wizard is not implemented here.') + `<p>${state.players.map(p => esc(p.name)).join(', ')}</p>`,
@@ -458,7 +577,7 @@ document.querySelector('#modal').addEventListener('cancel', e => {
   else closeModal();
 });
 function setVariant(next) { variant = next; updateURL(); render(); document.querySelector('#announcement').textContent = `Layout ${variant}, ${names[variant]}. Game records unchanged.`; }
-function cycle(delta) { const keys = Object.keys(names); setVariant(keys[(keys.indexOf(variant) + delta + keys.length) % keys.length]); }
+function cycle(delta) { const index = Math.max(0, comparison.indexOf(variant)); setVariant(comparison[(index + delta + comparison.length) % comparison.length]); }
 document.querySelector('#previous').onclick = () => cycle(-1);
 document.querySelector('#next').onclick = () => cycle(1);
 document.querySelector('#variant').onchange = e => setVariant(e.target.value);
