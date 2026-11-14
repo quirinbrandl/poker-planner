@@ -1,6 +1,6 @@
-# Cash-game Play · Review v2
+# Cash-game Play · Review v3
 
-**Throwaway, unapproved, fixture-only prototype.** This asks which Play hierarchy makes rebuys, late entry and player status understandable at the table. It does not implement the app or approve the later result/correction/Payments editors.
+**Throwaway, fixture-only prototype.** A is the human-selected Play direction. The compact rebuy popup/page comparison is still unapproved; this does not implement the app or approve the later result/correction/Payments editors.
 
 ## Run
 
@@ -10,19 +10,33 @@ From this branch's repository root:
 python3 docs/prototypes/cash-game-play/serve.py
 ```
 
-Open <http://127.0.0.1:4188/?review=v2&variant=A> or <http://127.0.0.1:4188/?review=v2&variant=D>. No packages, build, network or persistence. `index.html` also opens directly offline. Reload resets the fixture; the interruption review button simulates leaving without accepting an action.
+Open <http://127.0.0.1:4188/?review=v3&variant=A&rebuy=popup> or <http://127.0.0.1:4188/?review=v3&variant=A&rebuy=page>. Tap **Rebuy** beside Ben to open the treatment being compared. No packages, build, network or persistence. `index.html` also opens directly offline. Reload resets the fixture; the interruption review button simulates leaving without accepting an action.
 
-## Compare
+## Selected Play direction
 
-- **A · Refined rows:** the human's preferred starting point, now with a large three-part Blinds / Rebuy / Stack panel, direct Result (or Resume) beside each Rebuy, and signed provisional win/loss on confirmed-result rows.
+- **A · Refined rows:** selected by the human after the v2 comparison (“i like A more”). A large three-part Blinds / Rebuy / Stack panel, direct Result (or Resume) beside each Rebuy, and signed provisional win/loss on confirmed-result rows.
 - **D · Spotlight:** a deliberately bolder editorial direction: oversized Play typography, a high-contrast Lavender blind display with diagonal light planes, asymmetric player plaques, stronger action contrast and prominent result amounts. It keeps the same terms, status, money and action rules—no casino imagery, timer, hand tracking or decorative poker motifs.
 - **B · Player cards** and **C · Action hub** remain earlier layout explorations in the dropdown. C was **not** selected; the human retracted the accidental messages before providing feedback favoring A.
 
-The floating arrows compare **A ↔ D**. Switching preserves fixture records. Prototype controls expose independent histories, text scaling and a live record/inventory inspector. Scenarios are review controls, not MVP settings.
+All of B/C/D are now archived alternatives, reachable in the prototype dropdown only. The floating arrows compare **Rebuy · Popup ↔ Rebuy · Simple page**, leaving the selected A layout unchanged. Switching treatments cancels any pending rebuy rather than accepting it. Prototype controls expose independent histories, text scaling and a live record/inventory inspector. Scenarios and presentation switches are review controls, not MVP settings.
+
+## Review v3: compact rebuy comparison
+
+The human wants the stack to hand out and reserves remaining to dominate, does not need bank value or bank-chip totals on the rebuy review, and is unsure whether a simpler page or popup works better. They described contribution information both as interesting and as excluded; the provisional treatment below is explicitly an interpretation to review, not an approved requirement.
+
+Both treatments show the same information:
+
+- Actual denomination mix with exact stack units, using the chip towers at a compact size.
+- **Reserve after rebuy**: simultaneously achievable still-targeted stacks after this proposed issuance, not total bank capacity or a cap on future rebuys. At zero, a short note preserves the permission for further feasible requests.
+- Rebuy price stays visible on **Issue rebuy · EUR 20.00**. The additional contribution and player's new total are under collapsed **Contribution details**; no bank value, bank-change arithmetic or bank-chip counts are shown.
+- Reduced/zero coverage warnings stay visible and require explicit **Accept & issue**, never hidden under Details. No fully qualifying-stack badge is needed in the normal flow.
+- Impossible requests show an actionable 200-unit allocation reason, a no-record/no-consumption message, and Back to Play / View bank. Failure details do not dump the full inventory into the popup.
+
+Only explicit acceptance issues chips and records the rebuy. Cancel, Escape, navigation, presentation switching and simulated interruption leave all records unchanged and discard the proposal. Cancelling the popup returns focus to that player's Rebuy shortcut. Successful issuance returns to Play with feedback. The separate late-entry review is unchanged for now; both forms still enforce no reduced-coverage fallback for late arrivals.
 
 ## Feedback incorporated, not final approval
 
-The human asked to see how much a player won/lost when opening a confirmed result and directly in the Play overview; preferred A while asking for more prominent blinds/rebuy/stack terms, a result-entry shortcut beside Rebuy, and at least one more extravagant visual alternative. Review v2 implements those requests for comparison. The whole ticket is still open, and the issuance-review treatment and final visual selection remain unapproved.
+The human asked to see how much a player won/lost when opening a confirmed result and directly in the Play overview; preferred A while asking for more prominent blinds/rebuy/stack terms, a result-entry shortcut beside Rebuy, and at least one more extravagant visual alternative. Review v2 implemented those requests. A is now selected; the whole ticket remains open while the rebuy treatment and contribution disclosure are reviewed.
 
 Confirmed-result detail leads with **Won / Lost / Break-even · provisional**, a signed EUR amount, and the arithmetic: confirmed chip value minus **all** initial/rebuy contributions. The example Alice has EUR 25 of final chips and EUR 20 contributed, so her provisional win is **+EUR 5**, not EUR 25. These are provisional player balances, not final rounded Payments or money-transfer receipts. Active/uncounted players have no invented profit/loss amount. Opening a result or using the new result-entry shortcut never confirms anything or changes bank inventory.
 
@@ -52,8 +66,10 @@ Review v1's headless Chrome checks exercised full/reduced/zero-coverage acceptan
 
 All four available layouts and the checked Play/Results/locked details/bank/selection/player-detail/stack-review screens passed at 320px and 390px with 100% and 200% app text: no measured horizontal overflow, checked screen buttons at least 48×48px, and no page exceptions. Direct offline opening of Spotlight also passed.
 
-Latest captured screens use the `previews/review-v2-` prefix, particularly `play-A.png`, `play-D.png`, `mixed-results-A.png`, `mixed-results-D.png`, and the won/lost detail screens. Unprefixed captures belong to Review v1. The floating prototype switcher is hidden in captures, not part of the proposed app.
+Review v3 additionally checked both popup and page across normal, reduced/zero coverage, exhausted/zero target, no-exact-mix and total-value failure. It verified the displayed post-issuance reserve, collapsed/expanded contribution details, price visibility, acceptance/decline, Escape focus restoration, interruption, presentation switching and confirmed-result participation blocking. Both treatments passed at 320px and 390px with 100% and 200% app text, including warnings/failure and expanded details: no measured horizontal overflow, checked buttons/summary controls >=48×48px and no page exceptions. Standalone offline popup opening passed.
+
+Latest captures use the `previews/review-v3-` prefix. The key comparison is `popup-normal.png` versus `page-normal.png`; `popup-normal-details.png`, `popup-reduced.png`, `popup-zero.png` and `popup-impossible.png` exercise disclosure and exceptions. The `review-v2-` and unprefixed captures preserve earlier iterations. The floating prototype switcher is hidden in captures, not part of the proposed app.
 
 ## Human decision still required
 
-No variant or workflow is approved. Compare action placement and information density, then review accepted/declined/blocked proposals, late entry and explicit result-removal routing before updating implementation requirements.
+A is selected, but this ticket is not resolved. Compare the compact popup/page and confirm whether collapsed contribution details are the right interpretation, then confirm the remaining end-to-end behavior before updating implementation requirements.

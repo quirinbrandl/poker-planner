@@ -3,7 +3,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <link rel="icon" href="data:,">
-<title>Cash-game Play · Review v2 · Refined rows &amp; Spotlight</title>
+<title>Cash-game Play · Review v3 · Compact rebuy: popup or page</title>
 <style>
   * { box-sizing: border-box; }
   :root { color-scheme: dark; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; background: #0b1117; color: #f1f4f5; --accent: #c9b5ff; --on-accent: #2b1e45; --tint: #322b45; }
@@ -173,6 +173,21 @@
   dialog h2 { font-size: 1.5em; line-height: 1.15; letter-spacing: -.03em; }
   dialog .actions { display: grid; }
   dialog input { width: 100%; }
+  .compact-rebuy .stack { margin: 12px 0; padding: 12px 10px; }
+  .compact-rebuy .towers { grid-template-columns: repeat(auto-fit, minmax(52px, 1fr)); gap: 10px 4px; }
+  .compact-rebuy .tower svg { max-width: 76px; }
+  .reserve-after { display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 6px 12px; padding: 12px 0; border-bottom: 1px solid #526172; }
+  .reserve-after > span { color: #b3c0ca; font-size: .85em; }
+  .reserve-after strong { font-size: 1.55em; line-height: 1.2; font-variant-numeric: tabular-nums; }
+  .reserve-after strong small { font-size: .55em; font-weight: 500; color: #b3c0ca; }
+  .rebuy-details { margin: 4px 0 12px; font-size: .8em; }
+  .rebuy-details summary { color: #b3c0ca; font-weight: 500; }
+  .rebuy-details .metric-line { padding: 6px 0; }
+  .compact-rebuy .actions { margin-top: 8px; }
+  .compact-rebuy .notice { margin: 12px 0; }
+  .compact-rebuy .reserve-help { margin: 8px 0; font-size: .75em; }
+  dialog[data-type="rebuy"] { padding: 20px; background: #15212b; }
+  dialog[data-type="rebuy"] h2 { margin-bottom: 12px; }
   .switcher { position: fixed; bottom: 16px; left: 50%; transform: translateX(-50%); z-index: 10; display: flex; align-items: center; gap: 4px; max-width: calc(100vw - 20px); padding: 5px; border: 1px solid #c9b5ff; border-radius: 100px; background: #ede4ff; color: #2b1e45; box-shadow: 0 8px 28px #0008; }
   .switcher button { border-radius: 100px; background: #2b1e45; color: #f1f4f5; border: 0; padding: 8px; }
   .switcher span { font-size: 13px; padding: 0 8px; text-align: center; min-width: 0; }
@@ -201,13 +216,14 @@
   [data-large="true"] .spotlight-player .row-actions { display: flex; flex-wrap: wrap; }
   [data-large="true"] .spotlight-bank { grid-template-columns: auto minmax(0, 1fr); }
   [data-large="true"] .spotlight-bank .bank-arrow { display: none; }
+  [data-large="true"] .compact-rebuy .towers { grid-template-columns: repeat(2, minmax(0, 1fr)); }
   @media (prefers-reduced-motion: reduce) { *, *::before, *::after { transition: none !important; animation: none !important; } }
 </style>
 <main class="workshop">
   <header>
-    <div class="revision">Review v2 · Your feedback applied</div>
+    <div class="revision">Review v3 · A selected · Compact rebuy comparison</div>
     <h1>Cash-game Play, rebuys &amp; late entry</h1>
-    <p class="intro">A refines your preferred rows; D · Spotlight pushes the visual character further. Both add prominent game terms, direct result shortcuts and provisional win/loss. Everything is an in-memory fixture; detailed result/correction editors remain later design decisions.</p>
+    <p class="intro">Your selected A layout stays. Tap a player's Rebuy to compare a compact popup with a simpler page: stack to hand out, reserves left, and optional contribution details. No bank figures on the rebuy review. Everything is an in-memory fixture.</p>
   </header>
   <div class="layout">
     <section id="app" aria-label="Phone prototype"></section>
@@ -215,7 +231,8 @@
       <details id="review-tools">
         <summary>Prototype controls &amp; scenarios</summary>
         <div class="review-controls">
-          <label>Play layout<select id="variant"><optgroup label="Review v2"><option value="A">A · Refined rows</option><option value="D">D · Spotlight</option></optgroup><optgroup label="Earlier layout explorations"><option value="B">B · Player cards</option><option value="C">C · Action hub</option></optgroup></select></label>
+          <label>Rebuy review<select id="rebuy-presentation"><option value="popup">Compact popup</option><option value="page">Simple page</option></select></label>
+          <label>Play layout<select id="variant"><optgroup label="Selected"><option value="A">A · Refined rows</option></optgroup><optgroup label="Archived alternatives"><option value="D">D · Spotlight</option><option value="B">B · Player cards</option><option value="C">C · Action hub</option></optgroup></select></label>
           <label>Bank / history fixture<select id="fixture"><option value="normal">Normal · Alice won EUR 5</option><option value="mixed-results">Won / lost · two confirmed results</option><option value="break-even">Break-even · confirmed zero balance</option><option value="exhausted">Reserve exhausted · full stack still available</option><option value="zero-target">Started with zero reserve · feasible</option><option value="reduced">Reduced coverage · 3 of 4</option><option value="zero">Zero coverage · 0 of 4</option><option value="impossible">No exact mix · bank value is sufficient</option><option value="shortage">Not enough bank value</option></select></label>
           <label>App text<select id="scale"><option value="1">100%</option><option value="1.5">150%</option><option value="2">200%</option></select></label>
           <button data-review="reset">Reset this fixture</button>
@@ -237,14 +254,15 @@
     </aside>
   </div>
 </main>
-<div class="switcher" aria-label="Prototype layout switcher"><button id="previous" aria-label="Previous layout">←</button><span id="variant-label"></span><button id="next" aria-label="Next layout">→</button></div>
+<div class="switcher" aria-label="Prototype rebuy presentation switcher"><button id="previous" aria-label="Previous rebuy presentation">←</button><span id="variant-label"></span><button id="next" aria-label="Next rebuy presentation">→</button></div>
 <div id="announcement" role="status" aria-live="polite"></div>
 <dialog id="modal" aria-labelledby="modal-title"></dialog>
 <script>
-// THROWAWAY: refined A versus editorial D; B/C retained as earlier explorations.
+// THROWAWAY: A selected; compare the same compact rebuy as a popup or page.
 const params = new URLSearchParams(location.search);
 const names = { A: 'Refined rows', D: 'Spotlight', B: 'Player cards', C: 'Action hub' };
-const comparison = ['A', 'D'];
+const presentations = { popup: 'Rebuy · Popup', page: 'Rebuy · Simple page' };
+let presentation = params.get('rebuy') === 'page' ? 'page' : 'popup';
 let variant = names[params.get('variant')] ? params.get('variant') : 'A';
 let scale = ['1', '1.5', '2'].includes(params.get('scale')) ? params.get('scale') : '1';
 let fixture = params.get('fixture') || 'normal';
@@ -422,8 +440,25 @@ function playerPage() {
   const p = playerById(state.player);
   return header(p.name, false, 'play') + statusBadge(p) + (p.result ? resultHero(p) : '') + `<div class="card"><div class="metric-line"><span>Total contribution</span><strong>${contribution(p)}</strong></div><div class="metric-line"><span>Initial buy-in</span><strong>EUR 20.00</strong></div><div class="metric-line"><span>Rebuys</span><strong>${rebuyCount(p.id)}</strong></div></div>` + (p.result ? stack(p.result, 'Confirmed final chips') + b('Return to play…', 'return', 'full', `data-id="${p.id}"`) + `<div class="actions">${b('View / correct result', 'count', '', `data-id="${p.id}"`)}</div>` : `<div class="actions">${b('+ Rebuy · EUR 20.00', 'rebuy', 'primary', `data-id="${p.id}"`)}${b(p.draft ? 'Resume chip count' : 'Count final chips', 'count', '', `data-id="${p.id}"`)}</div>`) + `<div class="footer">${b('Rebuy records / corrections', 'records', 'full', `data-id="${p.id}"`)}</div>`;
 }
+function rebuyFailureReason(p) {
+  if (p.error === 'reserve') return 'This stack would use chips needed for the remaining reserve guarantee.';
+  if (units(state.bank) < 200) return `An exact 200-unit stack is required; available chips are ${200 - units(state.bank)} units short.`;
+  return 'No exact 200-unit stack can be formed. The remaining smaller chips cannot make 200, and a 500-unit chip cannot be split.';
+}
+function reserveAfter(mix) {
+  const target = Math.max(0, remaining() - 1), bank = minus(state.bank, mix);
+  for (let n = target; n >= 0; n--) if (supports(bank, n)) return { target, possible: n };
+  return { target, possible: 0 };
+}
+function compactRebuy() {
+  const p = state.proposal;
+  if (p.error) return `<div class="compact-rebuy">${notice(rebuyFailureReason(p), 'error', 'Cannot issue rebuy')}${notice('Nothing recorded. No chips or reserve consumed.')}<div class="actions">${b('Back to Play', 'decline', 'primary')}${b('View bank', 'bank')}</div></div>`;
+  const reduced = p.coverage < 4, after = reserveAfter(p.mix);
+  return `<div class="compact-rebuy">${stack(p.mix)}${reduced ? notice(`Only ${p.coverage} of the required 4 payments of each blind can be made with separate chips. Change from other players may be needed.`, 'warn', p.coverage === 0 ? '0 of 4 · Cannot pay either blind without change' : `${p.coverage} of 4 · Reduced blind-payment coverage`) : ''}<div class="reserve-after"><span>Reserve after rebuy</span><strong>${after.possible} <small>${after.possible === 1 ? 'stack left' : 'stacks left'}</small></strong></div>${after.possible < after.target ? `<p class="small reserve-help">${after.possible} of ${after.target} still-targeted stacks can be supplied.</p>` : after.target === 0 ? '<p class="small reserve-help">More rebuys are still allowed when another stack is possible.</p>' : ''}<details class="rebuy-details"><summary>Contribution details</summary><div class="metric-line"><span>Additional contribution</span><strong>EUR 20.00</strong></div><div class="metric-line"><span>${esc(playerById(state.player).name)}’s new total</span><strong>${eur((2 + rebuyCount(state.player)) * 2000)}</strong></div></details><div class="actions">${b(reduced ? 'Decline' : 'Cancel', 'decline')}${b(reduced ? 'Accept & issue · EUR 20.00' : 'Issue rebuy · EUR 20.00', 'accept', 'primary')}</div></div>`;
+}
 function proposalPage() {
   const p = state.proposal, entry = p.kind === 'entry', name = entry ? state.selected : playerById(state.player).name;
+  if (!entry) return header(`Rebuy for ${name}`, false, 'play') + compactRebuy();
   if (p.error) {
     let reason = 'No exact 200-unit stack can be formed from the bank.';
     if (p.error === 'coverage') reason = 'An exact stack exists, but it cannot cover all 4 payments of each blind. Reduced coverage is available for rebuys only, never for late entry.';
@@ -468,23 +503,27 @@ function render() {
     planning: () => header('Planning', false) + notice('Reset demonstration only. Play, rebuys, results and issuances were cleared; the current roster and setup remain. Gather all chips and redistribute before starting a new plan. The Planning wizard is not implemented here.') + `<p>${state.players.map(p => esc(p.name)).join(', ')}</p>`,
   };
   app.innerHTML = `<div class="page">${(views[state.page] || play)()}</div>`;
-  document.querySelector('#variant').value = variant; document.querySelector('#fixture').value = fixture; document.querySelector('#scale').value = scale;
-  document.querySelector('#variant-label').textContent = `${variant} · ${names[variant]}`;
+  document.querySelector('#variant').value = variant; document.querySelector('#fixture').value = fixture; document.querySelector('#scale').value = scale; document.querySelector('#rebuy-presentation').value = presentation;
+  document.querySelector('#variant-label').textContent = presentations[presentation];
   document.querySelector('#fixture-note').textContent = notes[fixture];
-  document.querySelector('#inspector').textContent = JSON.stringify({ layout: variant, page: state.page, phase: state.phase, participantCount: state.players.length, players: state.players, totalContributions: eur(contributions()), rebuyRecords: state.rebuys, currentBank: state.bank, reserve: { target: state.target, consumed: consumption(), unconsumed: remaining(), simultaneouslyAchievable: state.phase === 'In progress' ? achievable() : null }, proposal: state.proposal, selectedLateArrival: state.selected }, null, 2);
+  document.querySelector('#inspector').textContent = JSON.stringify({ layout: variant, rebuyPresentation: presentation, page: state.page, phase: state.phase, participantCount: state.players.length, players: state.players, totalContributions: eur(contributions()), rebuyRecords: state.rebuys, currentBank: state.bank, reserve: { target: state.target, consumed: consumption(), unconsumed: remaining(), simultaneouslyAchievable: state.phase === 'In progress' ? achievable() : null }, proposal: state.proposal, selectedLateArrival: state.selected }, null, 2);
   window.reviewState = state;
 }
 function updateURL() {
-  const url = new URL(location.href); url.searchParams.set('variant', variant); url.searchParams.set('fixture', fixture); url.searchParams.set('scale', scale);
+  const url = new URL(location.href); url.searchParams.set('variant', variant); url.searchParams.set('fixture', fixture); url.searchParams.set('scale', scale); url.searchParams.set('rebuy', presentation);
   history.replaceState(null, '', url);
 }
-function nav(page) { state.page = page; state.feedback = null; render(); }
+function nav(page) {
+  if (modal?.type === 'rebuy') closeModal();
+  state.proposal = null; state.page = page; state.feedback = null; render();
+}
 function openModal(type, data = {}) {
   const el = document.querySelector('#modal');
   if (!el.open) opener = document.activeElement;
   modal = { type, ...data };
-  el.style.setProperty('--scale', scale);
+  el.style.setProperty('--scale', scale); el.dataset.large = String(Number(scale) > 1.4); el.dataset.type = type;
   let html = '';
+  if (type === 'rebuy') html = `<h2 id="modal-title">Rebuy for ${esc(playerById(state.player).name)}</h2>${compactRebuy()}`;
   if (type === 'menu') html = `<h2 id="modal-title">Game actions</h2><div class="list-buttons">${b('Game details', 'modal-details')}${b('Return to Planning…', 'reset-dialog')}${b('Delete game…', 'delete-handoff')}${b('Cancel', 'cancel-modal', 'quiet')}</div>`;
   if (type === 'reset') html = `<h2 id="modal-title">Return to Planning?</h2><p>Clear all rebuys, final results and recorded chip movements, including initial issuances. Keep the entire current roster, initial buy-ins and setup.</p><p><strong>Gather and redistribute the physical chips before using the new plan.</strong></p><div class="actions">${b('Cancel', 'cancel-modal')}${b('Return to Planning', 'confirm-reset', 'danger')}</div>`;
   if (type === 'return') html = `<h2 id="modal-title">${esc(playerById(state.player).name)} has a final result</h2><p>Remove that result explicitly before a new rebuy. Removal reverses its chip return and may be blocked by later issuances that depend on those chips.</p><p>No result is removed and no rebuy issued by continuing to the correction screen.</p><div class="actions">${b('Cancel', 'cancel-modal')}${b('Go to result removal', 'remove-handoff', 'primary')}</div>`;
@@ -500,20 +539,25 @@ function issue(kind, id) {
   if (state.phase !== 'In progress') return;
   if (id) state.player = id;
   if (kind === 'rebuy' && playerById(state.player).result) { openModal('return'); return; }
-  state.proposal = allocation(kind); state.feedback = null; state.page = 'proposal'; render();
+  state.proposal = allocation(kind); state.feedback = null;
+  if (kind === 'rebuy' && presentation === 'popup') {
+    state.page = 'play'; render(); openModal('rebuy');
+    opener = document.querySelector(`#app [data-action="rebuy"][data-id="${state.player}"]`) || document.querySelector('#app [data-action="choose-rebuy"]');
+  } else { state.page = 'proposal'; render(); }
 }
 function accept() {
   const old = state.proposal;
   if (!old?.mix || state.phase !== 'In progress') return;
   const now = allocation(old.kind);
   if (now.error || JSON.stringify(now.mix) !== JSON.stringify(old.mix) || (old.kind === 'rebuy' && playerById(state.player).result)) {
-    state.proposal = now; render(); document.querySelector('#announcement').textContent = 'Bank changed. Review the current proposal; nothing was recorded.'; return;
+    state.proposal = now; render(); if (modal?.type === 'rebuy') openModal('rebuy'); document.querySelector('#announcement').textContent = 'Bank changed. Review the current proposal; nothing was recorded.'; return;
   }
   const name = old.kind === 'entry' ? state.selected : playerById(state.player).name;
   if (old.kind === 'entry') {
     if (!name || state.players.some(p => p.name.toLowerCase() === name.toLowerCase())) return;
     state.players.push({ id: `p${state.players.length}`, name, result: null, draft: false, late: true, mix: [...old.mix] });
   } else state.rebuys.push({ player: state.player, mix: [...old.mix], coverage: old.coverage });
+  if (modal?.type === 'rebuy') closeModal();
   state.bank = minus(state.bank, old.mix); state.proposal = null; state.selected = null; state.page = 'play';
   state.feedback = { kind: 'ok', title: old.kind === 'entry' ? `${name} joined` : `Rebuy issued · ${name}`, text: `+EUR 20.00 contribution · 200 units issued${old.coverage < 4 ? ` · coverage ${old.coverage} of 4 accepted` : ''}.` };
   render(); document.querySelector('#announcement').textContent = state.feedback.title + '. ' + state.feedback.text;
@@ -524,7 +568,13 @@ function action(a, el) {
   if (a === 'player') { state.player = id; nav('player'); }
   if (a === 'rebuy') issue('rebuy', id);
   if (a === 'accept') accept();
-  if (a === 'decline') { const reduced = state.proposal.coverage < 4, entry = state.proposal.kind === 'entry'; state.proposal = null; state.page = 'play'; state.feedback = { title: reduced ? 'Rebuy declined' : entry ? 'Entry cancelled' : 'Rebuy cancelled', text: 'No contribution recorded. Bank and reserve unchanged.', kind: '' }; render(); }
+  if (a === 'decline') {
+    const reduced = state.proposal.coverage < 4, entry = state.proposal.kind === 'entry', blocked = Boolean(state.proposal.error);
+    if (modal?.type === 'rebuy') closeModal();
+    state.proposal = null; state.page = 'play';
+    state.feedback = { title: blocked ? 'No rebuy issued' : reduced ? 'Rebuy declined' : entry ? 'Entry cancelled' : 'Rebuy cancelled', text: 'No contribution recorded. Bank and reserve unchanged.', kind: '' }; render();
+    document.querySelector(`#app [data-action="${entry ? 'entry' : 'rebuy'}"]${entry ? '' : `[data-id="${state.player}"]`}`)?.focus({ preventScroll: true });
+  }
   if (a === 'entry') { state.selected = null; nav('entry'); }
   if (a === 'entry-back') nav('entry');
   if (a === 'select') { state.selected = el.dataset.name; state.feedback = null; render(); }
@@ -564,7 +614,7 @@ document.addEventListener('click', e => {
   if (tool?.dataset.review === 'reset') reset();
   if (tool?.dataset.review === 'interrupt') {
     if (document.querySelector('#modal').open) closeModal();
-    if (state.page === 'proposal') { state.proposal = null; state.page = 'play'; }
+    if (state.proposal) { state.proposal = null; state.page = 'play'; }
     state.feedback = { title: 'Resumed · no pending action accepted', text: 'Accepted records and saved count drafts remain unchanged. This button simulates interruption; real reload resets this demo.', kind: '' }; render();
   }
   const walk = e.target.closest('[data-walk]');
@@ -572,15 +622,24 @@ document.addEventListener('click', e => {
 });
 document.querySelector('#modal').addEventListener('cancel', e => {
   e.preventDefault();
-  if (modal?.type === 'new-name' && document.querySelector('#new-name').value) openModal('discard-name', { raw: document.querySelector('#new-name').value });
+  if (modal?.type === 'rebuy') action('decline');
+  else if (modal?.type === 'new-name' && document.querySelector('#new-name').value) openModal('discard-name', { raw: document.querySelector('#new-name').value });
   else if (modal?.type === 'discard-name') openModal('new-name', { raw: modal.raw });
   else closeModal();
 });
 function setVariant(next) { variant = next; updateURL(); render(); document.querySelector('#announcement').textContent = `Layout ${variant}, ${names[variant]}. Game records unchanged.`; }
-function cycle(delta) { const index = Math.max(0, comparison.indexOf(variant)); setVariant(comparison[(index + delta + comparison.length) % comparison.length]); }
+function setPresentation(next) {
+  if (state.proposal?.kind === 'rebuy') {
+    if (modal?.type === 'rebuy') closeModal();
+    state.proposal = null; state.page = 'play';
+  }
+  presentation = next; updateURL(); render(); document.querySelector('#announcement').textContent = presentations[presentation] + '. No rebuy recorded.';
+}
+function cycle(delta) { const keys = Object.keys(presentations); setPresentation(keys[(keys.indexOf(presentation) + delta + keys.length) % keys.length]); }
 document.querySelector('#previous').onclick = () => cycle(-1);
 document.querySelector('#next').onclick = () => cycle(1);
 document.querySelector('#variant').onchange = e => setVariant(e.target.value);
+document.querySelector('#rebuy-presentation').onchange = e => setPresentation(e.target.value);
 document.querySelector('#fixture').onchange = e => reset(e.target.value);
 document.querySelector('#scale').onchange = e => { scale = e.target.value; updateURL(); render(); if (document.querySelector('#modal').open) document.querySelector('#modal').style.setProperty('--scale', scale); };
 document.addEventListener('keydown', e => {
