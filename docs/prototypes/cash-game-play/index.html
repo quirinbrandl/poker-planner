@@ -3,7 +3,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <link rel="icon" href="data:,">
-<title>Cash-game Play · Review v3 · Compact rebuy: popup or page</title>
+<title>Cash-game Play · Review v4 · Rebuy popup with inline contributions</title>
 <style>
   * { box-sizing: border-box; }
   :root { color-scheme: dark; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; background: #0b1117; color: #f1f4f5; --accent: #c9b5ff; --on-accent: #2b1e45; --tint: #322b45; }
@@ -180,9 +180,7 @@
   .reserve-after > span { color: #b3c0ca; font-size: .85em; }
   .reserve-after strong { font-size: 1.55em; line-height: 1.2; font-variant-numeric: tabular-nums; }
   .reserve-after strong small { font-size: .55em; font-weight: 500; color: #b3c0ca; }
-  .rebuy-details { margin: 4px 0 12px; font-size: .8em; }
-  .rebuy-details summary { color: #b3c0ca; font-weight: 500; }
-  .rebuy-details .metric-line { padding: 6px 0; }
+  .rebuy-facts { margin: 4px 0 16px; }
   .compact-rebuy .actions { margin-top: 8px; }
   .compact-rebuy .notice { margin: 12px 0; }
   .compact-rebuy .reserve-help { margin: 8px 0; font-size: .75em; }
@@ -191,6 +189,7 @@
   .switcher { position: fixed; bottom: 16px; left: 50%; transform: translateX(-50%); z-index: 10; display: flex; align-items: center; gap: 4px; max-width: calc(100vw - 20px); padding: 5px; border: 1px solid #c9b5ff; border-radius: 100px; background: #ede4ff; color: #2b1e45; box-shadow: 0 8px 28px #0008; }
   .switcher button { border-radius: 100px; background: #2b1e45; color: #f1f4f5; border: 0; padding: 8px; }
   .switcher span { font-size: 13px; padding: 0 8px; text-align: center; min-width: 0; }
+  .switcher[hidden] { display: none; }
   pre { white-space: pre-wrap; overflow-wrap: anywhere; font-size: 12px; max-height: 430px; overflow-y: auto; color: #b8dfbd; padding: 12px; background: #0b1117; border-radius: 12px; }
   .walks { display: grid; gap: 8px; }
   .walks button { text-align: left; font-size: 13px; }
@@ -221,9 +220,9 @@
 </style>
 <main class="workshop">
   <header>
-    <div class="revision">Review v3 · A selected · Compact rebuy comparison</div>
+    <div class="revision">Review v4 · A + Popup · Inline contribution rows</div>
     <h1>Cash-game Play, rebuys &amp; late entry</h1>
-    <p class="intro">Your selected A layout stays. Tap a player's Rebuy to compare a compact popup with a simpler page: stack to hand out, reserves left, and optional contribution details. No bank figures on the rebuy review. Everything is an in-memory fixture.</p>
+    <p class="intro">A and the popup are selected. Tap a player's Rebuy: the actual stack, remaining reserve, additional contribution and new total are shown directly—no dropdown and no bank figures. Everything is an in-memory fixture.</p>
   </header>
   <div class="layout">
     <section id="app" aria-label="Phone prototype"></section>
@@ -231,7 +230,7 @@
       <details id="review-tools">
         <summary>Prototype controls &amp; scenarios</summary>
         <div class="review-controls">
-          <label>Rebuy review<select id="rebuy-presentation"><option value="popup">Compact popup</option><option value="page">Simple page</option></select></label>
+          <label>Rebuy review<select id="rebuy-presentation"><option value="popup">Selected · Compact popup</option><option value="page">Archived · Simple page</option></select></label>
           <label>Play layout<select id="variant"><optgroup label="Selected"><option value="A">A · Refined rows</option></optgroup><optgroup label="Archived alternatives"><option value="D">D · Spotlight</option><option value="B">B · Player cards</option><option value="C">C · Action hub</option></optgroup></select></label>
           <label>Bank / history fixture<select id="fixture"><option value="normal">Normal · Alice won EUR 5</option><option value="mixed-results">Won / lost · two confirmed results</option><option value="break-even">Break-even · confirmed zero balance</option><option value="exhausted">Reserve exhausted · full stack still available</option><option value="zero-target">Started with zero reserve · feasible</option><option value="reduced">Reduced coverage · 3 of 4</option><option value="zero">Zero coverage · 0 of 4</option><option value="impossible">No exact mix · bank value is sufficient</option><option value="shortage">Not enough bank value</option></select></label>
           <label>App text<select id="scale"><option value="1">100%</option><option value="1.5">150%</option><option value="2">200%</option></select></label>
@@ -258,8 +257,9 @@
 <div id="announcement" role="status" aria-live="polite"></div>
 <dialog id="modal" aria-labelledby="modal-title"></dialog>
 <script>
-// THROWAWAY: A selected; compare the same compact rebuy as a popup or page.
+// THROWAWAY: A + popup selected; inline contributions are the latest refinement.
 const params = new URLSearchParams(location.search);
+document.querySelector('.switcher').hidden = params.get('compare') !== 'rebuy';
 const names = { A: 'Refined rows', D: 'Spotlight', B: 'Player cards', C: 'Action hub' };
 const presentations = { popup: 'Rebuy · Popup', page: 'Rebuy · Simple page' };
 let presentation = params.get('rebuy') === 'page' ? 'page' : 'popup';
@@ -454,7 +454,7 @@ function compactRebuy() {
   const p = state.proposal;
   if (p.error) return `<div class="compact-rebuy">${notice(rebuyFailureReason(p), 'error', 'Cannot issue rebuy')}${notice('Nothing recorded. No chips or reserve consumed.')}<div class="actions">${b('Back to Play', 'decline', 'primary')}${b('View bank', 'bank')}</div></div>`;
   const reduced = p.coverage < 4, after = reserveAfter(p.mix);
-  return `<div class="compact-rebuy">${stack(p.mix)}${reduced ? notice(`Only ${p.coverage} of the required 4 payments of each blind can be made with separate chips. Change from other players may be needed.`, 'warn', p.coverage === 0 ? '0 of 4 · Cannot pay either blind without change' : `${p.coverage} of 4 · Reduced blind-payment coverage`) : ''}<div class="reserve-after"><span>Reserve after rebuy</span><strong>${after.possible} <small>${after.possible === 1 ? 'stack left' : 'stacks left'}</small></strong></div>${after.possible < after.target ? `<p class="small reserve-help">${after.possible} of ${after.target} still-targeted stacks can be supplied.</p>` : after.target === 0 ? '<p class="small reserve-help">More rebuys are still allowed when another stack is possible.</p>' : ''}<details class="rebuy-details"><summary>Contribution details</summary><div class="metric-line"><span>Additional contribution</span><strong>EUR 20.00</strong></div><div class="metric-line"><span>${esc(playerById(state.player).name)}’s new total</span><strong>${eur((2 + rebuyCount(state.player)) * 2000)}</strong></div></details><div class="actions">${b(reduced ? 'Decline' : 'Cancel', 'decline')}${b(reduced ? 'Accept & issue · EUR 20.00' : 'Issue rebuy · EUR 20.00', 'accept', 'primary')}</div></div>`;
+  return `<div class="compact-rebuy">${stack(p.mix)}${reduced ? notice(`Only ${p.coverage} of the required 4 payments of each blind can be made with separate chips. Change from other players may be needed.`, 'warn', p.coverage === 0 ? '0 of 4 · Cannot pay either blind without change' : `${p.coverage} of 4 · Reduced blind-payment coverage`) : ''}<div class="rebuy-facts"><div class="reserve-after"><span>Reserve after rebuy</span><strong>${after.possible} <small>${after.possible === 1 ? 'stack left' : 'stacks left'}</small></strong></div><div class="reserve-after"><span>Additional contribution</span><strong>EUR 20.00</strong></div><div class="reserve-after"><span>New total contribution</span><strong>${eur((2 + rebuyCount(state.player)) * 2000)}</strong></div></div>${after.possible < after.target ? `<p class="small reserve-help">${after.possible} of ${after.target} still-targeted stacks can be supplied.</p>` : after.target === 0 ? '<p class="small reserve-help">More rebuys are still allowed when another stack is possible.</p>' : ''}<div class="actions">${b(reduced ? 'Decline' : 'Cancel', 'decline')}${b(reduced ? 'Accept & issue · EUR 20.00' : 'Issue rebuy · EUR 20.00', 'accept', 'primary')}</div></div>`;
 }
 function proposalPage() {
   const p = state.proposal, entry = p.kind === 'entry', name = entry ? state.selected : playerById(state.player).name;
@@ -644,6 +644,7 @@ document.querySelector('#fixture').onchange = e => reset(e.target.value);
 document.querySelector('#scale').onchange = e => { scale = e.target.value; updateURL(); render(); if (document.querySelector('#modal').open) document.querySelector('#modal').style.setProperty('--scale', scale); };
 document.addEventListener('keydown', e => {
   if (e.target.matches('input, textarea, select, [contenteditable]') || document.querySelector('#modal').open) return;
+  if (params.get('compare') !== 'rebuy') return;
   if (e.key === 'ArrowLeft') { e.preventDefault(); cycle(-1); }
   if (e.key === 'ArrowRight') { e.preventDefault(); cycle(1); }
 });

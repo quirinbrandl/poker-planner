@@ -1,6 +1,6 @@
-# Cash-game Play · Review v3
+# Cash-game Play · Review v4
 
-**Throwaway, fixture-only prototype.** A is the human-selected Play direction. The compact rebuy popup/page comparison is still unapproved; this does not implement the app or approve the later result/correction/Payments editors.
+**Throwaway, fixture-only prototype.** A and the compact rebuy popup are selected by the human. Review v4 interprets the latest request as showing additional/new total contributions inline rather than inside a dropdown; that exact presentation is awaiting confirmation. This does not implement the app or approve the later result/correction/Payments editors.
 
 ## Run
 
@@ -10,7 +10,7 @@ From this branch's repository root:
 python3 docs/prototypes/cash-game-play/serve.py
 ```
 
-Open <http://127.0.0.1:4188/?review=v3&variant=A&rebuy=popup> or <http://127.0.0.1:4188/?review=v3&variant=A&rebuy=page>. Tap **Rebuy** beside Ben to open the treatment being compared. No packages, build, network or persistence. `index.html` also opens directly offline. Reload resets the fixture; the interruption review button simulates leaving without accepting an action.
+Open <http://127.0.0.1:4188/?review=v4&variant=A&rebuy=popup>. Tap **Rebuy** beside Ben. No packages, build, network or persistence. `index.html` also opens directly offline. Reload resets the fixture; the interruption review button simulates leaving without accepting an action.
 
 ## Selected Play direction
 
@@ -18,9 +18,13 @@ Open <http://127.0.0.1:4188/?review=v3&variant=A&rebuy=popup> or <http://127.0.0
 - **D · Spotlight:** a deliberately bolder editorial direction: oversized Play typography, a high-contrast Lavender blind display with diagonal light planes, asymmetric player plaques, stronger action contrast and prominent result amounts. It keeps the same terms, status, money and action rules—no casino imagery, timer, hand tracking or decorative poker motifs.
 - **B · Player cards** and **C · Action hub** remain earlier layout explorations in the dropdown. C was **not** selected; the human retracted the accidental messages before providing feedback favoring A.
 
-All of B/C/D are now archived alternatives, reachable in the prototype dropdown only. The floating arrows compare **Rebuy · Popup ↔ Rebuy · Simple page**, leaving the selected A layout unchanged. Switching treatments cancels any pending rebuy rather than accepting it. Prototype controls expose independent histories, text scaling and a live record/inventory inspector. Scenarios and presentation switches are review controls, not MVP settings.
+All of B/C/D and the simple-page rebuy are now archived alternatives, reachable in the prototype dropdown only. For the old floating popup/page comparison, add `&compare=rebuy`; the switcher and arrow-key shortcut are otherwise hidden. Switching treatments cancels any pending rebuy rather than accepting it. Prototype controls expose independent histories, text scaling and a live record/inventory inspector. Scenarios and presentation switches are review controls, not MVP settings.
 
-## Review v3: compact rebuy comparison
+## Review v4: selected popup, inline facts
+
+The human prefers the popup and asked for additional and total contribution to be listed like remaining reserve, rather than tucked inside the dropdown. Review v4 removes the dropdown and presents three ordinary label/value rows below the actual stack: **Reserve after rebuy**, **Additional contribution**, and **New total contribution**. Bank figures stay absent. Coverage warnings, price, acceptance, cancellation and inventory behavior are unchanged. This is the explicit interpretation being shown back to the human before the whole workflow is resolved.
+
+## Review v3: earlier compact rebuy comparison
 
 The human wants the stack to hand out and reserves remaining to dominate, does not need bank value or bank-chip totals on the rebuy review, and is unsure whether a simpler page or popup works better. They described contribution information both as interesting and as excluded; the provisional treatment below is explicitly an interpretation to review, not an approved requirement.
 
@@ -36,7 +40,7 @@ Only explicit acceptance issues chips and records the rebuy. Cancel, Escape, nav
 
 ## Feedback incorporated, not final approval
 
-The human asked to see how much a player won/lost when opening a confirmed result and directly in the Play overview; preferred A while asking for more prominent blinds/rebuy/stack terms, a result-entry shortcut beside Rebuy, and at least one more extravagant visual alternative. Review v2 implemented those requests. A is now selected; the whole ticket remains open while the rebuy treatment and contribution disclosure are reviewed.
+The human asked to see how much a player won/lost when opening a confirmed result and directly in the Play overview; preferred A while asking for more prominent blinds/rebuy/stack terms, a result-entry shortcut beside Rebuy, and at least one more extravagant visual alternative. Review v2 implemented those requests. A and the popup are now selected; the whole ticket remains open while the inline contribution refinement and complete workflow receive final review.
 
 Confirmed-result detail leads with **Won / Lost / Break-even · provisional**, a signed EUR amount, and the arithmetic: confirmed chip value minus **all** initial/rebuy contributions. The example Alice has EUR 25 of final chips and EUR 20 contributed, so her provisional win is **+EUR 5**, not EUR 25. These are provisional player balances, not final rounded Payments or money-transfer receipts. Active/uncounted players have no invented profit/loss amount. Opening a result or using the new result-entry shortcut never confirms anything or changes bank inventory.
 
@@ -68,8 +72,10 @@ All four available layouts and the checked Play/Results/locked details/bank/sele
 
 Review v3 additionally checked both popup and page across normal, reduced/zero coverage, exhausted/zero target, no-exact-mix and total-value failure. It verified the displayed post-issuance reserve, collapsed/expanded contribution details, price visibility, acceptance/decline, Escape focus restoration, interruption, presentation switching and confirmed-result participation blocking. Both treatments passed at 320px and 390px with 100% and 200% app text, including warnings/failure and expanded details: no measured horizontal overflow, checked buttons/summary controls >=48×48px and no page exceptions. Standalone offline popup opening passed.
 
-Latest captures use the `previews/review-v3-` prefix. The key comparison is `popup-normal.png` versus `page-normal.png`; `popup-normal-details.png`, `popup-reduced.png`, `popup-zero.png` and `popup-impossible.png` exercise disclosure and exceptions. The `review-v2-` and unprefixed captures preserve earlier iterations. The floating prototype switcher is hidden in captures, not part of the proposed app.
+Review v4 checked three always-visible fact rows, correct additional/new total contribution and remaining reserve, absence of a dropdown/bank figures, full/reduced/zero/exhausted request acceptance and decline, unchanged failed requests, Escape/focus, archived simple-page behavior, provisional result detail and successful late entry. Normal/warning/failure popups passed at 320px and 390px with 100% and 200% app text: no measured horizontal overflow, checked buttons >=48×48px, and no page exceptions.
+
+Review v3 captures use the `previews/review-v3-` prefix. The earlier comparison is `popup-normal.png` versus `page-normal.png`; `popup-normal-details.png` preserves the now-rejected dropdown treatment. Review v4 captures use `previews/review-v4-popup-` and show the current inline contribution rows. Older captures preserve prior iterations, not selected requirements. The floating prototype switcher is hidden in captures, not part of the proposed app.
 
 ## Human decision still required
 
-A is selected, but this ticket is not resolved. Compare the compact popup/page and confirm whether collapsed contribution details are the right interpretation, then confirm the remaining end-to-end behavior before updating implementation requirements.
+A and the popup are selected, but this ticket is not resolved. Confirm that the inline contribution rows match the latest request, then confirm the remaining end-to-end behavior before updating implementation requirements.
