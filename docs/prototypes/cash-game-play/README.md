@@ -1,6 +1,6 @@
-# Cash-game Play · Review v4
+# Cash-game Play · Review v5
 
-**Throwaway, fixture-only prototype.** A and the compact rebuy popup are selected by the human. Review v4 interprets the latest request as showing additional/new total contributions inline rather than inside a dropdown; that exact presentation is awaiting confirmation. This does not implement the app or approve the later result/correction/Payments editors.
+**Throwaway, fixture-only prototype.** A and the rebuy popup with inline contributions are approved by the human (“Yeah, looks awesome”). Review v5 extends the same popup pattern to late arrivals for the human to try. Full blind-payment coverage remains mandatory for late entry, explicitly reaffirmed by the human. This does not implement the app or approve the later result/correction/Payments editors.
 
 ## Run
 
@@ -10,7 +10,13 @@ From this branch's repository root:
 python3 docs/prototypes/cash-game-play/serve.py
 ```
 
-Open <http://127.0.0.1:4188/?review=v4&variant=A&rebuy=popup>. Tap **Rebuy** beside Ben. No packages, build, network or persistence. `index.html` also opens directly offline. Reload resets the fixture; the interruption review button simulates leaving without accepting an action.
+Open <http://127.0.0.1:4188/?review=v5&variant=A&rebuy=popup>.
+
+- **Late arrival:** Add player → select Nora → Review entry. The matching popup shows the stack, reserve after entry and EUR 20 initial contribution. Only **Add player & issue stack** actually joins Nora.
+- **Blocked late arrival:** select the Reduced coverage or Zero coverage fixture under Prototype controls, then repeat that path. Entry is blocked without an acceptance/fallback button or any participant/contribution changes.
+- **Rebuy:** tap Rebuy beside Ben; the approved three-row popup is unchanged.
+
+No packages, build, network or persistence. `index.html` also opens directly offline. Reload resets the fixture; the interruption review button simulates leaving without accepting an action.
 
 ## Selected Play direction
 
@@ -20,9 +26,17 @@ Open <http://127.0.0.1:4188/?review=v4&variant=A&rebuy=popup>. Tap **Rebuy** bes
 
 All of B/C/D and the simple-page rebuy are now archived alternatives, reachable in the prototype dropdown only. For the old floating popup/page comparison, add `&compare=rebuy`; the switcher and arrow-key shortcut are otherwise hidden. Switching treatments cancels any pending rebuy rather than accepting it. Prototype controls expose independent histories, text scaling and a live record/inventory inspector. Scenarios and presentation switches are review controls, not MVP settings.
 
-## Review v4: selected popup, inline facts
+## Review v5: matching late-entry popup
 
-The human prefers the popup and asked for additional and total contribution to be listed like remaining reserve, rather than tucked inside the dropdown. Review v4 removes the dropdown and presents three ordinary label/value rows below the actual stack: **Reserve after rebuy**, **Additional contribution**, and **New total contribution**. Bank figures stay absent. Coverage warnings, price, acceptance, cancellation and inventory behavior are unchanged. This is the explicit interpretation being shown back to the human before the whole workflow is resolved.
+The human asked to try the late-arrival confirmation in the existing prototype and reaffirmed that late arrivals still require full blind-payment coverage. Selecting a name stays a staged choice. Review entry now opens the same compact visual treatment as Rebuy, showing the actual exact-value stack, **Reserve after entry**, and **Initial contribution**. There is no redundant second total for a first buy-in, no dropdown and no bank figures.
+
+Confirming adds the captured participant, initial contribution, actual issuance, bank deduction and shared-reserve consumption together, then returns to Play. Existing results, mixes and other records are preserved. Cancel/Escape or dismissing a blocked entry returns to player selection with the chosen name retained, explicit no-entry feedback and focus on Review entry. Interrupting or changing presentation never accepts the proposal.
+
+Only fully qualifying stacks can be accepted for entry. Reduced/zero coverage yields **Cannot add Nora**, the achievable-versus-required coverage explanation, and **Nora has not joined**; there is no reduced-coverage acceptance control or handout mix. No exact-value allocation and reserve constraints are also blocked without partial mutation. Exhausted/zero reserve targets still allow a fully qualifying entry when feasible. This matching late-entry presentation is awaiting the human's review; the underlying coverage rule is not a new functional decision.
+
+## Review v4: approved popup, inline facts
+
+The human prefers the popup and asked for additional and total contribution to be listed like remaining reserve, rather than tucked inside the dropdown. Review v4 removes the dropdown and presents three ordinary label/value rows below the actual stack: **Reserve after rebuy**, **Additional contribution**, and **New total contribution**. Bank figures stay absent. Coverage warnings, price, acceptance, cancellation and inventory behavior are unchanged. The human approved this presentation after seeing v4.
 
 ## Review v3: earlier compact rebuy comparison
 
@@ -40,7 +54,7 @@ Only explicit acceptance issues chips and records the rebuy. Cancel, Escape, nav
 
 ## Feedback incorporated, not final approval
 
-The human asked to see how much a player won/lost when opening a confirmed result and directly in the Play overview; preferred A while asking for more prominent blinds/rebuy/stack terms, a result-entry shortcut beside Rebuy, and at least one more extravagant visual alternative. Review v2 implemented those requests. A and the popup are now selected; the whole ticket remains open while the inline contribution refinement and complete workflow receive final review.
+The human asked to see how much a player won/lost when opening a confirmed result and directly in the Play overview; preferred A while asking for more prominent blinds/rebuy/stack terms, a result-entry shortcut beside Rebuy, and at least one more extravagant visual alternative. Review v2 implemented those requests. A and the v4 rebuy popup are approved; the whole ticket remains open while the matching late-entry popup receives final review.
 
 Confirmed-result detail leads with **Won / Lost / Break-even · provisional**, a signed EUR amount, and the arithmetic: confirmed chip value minus **all** initial/rebuy contributions. The example Alice has EUR 25 of final chips and EUR 20 contributed, so her provisional win is **+EUR 5**, not EUR 25. These are provisional player balances, not final rounded Payments or money-transfer receipts. Active/uncounted players have no invented profit/loss amount. Opening a result or using the new result-entry shortcut never confirms anything or changes bank inventory.
 
@@ -74,8 +88,10 @@ Review v3 additionally checked both popup and page across normal, reduced/zero c
 
 Review v4 checked three always-visible fact rows, correct additional/new total contribution and remaining reserve, absence of a dropdown/bank figures, full/reduced/zero/exhausted request acceptance and decline, unchanged failed requests, Escape/focus, archived simple-page behavior, provisional result detail and successful late entry. Normal/warning/failure popups passed at 320px and 390px with 100% and 200% app text: no measured horizontal overflow, checked buttons >=48×48px, and no page exceptions.
 
-Review v3 captures use the `previews/review-v3-` prefix. The earlier comparison is `popup-normal.png` versus `page-normal.png`; `popup-normal-details.png` preserves the now-rejected dropdown treatment. Review v4 captures use `previews/review-v4-popup-` and show the current inline contribution rows. Older captures preserve prior iterations, not selected requirements. The floating prototype switcher is hidden in captures, not part of the proposed app.
+Review v5 checked successful fully qualifying late entry before/after target exhaustion and at a zero target; blocked reduced/zero coverage and exact/value shortages; unchanged earlier players/results/rebuys; stored actual mix, contribution and bank/reserve effects; cancelled/Escape selection retention and focus; incomplete/duplicate selection; interruption; archived-page parity; and the unchanged v4 rebuy flows. Entry and rebuy popups passed at 320px/390px with 100%/200% text without measured horizontal overflow, checked button targets below 48×48px, or page exceptions. These remain fixture checks, not native-accessibility or persistence certification.
+
+Latest late-entry captures use `previews/review-v5-entry-`, particularly `normal.png`, `accepted.png`, `reduced.png`, `zero.png` and `impossible.png`. `review-v5-rebuy-` captures confirm the approved rebuy presentation is unchanged. `review-v4-popup-` preserves the approved rebuy checkpoint; `review-v3-` contains the earlier comparison and rejected dropdown. Older captures preserve prior iterations, not selected requirements. The floating prototype switcher is hidden in captures, not part of the proposed app.
 
 ## Human decision still required
 
-A and the popup are selected, but this ticket is not resolved. Confirm that the inline contribution rows match the latest request, then confirm the remaining end-to-end behavior before updating implementation requirements.
+A and the v4 rebuy popup are approved, but this ticket is not resolved. The human is trying the matching late-entry popup before approving the complete workflow and updating implementation requirements.
