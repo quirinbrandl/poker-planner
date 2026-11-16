@@ -1,8 +1,8 @@
-# Cash-game results & correction recovery · Review v2
+# Cash-game results & correction recovery · Review v3
 
-**Throwaway, unapproved UI prototype.** It asks: how can the host count final chips, inspect/correct actual records, and recover from dependent inventory without confusing a draft, confirmed result, physical chip movement, or final Payments?
+**Throwaway UI prototype; workflow review remains open.** It asks: how can the host count final chips, inspect/correct actual records, and recover from dependent inventory without confusing a draft, confirmed result, physical chip movement, or final Payments?
 
-Decision ticket: [Design cash-game result entry and correction recovery](https://github.com/quirinbrandl/poker-planner/issues/37). The ticket remains open for live human review. Neither these proposed UI choices nor the earlier questionnaire have been approved. No production code, functional specification, or implementation-ticket acceptance criteria are changed by this branch.
+Decision ticket: [Design cash-game result entry and correction recovery](https://github.com/quirinbrandl/poker-planner/issues/37). The compact picker-caption refinement below is approved without another label review; the whole workflow and earlier questionnaire are not approved. No production code, functional specification, or implementation-ticket acceptance criteria are changed by this branch.
 
 ## Run
 
@@ -14,7 +14,7 @@ python3 docs/prototypes/cash-game-results/serve.py
 
 Open <http://127.0.0.1:4189/?variant=A&walk=count>.
 
-For the latest requested refinement, open <http://127.0.0.1:4189/?variant=B&walk=count&review=v2>.
+For the next live decision, open <http://127.0.0.1:4189/?variant=B&walk=confirm&review=v3>. The current count editor is <http://127.0.0.1:4189/?variant=B&walk=count&review=v3>.
 
 No packages or build. `index.html` also opens directly offline. All state is in memory: reload resets it. The interruption control simulates retaining accepted records and count drafts, without replaying a pending acceptance. It does not demonstrate durable production storage.
 
@@ -32,7 +32,17 @@ Use the floating comparison arrows, or the dropdown in **Prototype controls & sc
 
 Screens: [Count sheet](previews/count-A.png), [one denomination](previews/count-B.png), [count popup](previews/count-C.png).
 
-## Review v2 · Chip-image denomination buttons
+## Review v3 · Approved compact captions; next is result confirmation
+
+The human requested **0x** instead of Not counted, and **12x / 0x** instead of 12 chips / 0 chips, explicitly authorizing this change without another review. Those compact captions are applied to B's chip-image picker. The blank-caption fallback is presentation only: existing blank/raw draft inputs are retained, the accessible name identifies a quantity not entered, and an untouched player remains uncounted until explicit result confirmation. A caption never confirms a result or returns inventory. Explicitly entered zero remains a real quantity; malformed text remains available for correction.
+
+No further label approval is requested. The next prototype link opens Clara's **Confirm result** review directly, with a prepared but unconfirmed `[15, 2, 5, 1, 0]` count: 250 chip units, provisional EUR 25 chip value, EUR 20 contributions and a provisional EUR 5 win. Opening the link changes no accepted result or bank inventory. Cancel keeps the draft; only Confirm result records the return. The review layout/content remains a proposal for live reaction, not an approved final workflow.
+
+Screens: [compact picker](previews/review-v3-picker.png), [result confirmation](previews/review-v3-confirm-result.png). Earlier screenshots and notes below preserve their original review versions; the Not counted / chips captions in v2 are superseded.
+
+V3 browser checks passed compact captions with retained blank/zero/raw distinctions, unchanged records on preview/cancel, the correct 250-unit / EUR 25 / EUR 20 / +EUR 5 review, explicit single-return acceptance without auto-completion, and 320px/390px at 100%/200% text with no measured horizontal overflow or checked targets below 48×48px. The earlier workflow smoke checks passed again.
+
+## Archived review v2 · Chip-image denomination buttons
 
 The human found B's text labels such as `5 · —` awkward for unentered quantities and requested chip images instead of repeating denomination values as separate numbers. B now uses the configured chip image, with its value on the face and its color, as the denomination selector. A short caption underneath says **Not counted**, **0 chips**, or the entered quantity; invalid text gives **Check entry** while the raw input stays available in the editor. No dash or duplicate denomination number is used outside the image.
 

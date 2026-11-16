@@ -17,5 +17,5 @@ if __name__ == "__main__":
     parser.add_argument("--port", type=int, default=4189)
     args = parser.parse_args()
     handler = partial(ReviewHandler, directory=str(Path(__file__).resolve().parent))
-    print(f"Result entry · Review v2: http://127.0.0.1:{args.port}/?variant=B&walk=count", flush=True)
+    print(f"Result entry · Review v3: http://127.0.0.1:{args.port}/?variant=B&walk=confirm", flush=True)
     ThreadingHTTPServer(("127.0.0.1", args.port), handler).serve_forever()
