@@ -1,6 +1,6 @@
-# Cash-game Play · Review v5
+# Cash-game Play · Approved Review v5
 
-**Throwaway, fixture-only prototype.** A and the rebuy popup with inline contributions are approved by the human (“Yeah, looks awesome”). Review v5 extends the same popup pattern to late arrivals for the human to try. Full blind-payment coverage remains mandatory for late entry, explicitly reaffirmed by the human. This does not implement the app or approve the later result/correction/Payments editors.
+**Approved primary-source design artifact; throwaway, fixture-only code.** The human selected A, approved the rebuy popup with inline contributions (“Yeah, looks awesome”), then tried and approved the matching late-entry popup (“Yeah, that's fine”). Full blind-payment coverage remains mandatory for late entry, explicitly reaffirmed by the human. This does not implement the app or approve the later result/correction/Payments editors.
 
 ## Run
 
@@ -32,7 +32,7 @@ The human asked to try the late-arrival confirmation in the existing prototype a
 
 Confirming adds the captured participant, initial contribution, actual issuance, bank deduction and shared-reserve consumption together, then returns to Play. Existing results, mixes and other records are preserved. Cancel/Escape or dismissing a blocked entry returns to player selection with the chosen name retained, explicit no-entry feedback and focus on Review entry. Interrupting or changing presentation never accepts the proposal.
 
-Only fully qualifying stacks can be accepted for entry. Reduced/zero coverage yields **Cannot add Nora**, the achievable-versus-required coverage explanation, and **Nora has not joined**; there is no reduced-coverage acceptance control or handout mix. No exact-value allocation and reserve constraints are also blocked without partial mutation. Exhausted/zero reserve targets still allow a fully qualifying entry when feasible. This matching late-entry presentation is awaiting the human's review; the underlying coverage rule is not a new functional decision.
+Only fully qualifying stacks can be accepted for entry. Reduced/zero coverage yields **Cannot add Nora**, the achievable-versus-required coverage explanation, and **Nora has not joined**; there is no reduced-coverage acceptance control or handout mix. No exact-value allocation and reserve constraints are also blocked without partial mutation. Exhausted/zero reserve targets still allow a fully qualifying entry when feasible. The human approved this matching late-entry presentation after trying it; the underlying coverage rule is not a new functional decision.
 
 ## Review v4: approved popup, inline facts
 
@@ -52,9 +52,9 @@ Both treatments show the same information:
 
 Only explicit acceptance issues chips and records the rebuy. Cancel, Escape, navigation, presentation switching and simulated interruption leave all records unchanged and discard the proposal. Cancelling the popup returns focus to that player's Rebuy shortcut. Successful issuance returns to Play with feedback. The separate late-entry review is unchanged for now; both forms still enforce no reduced-coverage fallback for late arrivals.
 
-## Feedback incorporated, not final approval
+## Approval history
 
-The human asked to see how much a player won/lost when opening a confirmed result and directly in the Play overview; preferred A while asking for more prominent blinds/rebuy/stack terms, a result-entry shortcut beside Rebuy, and at least one more extravagant visual alternative. Review v2 implemented those requests. A and the v4 rebuy popup are approved; the whole ticket remains open while the matching late-entry popup receives final review.
+The human asked to see how much a player won/lost when opening a confirmed result and directly in the Play overview; preferred A while asking for more prominent blinds/rebuy/stack terms, a result-entry shortcut beside Rebuy, and at least one more extravagant visual alternative. Review v2 implemented those requests. They chose A over D, chose the popup over the simple page, rejected hiding contributions in a dropdown, approved the resulting v4 inline rows, then tried and approved the matching v5 late-entry popup. The winning direction is A with compact popups, not archived B/C/D or a full-page confirmation.
 
 Confirmed-result detail leads with **Won / Lost / Break-even · provisional**, a signed EUR amount, and the arithmetic: confirmed chip value minus **all** initial/rebuy contributions. The example Alice has EUR 25 of final chips and EUR 20 contributed, so her provisional win is **+EUR 5**, not EUR 25. These are provisional player balances, not final rounded Payments or money-transfer receipts. Active/uncounted players have no invented profit/loss amount. Opening a result or using the new result-entry shortcut never confirms anything or changes bank inventory.
 
@@ -92,6 +92,8 @@ Review v5 checked successful fully qualifying late entry before/after target exh
 
 Latest late-entry captures use `previews/review-v5-entry-`, particularly `normal.png`, `accepted.png`, `reduced.png`, `zero.png` and `impossible.png`. `review-v5-rebuy-` captures confirm the approved rebuy presentation is unchanged. `review-v4-popup-` preserves the approved rebuy checkpoint; `review-v3-` contains the earlier comparison and rejected dropdown. Older captures preserve prior iterations, not selected requirements. The floating prototype switcher is hidden in captures, not part of the proposed app.
 
-## Human decision still required
+## Approved decision and handoff
 
-A and the v4 rebuy popup are approved, but this ticket is not resolved. The human is trying the matching late-entry popup before approving the complete workflow and updating implementation requirements.
+Approved decision: [Design cash-game play, rebuys, and late entry](https://github.com/quirinbrandl/poker-planner/issues/36). Shared implementation requirements belong to the parent MVP specification and the three affected existing implementation tickets, not to a competing design specification. This archive preserves the selected visuals, interactions, fixtures and rejected alternatives as primary-source evidence. Its fixed 200-unit / 1–2-blind / EUR 20 calculation code must not be promoted to production.
+
+Detailed count/correction editors and dependency recovery continue in [Design cash-game result entry and correction recovery](https://github.com/quirinbrandl/poker-planner/issues/37). Payments and detailed lifecycle-safety presentation remain with their own decisions. No glossary, functional product rule, framework/storage choice or production application code changed in this approval.
