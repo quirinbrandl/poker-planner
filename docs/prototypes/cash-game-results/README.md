@@ -1,4 +1,4 @@
-# Cash-game results & correction recovery · Review v1
+# Cash-game results & correction recovery · Review v2
 
 **Throwaway, unapproved UI prototype.** It asks: how can the host count final chips, inspect/correct actual records, and recover from dependent inventory without confusing a draft, confirmed result, physical chip movement, or final Payments?
 
@@ -13,6 +13,8 @@ python3 docs/prototypes/cash-game-results/serve.py
 ```
 
 Open <http://127.0.0.1:4189/?variant=A&walk=count>.
+
+For the latest requested refinement, open <http://127.0.0.1:4189/?variant=B&walk=count&review=v2>.
 
 No packages or build. `index.html` also opens directly offline. All state is in memory: reload resets it. The interruption control simulates retaining accepted records and count drafts, without replaying a pending acceptance. It does not demonstrate durable production storage.
 
@@ -29,6 +31,16 @@ The approved **A · Refined rows** Play workspace and Current/Lavender foundatio
 Use the floating comparison arrows, or the dropdown in **Prototype controls & scenarios**. In a modal the same comparison bar sits at the end of its scrollable content so the native modal does not make it inert or cover the actual actions. Switching treatments retains raw draft quantities and cancels a pending confirmation; it never confirms a result. Left/right keys switch outside editable fields/modals.
 
 Screens: [Count sheet](previews/count-A.png), [one denomination](previews/count-B.png), [count popup](previews/count-C.png).
+
+## Review v2 · Chip-image denomination buttons
+
+The human found B's text labels such as `5 · —` awkward for unentered quantities and requested chip images instead of repeating denomination values as separate numbers. B now uses the configured chip image, with its value on the face and its color, as the denomination selector. A short caption underneath says **Not counted**, **0 chips**, or the entered quantity; invalid text gives **Check entry** while the raw input stays available in the editor. No dash or duplicate denomination number is used outside the image.
+
+The selected chip has a checkmark as well as the border/tint. Accessible button names retain the exact denomination, color name and count/status, so identifying the chip does not depend on color alone. Typing updates the caption without removing the chip image. The picker reflows at larger text sizes and keeps 48×48 minimum targets. Switching chips still only navigates the draft; it never confirms a result or turns blanks into zeroes.
+
+This is a requested refinement for review, not final approval of B or the whole ticket. A/C, accounting, confirmation, historical correction and recovery behavior are unchanged. Screens: [partial/unentered quantities](previews/review-v2-picker-partial.png), [zero versus uncounted](previews/review-v2-picker-zero.png), [entered quantities](previews/review-v2-picker-entered.png), [narrow screen at 200% text](previews/review-v2-picker-large-text.png). The earlier `count-B.png` preserves the v1 text-button comparison.
+
+V2 browser checks passed chip-image retention during typing, live blank/zero/entered/invalid captions, selected/accessibility labels, unchanged records on navigation, cancelled review/raw retention, 320px/390px at 100%/200% text without measured horizontal overflow, and picker targets at least 48×48px. The previous count/correction/history/recovery smoke checks also passed again without overwriting the archived v1 captures.
 
 ## Proposed workflow defaults—not decisions
 

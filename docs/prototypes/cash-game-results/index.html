@@ -3,7 +3,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <link rel="icon" href="data:,">
-<title>Cash-game results · Prototype review v1</title>
+<title>Cash-game results · Prototype review v2</title>
 <style>
   * { box-sizing: border-box; }
   :root { color-scheme: dark; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; background: #0b1117; color: #f1f4f5; --accent: #c9b5ff; --tint: #322b45; }
@@ -103,9 +103,12 @@
   .stepper { display: grid; grid-template-columns: 48px minmax(0,1fr) 48px; gap: 8px; align-items: center; }
   .stepper label { margin: 0; }
   .stepper button { padding: 8px; }
-  .denom-tabs { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 12px; }
-  .denom-tabs button { flex: 1; padding: 8px; font-size: .8em; }
+  .denom-tabs { display: grid; grid-template-columns: repeat(auto-fit,minmax(4.2em,1fr)); gap: 6px; margin-top: 12px; font-size: .75em; }
+  .denom-tabs button { position: relative; display: flex; flex-direction: column; align-items: center; gap: 7px; padding: 10px 4px 8px; font-size: inherit; }
+  .denom-tabs .chip { width: 40px; height: 40px; }
+  .denom-quantity { display: flex; align-items: center; justify-content: center; min-height: 2.5em; line-height: 1.25; font-variant-numeric: tabular-nums; }
   .denom-tabs [aria-pressed="true"] { background: var(--tint); border-color: var(--accent); color: var(--accent); }
+  .denom-tabs [aria-pressed="true"]::after { content: '✓'; position: absolute; top: 2px; right: 3px; font-size: .9em; font-weight: 750; }
   .progress { display: flex; height: 5px; border-radius: 4px; overflow: hidden; background: #364653; margin: 12px 0; }
   .progress span { background: var(--accent); }
   .recovery-step { border-bottom: 1px solid #46515f; padding: 16px 0; }
@@ -146,7 +149,7 @@
   @media (prefers-reduced-motion:reduce) { *, *::before, *::after { transition: none !important; animation: none !important; } }
 </style>
 <main class="workshop">
-  <header><div class="revision">Review v1 · Three ways to count</div><h1>Final chips, clear records.</h1><p class="intro">Try Result beside Clara, then compare A / B / C below. The approved Play layout stays the same. Counts, corrections and recovery are proposals for your review—not approved requirements. In-memory only; reload resets everything.</p></header>
+  <header><div class="revision">Review v2 · Chip-image denomination picker</div><h1>Final chips, clear records.</h1><p class="intro">Try B’s denomination buttons: the chip carries its value and color; the quantity sits underneath. Blank means Not counted, never zero. A / C remain available for comparison. In-memory only; reload resets everything.</p></header>
   <div class="layout">
     <section id="app" aria-label="Phone prototype"></section>
     <aside class="review"><details id="tools"><summary>Prototype controls &amp; scenarios</summary><div class="review-controls">
@@ -266,6 +269,8 @@ function reset(next=fixture){
   view={page:'play',player:'p0',origin:'play',step:0};updateURL();render();
 }
 function chip(d){return `<svg class="chip" viewBox="0 0 72 72" aria-hidden="true"><circle cx="36" cy="36" r="33" fill="${d.fill}" stroke="#b3c0ca"/><circle cx="36" cy="36" r="27" fill="none" stroke="${d.ink}" stroke-width="6" stroke-dasharray="8 14"/><text x="36" y="42" text-anchor="middle" fill="${d.ink}" font-size="${d.value>99?15:20}" font-weight="700">${d.value}</text></svg>`;}
+function denominationQuantity(raw){return raw===''?'Not counted':/^\d+$/.test(raw)&&Number.isSafeInteger(Number(raw))?`${raw} ${Number(raw)===1?'chip':'chips'}`:'Check entry';}
+function denominationButton(d,i,raw){const label=denominationQuantity(raw);return `<button type="button" data-action="step" data-step="${i}" aria-pressed="${view.step===i}" aria-label="${esc(`${d.value} chip units, ${d.color}, ${label}`)}">${chip(d)}<span class="denom-quantity">${esc(label)}</span></button>`;}
 function pills(mix){return `<div class="pills">${mix.map((q,i)=>`<div class="pill">${chip(denoms[i])}<span>×${q}<small>${denoms[i].value} · ${denoms[i].color}</small></span></div>`).join('')}</div>`;}
 function tower(d,count){let discs='';for(let i=0;i<Math.min(20,count);i++){const y=154-i*5.4;discs+=`<path d="M17 ${y} A33 11.5 0 0 0 83 ${y} v5.6 A33 11.5 0 0 1 17 ${y+5.6} Z" fill="${d.edge}" stroke="#080d12" stroke-width=".7"/><path d="M28 ${y+2}v5 M50 ${y+11}v5 M72 ${y+2}v5" stroke="${d.ink}" stroke-width="3.6"/><ellipse cx="50" cy="${y}" rx="33" ry="11.5" fill="${d.fill}" stroke="${(i+1)%5===0?'#c9b5ff':'#ffffff44'}"/>`;if(i===Math.min(20,count)-1)discs+=`<text x="50" y="${y+3}" text-anchor="middle" fill="${d.ink}" font-size="12" font-weight="800">${d.value}</text>`;}return `<div class="tower" role="listitem" aria-label="${count} chips of value ${d.value}, ${d.color}"><svg viewBox="0 0 100 174" aria-hidden="true">${discs}</svg><b>×${count}</b><small>${d.value} · ${d.color}</small></div>`;}
 function stack(mix){return `<div class="stack"><div class="between"><span>Stack to hand out</span><strong>${units(mix)} chip units</strong></div><div class="towers" role="list">${mix.map((q,i)=>q?tower(denoms[i],q):'').join('')}</div></div>`;}
@@ -305,7 +310,7 @@ function editorBody(){const p=player(editor.player),history=editor.kind==='histo
   if(banner?.editor)body+=feedback();
   if(!history&&variant==='B'){
     const d=denoms[view.step];
-    body+=`<div class="between"><span class="small">Denomination ${view.step+1} of ${denoms.length}</span><span class="small" id="entered-progress">${filled} quantities entered</span></div><div class="focus-denom">${chip(d)}<h3>${d.value} chip units</h3><span class="small">${d.color}</span><div class="stepper">${b('−','minus','','aria-label="Decrease quantity by one"')}${countField(view.step,true)}${b('+','plus','','aria-label="Increase quantity by one"')}</div></div><div class="actions">${b('← Previous','step-back')}${b(view.step===denoms.length-1?'Back to first':'Next denomination →','step-next')}</div><div class="denom-tabs" aria-label="Jump to denomination">${denoms.map((d,i)=>b(`${d.value}${raw[i]===''?' · —':` · ${raw[i]}`}`,'step','',`data-step="${i}" aria-pressed="${view.step===i}" aria-label="${d.value} chip units, ${d.color}, ${raw[i]===''?'not counted':raw[i]+' chips'}"`)).join('')}</div>`;
+    body+=`<div class="between"><span class="small">Denomination ${view.step+1} of ${denoms.length}</span><span class="small" id="entered-progress">${filled} ${filled===1?'quantity':'quantities'} entered</span></div><div class="focus-denom">${chip(d)}<h3>${d.value} chip ${d.value===1?'unit':'units'}</h3><span class="small">${d.color}</span><div class="stepper">${b('−','minus','','aria-label="Decrease quantity by one"')}${countField(view.step,true)}${b('+','plus','','aria-label="Increase quantity by one"')}</div></div><div class="actions">${b('← Previous','step-back')}${b(view.step===denoms.length-1?'Back to first':'Next denomination →','step-next')}</div><div class="denom-tabs" aria-label="Jump to denomination">${denoms.map((d,i)=>denominationButton(d,i,raw[i])).join('')}</div>`;
   }else body+=`<div aria-label="Denomination quantities">${denoms.map((d,i)=>countField(i)).join('')}</div>`;
   body+=b('Set remaining quantities to zero','fill-zero','quiet full')+`<div class="count-summary" id="live-total" aria-live="polite">${totalHTML()}</div>`;
   if(history)body+='<p class="save-note">Editor text is retained in this demo, not recorded as a rebuy. Fixed price and game terms do not change.</p>';
@@ -421,8 +426,8 @@ document.addEventListener('input',e=>{if(!e.target.matches('[data-quantity]'))re
 document.addEventListener('focusout',e=>{if(!e.target.matches('[data-quantity]')||e.target.value===''||!editor)return;const i=Number(e.target.dataset.quantity);if(!/^\d+$/.test(e.target.value)){fieldErrors[i]='Use a nonnegative whole number; keep digits only.';const err=document.querySelector(`#error-${i}`);err.textContent=fieldErrors[i];err.hidden=false;e.target.setAttribute('aria-invalid','true');}});
 document.addEventListener('input',e=>{
   if(!e.target.matches('[data-quantity]')||editor?.kind!=='count'||variant!=='B')return;
-  const raw=currentRaw();document.querySelector('#entered-progress').textContent=`${raw.filter(v=>v!=='').length} quantities entered`;
-  document.querySelectorAll('.denom-tabs button').forEach((el,i)=>{el.textContent=`${denoms[i].value} · ${raw[i]===''?'—':raw[i]}`;el.setAttribute('aria-label',`${denoms[i].value} chip units, ${denoms[i].color}, ${raw[i]===''?'not counted':raw[i]+' chips'}`);});
+  const raw=currentRaw(),filled=raw.filter(v=>v!=='').length;document.querySelector('#entered-progress').textContent=`${filled} ${filled===1?'quantity':'quantities'} entered`;
+  document.querySelectorAll('.denom-tabs button').forEach((el,i)=>{const label=denominationQuantity(raw[i]);el.querySelector('.denom-quantity').textContent=label;el.setAttribute('aria-label',`${denoms[i].value} chip units, ${denoms[i].color}, ${label}`);});
 });
 document.addEventListener('keydown',e=>{
   if(e.key==='Enter'&&e.target.matches('[data-quantity]')){
