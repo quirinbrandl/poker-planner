@@ -1,8 +1,8 @@
-# Cash-game results & correction recovery · Review v4
+# Cash-game results & correction recovery · Approved (Review v5)
 
-**Throwaway UI prototype; workflow review remains open.** It asks: how can the host count final chips, inspect/correct actual records, and recover from dependent inventory without confusing a draft, confirmed result, physical chip movement, or final Payments?
+**Throwaway UI prototype. The human approved the whole workflow in Review v5.** It asks: how can the host count final chips, inspect/correct actual records, and recover from dependent inventory without confusing a draft, confirmed result, physical chip movement, or final Payments?
 
-Decision ticket: [Design cash-game result entry and correction recovery](https://github.com/quirinbrandl/poker-planner/issues/37). Review v4 below records the human’s decisions on result confirmation and blocked-correction recovery. Records inspection, historical rebuys, result removal and whole-game accounting are still open. No production code, functional specification, or implementation-ticket acceptance criteria are changed by this branch.
+Decision ticket: [Design cash-game result entry and correction recovery](https://github.com/quirinbrandl/poker-planner/issues/37). Approved: count editor **B**, the simplified result confirmation, blocked-correction fix **3 · One step at a time**, and the v5 player page, forgotten-rebuy editor, return-to-play popup and results status. Earlier sections are kept as the review history. No production code, functional specification, or implementation-ticket acceptance criteria are changed by this branch.
 
 ## Run
 
@@ -14,7 +14,7 @@ python3 docs/prototypes/cash-game-results/serve.py
 
 Open <http://127.0.0.1:4189/?variant=A&walk=count>.
 
-Chosen blocked-correction fix: <http://127.0.0.1:4189/?variant=B&walk=dependency&fix=3>. Result confirmation: <http://127.0.0.1:4189/?variant=B&walk=confirm>. Count editor: <http://127.0.0.1:4189/?variant=B&walk=count>.
+Count editor: <http://127.0.0.1:4189/?walk=count>. Result confirmation: <http://127.0.0.1:4189/?walk=confirm>. Blocked-correction fix: <http://127.0.0.1:4189/?walk=dependency>. Player page: <http://127.0.0.1:4189/?fixture=normal> → tap Alice or Bob. Forgotten rebuy: <http://127.0.0.1:4189/?walk=history>. Return to play: <http://127.0.0.1:4189/?walk=return>. Missing chip: <http://127.0.0.1:4189/?walk=shortage>. B and fix 3 are the defaults; `variant=A|C` and `fix=1|2` open the archived alternatives.
 
 No packages or build. `index.html` also opens directly offline. All state is in memory: reload resets it. The interruption control simulates retaining accepted records and count drafts, without replaying a pending acceptance. It does not demonstrate durable production storage.
 
@@ -32,7 +32,39 @@ Use the floating comparison arrows, or the dropdown in **Prototype controls & sc
 
 Screens: [Count sheet](previews/count-A.png), [one denomination](previews/count-B.png), [count popup](previews/count-C.png).
 
-## Review v4 · Simpler confirmation; blocked correction redesigned
+## Review v5 · Approved
+
+The human confirmed **B · One denomination** as the count editor (A and C archived), then asked for the four remaining screens to be redone in the same simple style as the chosen fix flow, and approved all four: “Yeah, everything approved.”
+
+### 1. Player page holds every record
+
+The separate Rebuy records page is gone. A player page shows, in order: the approved win/loss summary (result players only), **Final chips · <units>** with the denomination pills and a **Correct** button, **Buy-ins · <total>** listing the initial buy-in and every rebuy with its actual mix, then **+ Add forgotten rebuy** and, for a player with a result, **Return to play…**. Each rebuy row has **Correct mix** and **Undo**. Tags mark a rebuy as *added later* or *corrected*, and a reduced-coverage mix as *c of 4 coverage*. Zero-quantity denominations are hidden in these compact rows. A player still playing gets **Count final chips** / **+ Rebuy** instead of the result sections. There is no standalone Remove final result button: removal is only reached through Return to play.
+
+Screens: [Alice with a result](previews/review-v5-player-alice.png), [after adding a forgotten rebuy](previews/review-v5-player-after-history.png), [Bob still playing](previews/review-v5-player-bob.png).
+
+### 2. Forgotten rebuy and Correct mix
+
+Same B chip picker as the count editor. One line: “Enter the chips <name> actually got. They must add up to 200.” (plus “<name>’s result stays.” when one exists). A bar fills toward **200 chip units**: “N to go”, “N over” in red, “Exactly 200 ✓” in green. A wrong total on review shows “N chip units, not 200 · Check the quantities you entered.” The confirmation popup (**Add <name>’s forgotten rebuy?** / **Correct <name>’s rebuy k?**) shows the mix, “<name>’s buy-ins EUR 20.00 → EUR 40.00” for an addition, and one ⚠ line per problem: “Covers only c of 4 blind payments with separate chips.” and “Leaves chips for only x of y reserve stacks (was z).” With a warning the buttons are **Decline / Accept & add** (or **Accept & save**); otherwise **Cancel / Add rebuy** (**Save correction**). If the bank doesn’t have the chips, the popup **Not enough chips for this mix** shows the chip with −N, “The bank is N White chips short. Check the quantities you entered.”, “Nothing was saved.” and **Back to editing** only.
+
+Screens: [editor](previews/review-v5-history-ready.png), [wrong total](previews/review-v5-history-incomplete.png), [confirm](previews/review-v5-history-confirm.png), [reduced coverage](previews/review-v5-history-reduced.png), [weakened reserve](previews/review-v5-history-weaken.png), [not enough chips](previews/review-v5-history-impossible.png), [correct mix](previews/review-v5-history-correct-confirm.png).
+
+### 3. Return to play is one popup
+
+**<name> back in the game?** “Hand <name> back these chips:” with the confirmed mix (or “cashed out with no chips, so there’s nothing to hand back”), then **Final result · Removed** and **Buy-ins · EUR x · unchanged**. **Cancel / Back in the game**. Afterwards the player is playing again and can rebuy or be counted. A removal that later records depend on uses the approved One-step-at-a-time fix flow.
+
+Screens: [popup](previews/review-v5-return.png), [after](previews/review-v5-return-after.png).
+
+### 4. Results status card
+
+One card above the player list: **N still to count** (names, progress, `done/total` icon), **N chip unit(s) missing** / **too many** (“EUR x · counted of issued. Recount, or correct a result.”), or **Everything adds up ✓** (“All N counted · units”). **Calculate Payments…** is primary only when everything adds up; otherwise it is disabled with “Count everyone first.” / “Find the missing chips first.” / “Fix the extra chips first.” A count that would return more chips than the game has is blocked with **More chips than the game has**, the chip with +N and **Back to editing**.
+
+Screens: [still to count](previews/review-v5-results-incomplete.png), [chip missing](previews/review-v5-results-shortage.png), [adds up](previews/review-v5-results-balanced.png), [completed](previews/review-v5-results-completed.png), [too many chips blocked](previews/review-v5-surplus-blocked.png), [count editor B](previews/review-v5-count-editor-B.png).
+
+Successful actions show a short ✓ toast (“Result confirmed”, “Forgotten rebuy added”, “Rebuy corrected”, “Rebuy undone”, “Back in the game”) instead of an explanation box.
+
+V5 headless checks drove every new screen with correct records (forgotten rebuy added with the result retained, Bob’s rebuy corrected in place, Alice back in the game with buy-ins unchanged, impossible/too-many blocked with nothing saved), reran all three fix flows and the A/B/C editors, and found no page exceptions and no overflow at 320px/390px with 100%/200% text. Fixture evidence only.
+
+## Archived review v4 · Simpler confirmation; blocked correction redesigned
 
 ### Result confirmation · human decisions
 
