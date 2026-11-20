@@ -1,8 +1,8 @@
-# Cash-game results & correction recovery · Review v3
+# Cash-game results & correction recovery · Review v4
 
 **Throwaway UI prototype; workflow review remains open.** It asks: how can the host count final chips, inspect/correct actual records, and recover from dependent inventory without confusing a draft, confirmed result, physical chip movement, or final Payments?
 
-Decision ticket: [Design cash-game result entry and correction recovery](https://github.com/quirinbrandl/poker-planner/issues/37). The compact picker-caption refinement below is approved without another label review; the whole workflow and earlier questionnaire are not approved. No production code, functional specification, or implementation-ticket acceptance criteria are changed by this branch.
+Decision ticket: [Design cash-game result entry and correction recovery](https://github.com/quirinbrandl/poker-planner/issues/37). Review v4 below records the human’s decisions on result confirmation and blocked-correction recovery. Records inspection, historical rebuys, result removal and whole-game accounting are still open. No production code, functional specification, or implementation-ticket acceptance criteria are changed by this branch.
 
 ## Run
 
@@ -14,7 +14,7 @@ python3 docs/prototypes/cash-game-results/serve.py
 
 Open <http://127.0.0.1:4189/?variant=A&walk=count>.
 
-For the next live decision, open <http://127.0.0.1:4189/?variant=B&walk=confirm&review=v3>. The current count editor is <http://127.0.0.1:4189/?variant=B&walk=count&review=v3>.
+Chosen blocked-correction fix: <http://127.0.0.1:4189/?variant=B&walk=dependency&fix=3>. Result confirmation: <http://127.0.0.1:4189/?variant=B&walk=confirm>. Count editor: <http://127.0.0.1:4189/?variant=B&walk=count>.
 
 No packages or build. `index.html` also opens directly offline. All state is in memory: reload resets it. The interruption control simulates retaining accepted records and count drafts, without replaying a pending acceptance. It does not demonstrate durable production storage.
 
@@ -32,7 +32,40 @@ Use the floating comparison arrows, or the dropdown in **Prototype controls & sc
 
 Screens: [Count sheet](previews/count-A.png), [one denomination](previews/count-B.png), [count popup](previews/count-C.png).
 
-## Review v3 · Approved compact captions; next is result confirmation
+## Review v4 · Simpler confirmation; blocked correction redesigned
+
+### Result confirmation · human decisions
+
+- **No “provisional” label anywhere.** The human asked why chip value and win/loss were marked provisional, heard the reason (final cents are allocated across the whole table at Payments, and Payments needs every count and balanced chips), and decided the label is not needed in any place. Removed from the confirmation popup, count-editor totals, finished-player rows, player detail and the post-confirmation message; the player-detail line about final cents/Payments is gone too. Monetary behavior is unchanged: exact values are kept and cents are still allocated only at Payments, which stays a separate step. This supersedes the “Won · provisional” wording approved in the cash-game Play decision.
+- **No consequence note** on first-time Confirm result. The popup is the chip mix, final chip units, chip value, all contributions and win/loss, then Cancel / Confirm result. (The Replace result note for corrections is untouched.)
+- **Chip pills show only the chip image and the quantity** (`×15`). The image carries value and color; screen readers still hear e.g. “15 × 1 White”.
+
+Screen: [result confirmation](previews/review-v4-confirm-result.png).
+
+### Blocked correction · three new designs, 3 chosen
+
+The human rejected the v1 “Correction blocked” popup (three stacked colored notices) and asked for a complete redesign. Three structurally different designs were built on the same explicit operations: undo the dependent rebuy → save the corrected count → review and accept a new rebuy. Nothing cascades; each step keeps its own confirmation. Switch with `&fix=1|2|3` or the bottom arrows while the dependency fixture is open.
+
+| Design | Structure | Status |
+| --- | --- | --- |
+| **1 · Chip trail** | Popup with an Alice → ×5 White → Bob diagram, then a timeline page. | Archived comparison |
+| **2 · Fix plan** | No separate blocked screen: the popup is the 3-step checklist, re-shown after each step. | Archived comparison |
+| **3 · One step at a time** | Full page showing only the current step, large; 3-segment progress bar; done screen. | **Chosen by the human** |
+
+Design 3 flow:
+
+1. **Can’t save Alice’s count yet** — big White chip with **−5**, “Bob’s rebuy 2 is using 5 of these White chips”, Bob’s rebuy 2 card, **Undo Bob’s rebuy 2…** / Back to count. Back to count keeps the correction and abandons nothing else.
+2. **✓ Bob’s rebuy undone · Now save Alice’s corrected count** — the retained mix, **Save Alice’s count…** (opens Confirm/Replace result directly) / Edit count first.
+3. **✓ Alice’s count saved · Give Bob a new rebuy** — opens the approved rebuy popup with a newly computed mix; reduced coverage still needs explicit Accept & issue.
+4. **All fixed** — three ticked operations, Back to Play.
+
+Shared simplifications: no “inventory / reserve consumption” wording; the physical-chip rule appears as one practical line where it matters (undo: “Bob keeps the chips until the new rebuy”; new rebuy: “Swap Bob’s chips so they match this stack”). The Undo rebuy popup is chips, “Bob’s contributions EUR 60.00 → EUR 40.00” and that line. Leaving mid-fix shows a compact **Fixing Alice’s count · Step n of 3** button on Play.
+
+Screens: [step 1](previews/review-v4-fix3-step1-undo.png), [undo popup](previews/review-v4-undo-confirm.png), [step 2](previews/review-v4-fix3-step2-save.png), [step 3](previews/review-v4-fix3-step3-rebuy.png), [new rebuy popup](previews/review-v4-fix3-new-rebuy.png), [done](previews/review-v4-fix3-done.png); archived: [1 · Chip trail](previews/review-v4-fix1-chip-trail.png), [2 · Fix plan](previews/review-v4-fix2-plan.png).
+
+V4 headless checks (390×844) drove all three designs end to end: Alice’s result becomes `[10, 3, 5, 1, 0]`, Bob keeps rebuy 1 and receives a new `[10, 3, 3, 1, 0]` rebuy, the recovery completes, no page exceptions and no horizontal overflow. Switching designs mid-fix keeps progress. Fixture evidence only, not device/accessibility certification.
+
+## Archived review v3 · Approved compact captions; next is result confirmation
 
 The human requested **0x** instead of Not counted, and **12x / 0x** instead of 12 chips / 0 chips, explicitly authorizing this change without another review. Those compact captions are applied to B's chip-image picker. The blank-caption fallback is presentation only: existing blank/raw draft inputs are retained, the accessible name identifies a quantity not entered, and an untouched player remains uncounted until explicit result confirmation. A caption never confirms a result or returns inventory. Explicitly entered zero remains a real quantity; malformed text remains available for correction.
 
