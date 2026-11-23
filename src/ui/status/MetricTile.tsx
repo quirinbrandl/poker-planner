@@ -33,12 +33,12 @@ export function MetricTile({ label, value, subLabel, adjustedFrom, adjusts = 'va
   ]
     .filter(Boolean)
     .join(', ');
-  // The width a tile asks for grows with the text size, so tiles wrap to a new row before a label
-  // would break inside a word.
+  // A tile asks for at least its content's width (which grows with the text size) so a value such
+  // as "EUR 20.00" stays on one line; tiles then share the row and wrap to a new row when they don't fit.
   const { fontScale } = useWindowDimensions();
-  const basis = TILE_BASIS * Math.max(1, fontScale || 1);
+  const minBasis = TILE_BASIS * Math.max(1, fontScale || 1);
   return (
-    <View accessible accessibilityLabel={spoken} style={[styles.tile, { flexBasis: basis }, adjusted && styles.adjusted]}>
+    <View accessible accessibilityLabel={spoken} style={[styles.tile, { minWidth: minBasis }, adjusted && styles.adjusted]}>
       <View style={styles.labelRow}>
         {adjusted ? <Icon name="warning" size={13} color={colors.warning} /> : null}
         <Text variant="overline" tone={adjusted ? 'warning' : 'supporting'}>
@@ -85,8 +85,8 @@ export function MetricStrip({ children, accessibilityLabel }: { children: ReactN
   );
 }
 
-/** Keep ratios like "1 / 2" on one line (long values may still wrap between words). */
-const nonBreaking = (text: string) => text.replace(/ \/ /g, '\u00A0/\u00A0');
+/** Keep ratios like "1 / 2" and amounts like "EUR 20.00" on one line (long values may still wrap between words). */
+const nonBreaking = (text: string) => text.replace(/ \/ /g, '\u00A0/\u00A0').replace(/^([A-Z]{3}) (?=\d)/, '$1\u00A0');
 
 const TILE_BASIS = 100;
 
@@ -94,7 +94,9 @@ const styles = StyleSheet.create({
   strip: { flexDirection: 'row', flexWrap: 'wrap', gap: space.sm },
   tile: {
     flexGrow: 1,
-    minWidth: 0,
+    flexShrink: 1,
+    flexBasis: 'auto',
+    maxWidth: '100%',
     gap: 3,
     paddingHorizontal: space.md,
     paddingVertical: space.md - 1,

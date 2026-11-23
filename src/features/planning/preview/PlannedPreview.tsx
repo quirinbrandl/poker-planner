@@ -65,7 +65,7 @@ export function PlannedPreview({ plan, payouts, onEditPayouts }: PlannedPreviewP
         </View>
         <ChipPillRow accessibilityLabel="Unissued bank">
           {plan.bank.mix.map((chip) => (
-            <ChipPill key={chip.value} color={chip.color} value={chip.value} count={chip.count} showValue />
+            <ChipPill key={chip.value} color={chip.color} value={chip.value} count={chip.count} />
           ))}
         </ChipPillRow>
       </Card>
@@ -101,7 +101,7 @@ function ReserveTile({ plan }: { plan: DistributionPlanView }) {
       />
     );
   }
-  return <MetricTile label="Reserve" value={stacksLabel(stacks)} subLabel={stacks === 0 ? '0 stacks' : 'Shared in bank'} />;
+  return <MetricTile label="Reserve" value={stacksLabel(stacks)} />;
 }
 
 function PayoutsCard({ payouts, onEdit }: { payouts: NonNullable<PreviewData['payouts']>; onEdit: () => void }) {

@@ -39,7 +39,7 @@ it('shows one starting stack as labelled towers, the game terms and the whole ba
   expect(label('1 chip of value 100 (Green)')).toBeTruthy();
   expect(label('Blinds, 1 / 2, 100 BB depth')).toBeTruthy();
   expect(label('Cash value, EUR 20.00, EUR 0.10 / unit')).toBeTruthy();
-  expect(label('Reserve, 3 stacks, Shared in bank')).toBeTruthy();
+  expect(label('Reserve, 3 stacks')).toBeTruthy();
   expect(screen.getByText('Unissued bank (374 chips)')).toBeTruthy();
   expect(screen.getByText('Covers 3 reserved stacks')).toBeTruthy();
   expect(label('110 × 1 Grey')).toBeTruthy();
@@ -61,7 +61,7 @@ it('shows a rounded small blind and the zero-reserve wording', async () => {
   await renderPreview('rounded-sb');
   expect(label('Blinds, 2 / 5, Rounded SB · 100 BB')).toBeTruthy();
   await renderPreview('zero-reserve');
-  expect(label('Reserve, 0 stacks, 0 stacks')).toBeTruthy();
+  expect(label('Reserve, 0 stacks')).toBeTruthy();
   expect(screen.getByText('0 reserved')).toBeTruthy();
 });
 

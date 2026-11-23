@@ -23,7 +23,7 @@ import { type PayoutStepValidation, shareFieldKey } from './payout-validation';
 import type { FieldView } from './view';
 
 export type PrizePoolView =
-  /** "EUR 120.00" with "6 × EUR 20.00 · rebuys add to it". */
+  /** "EUR 120.00" with "6 × EUR 20.00". */
   | { kind: 'amount'; cents: Cents; amountText: string; detail: string }
   /** No valid buy-in: show `label` ("Add a buy-in") and an Edit game settings button. */
   | { kind: 'noBuyIn'; label: string };
@@ -150,7 +150,7 @@ export function buildPayoutScheduleView(
           kind: 'amount',
           cents: poolCents,
           amountText: formatEur(poolCents),
-          detail: `${playerCount} × ${formatEur(buyInCents)} · rebuys add to it`,
+          detail: `${playerCount} × ${formatEur(buyInCents)}`,
         };
 
   const amounts = validation.valid && poolCents !== null ? prizeAmounts(poolCents, validation.valid.shares) : null;
