@@ -75,6 +75,9 @@ Rules of use:
 **`TextField`** — persistent `label`, `value` (raw text, kept as typed), `onChangeText`, `unit` (EUR, BB, payments, stacks, chip units, chips, %) with `unitSpoken`, `icon`, `helper`, `error` (shown in words under the field, spoken as the input's hint, announced), `keyboard` (`text` / `decimal` / `whole`), `onBlur`, `onSubmitEditing` + `returnKeyType`, `inputRef`, `footer` (e.g. "Use automatic (3)"), `editable`, `size="large"` / `size="compact"` (48-high box inside cards), `before` / `after`, `inputWidth` (fixed box width that grows with text size; `before` / `after` take the rest), `labelHidden` (spoken but not shown, only where visible context names the field, such as a payout place's share). Never placeholder-only.
 `<TextField label="Buy-in per player" icon="wallet" unit="EUR" unitSpoken="euros" keyboard="decimal" value={raw} onChangeText={setRaw} error={buyInError} />`
 
+**`SearchField`** — search box with a magnifier and a "Search" placeholder inside, no visible label. `value`, `onChangeText`, required `accessibilityLabel` ("Search saved names"), `placeholder`.
+`<SearchField value={q} onChangeText={setQ} accessibilityLabel="Search saved names" />`
+
 **`StepperField`** — − / large quantity / +. Same text props as `TextField`; `onDecrement` / `onIncrement` are yours (no number rules inside), `decrementLabel` / `incrementLabel`, `decrementUnavailable`.
 `<StepperField label="Quantity (chips)" value={raw} onChangeText={setRaw} onDecrement={dec} onIncrement={inc} />`
 
