@@ -283,7 +283,8 @@ it("a correction a later rebuy depends on opens the fix flow, which advances one
 
 it("Android back on the fix page goes to Play, like its Back to Play", async () => {
   // Collect the hardware back handlers the screens register; the newest one runs first.
-  const handlers: (() => boolean | null | undefined)[] = [];
+  type Handler = Parameters<typeof BackHandler.addEventListener>[1];
+  const handlers: Handler[] = [];
   const spy = jest
     .spyOn(BackHandler, "addEventListener")
     .mockImplementation((_event, handler) => {
@@ -310,7 +311,7 @@ it("Android back on the fix page goes to Play, like its Back to Play", async () 
     await press("Review correction");
     expect(router.getPathname()).toBe(`/game/${gameId}/fix`);
     await act(async () => {
-      expect(handlers.at(-1)?.()).toBe(true);
+      expect(handlers.at(-1)?.({} as Parameters<Handler>[0])).toBe(true);
     });
     expect(router.getPathname()).toBe(`/game/${gameId}/play`);
     // Step 1 recorded nothing, so Play offers no fix to continue.
