@@ -214,8 +214,8 @@ describe('mode change during Planning', () => {
     await app.planning.setSettingText(gameId, 'buyIn', '15');
     await app.planning.setSettingText(gameId, 'reserve', '0');
     await app.planning.setDistributionPreference(gameId, 'more');
-    const { rowId } = expectStatus(await app.planning.addPayoutRow(gameId), 'accepted');
-    await app.planning.setPayoutShareText(gameId, rowId, '100');
+    expectStatus(await app.planning.choosePayoutPreset(gameId, 'top2'), 'accepted');
+    await app.planning.setPayoutShareText(gameId, view(gameId).payoutSchedule.places[0].id, '60,5');
     const before = view(gameId);
 
     expectStatus(await app.planning.changeMode(gameId, 'cash'), 'accepted');
@@ -226,12 +226,12 @@ describe('mode change during Planning', () => {
     expect(cash.players).toEqual(before.players);
     expect(cash.chipSet).toEqual(before.chipSet);
     expect(cash.settings).toEqual(before.settings);
-    expect(cash.payoutSchedule.rows.map((r) => r.share.text)).toEqual(['100']);
+    expect(cash.payoutSchedule.places.map((r) => r.share.text)).toEqual(['60,5', '30']);
 
     expectStatus(await app.planning.changeMode(gameId, 'tournament'), 'accepted');
     const back = view(gameId);
     expect(back.steps.map((s) => s.id)).toContain('payouts');
-    expect(back.payoutSchedule.rows.map((r) => r.share.text)).toEqual(['100']);
+    expect(back.payoutSchedule.places.map((r) => r.share.text)).toEqual(['60,5', '30']);
   });
 
   it('a newly required payout step shows up in the whole-plan check', async () => {
@@ -243,6 +243,6 @@ describe('mode change during Planning', () => {
     await app.planning.changeMode(gameId, 'tournament');
     const preview = view(gameId).preview;
     expect(preview.setupComplete).toBe(false);
-    expect(preview.blockers.map((b) => [b.step, b.problems[0].code])).toEqual([['payouts', 'noPaidPlaces']]);
+    expect(preview.blockers.map((b) => [b.step, b.problems[0].code])).toEqual([['payouts', 'payoutScheduleMissing']]);
   });
 });

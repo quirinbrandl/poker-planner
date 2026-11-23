@@ -7,6 +7,8 @@ import type { AppState, GameDocument, StepId } from '../core/documents';
 import type { Problem } from '../core/problems';
 import { type ChipSetSummary, isBlankRow } from '../shared/chip-rows';
 import { automaticReserve, DEFAULT_DEPTH_BB, STEP_TITLES, stepsForMode } from './draft';
+import { payoutBlockerProblems } from './payout-validation';
+import { buildPayoutScheduleView, type PayoutScheduleView } from './payout-view';
 import { STEP_STATUS_LABELS, type StepStatus, stepStatuses, validateGame } from './validation';
 
 /** One text input. Show `problem` once `revealed` and the host has left the field (see the guide). */
@@ -55,13 +57,6 @@ export type ChipSetSource =
   /** Copied from a template that has since been deleted; the game's copy is kept. */
   | { kind: 'deletedTemplate'; templateId: string };
 
-export interface PayoutRowView {
-  id: string;
-  /** 1-based finishing place. */
-  place: number;
-  share: FieldView;
-}
-
 export interface PlanningView {
   gameId: string;
   mode: GameMode;
@@ -106,12 +101,8 @@ export interface PlanningView {
     problems: readonly Problem[];
     continueAttempted: boolean;
   };
-  /** Tournament payout entries; kept (dormant) while the game is a cash game. Placeholder rules. */
-  payoutSchedule: {
-    rows: readonly PayoutRowView[];
-    problems: readonly Problem[];
-    continueAttempted: boolean;
-  };
+  /** The Payout schedule step (tournament); kept (dormant) while the game is a cash game. */
+  payoutSchedule: PayoutScheduleView;
   /** Whole-plan check for Distribution preview: problems linked to their source steps. */
   preview: {
     /** Steps with problems, in wizard order, each with its problems. */
@@ -224,19 +215,24 @@ export function buildPlanningView(state: AppState, game: GameDocument): Planning
       problems: sv.problems,
       continueAttempted: settingsAttempted,
     },
-    payoutSchedule: {
-      rows: draft.payoutSchedule.rows.map((row, index) => ({
-        id: row.id,
-        place: index + 1,
-        share: field(row.shareText, null, `payoutShare:${row.id}`, editedFields, attempted('payouts')),
-      })),
-      problems: validation.payouts,
-      continueAttempted: attempted('payouts'),
-    },
+    payoutSchedule: buildPayoutScheduleView(
+      game,
+      validation.payouts,
+      sv.buyIn.cents,
+      editedFields,
+      attempted('payouts'),
+    ),
     preview: {
       blockers: modeSteps
         .filter((step) => validation.byStep[step].length > 0)
-        .map((step) => ({ step, title: STEP_TITLES[step], problems: validation.byStep[step] })),
+        .map((step) => ({
+          step,
+          title: STEP_TITLES[step],
+          problems:
+            step === 'payouts'
+              ? payoutBlockerProblems(draft.payoutSchedule, validation.byStep.payouts)
+              : validation.byStep[step],
+        })),
       setupComplete: modeSteps.every((step) => validation.byStep[step].length === 0),
     },
   };

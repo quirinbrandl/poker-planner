@@ -246,7 +246,7 @@ export function createChipSetOperations(rt: Runtime) {
       }
 
       const nextStep = nextStepAfter(game, 'chipSet') as 'settings' | 'preview';
-      const moved = moveTo({ ...state, templates }, game, nextStep, game.planning.wizard.returnToPreview);
+      const moved = moveTo({ ...state, templates }, game, nextStep, game.planning.wizard.returnToPreview, rt.newId);
       await rt.apply(moved);
       return templateId ? { status: 'accepted', nextStep, templateId } : { status: 'accepted', nextStep };
     },

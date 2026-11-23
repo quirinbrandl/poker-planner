@@ -13,6 +13,7 @@ import {
   type StepInvalid,
 } from '../core/results';
 import type { Runtime } from '../core/runtime';
+import { preselectSuggestedSchedule } from './payout-schedule';
 import { addReached, planningGame, stepsForMode, withDraft, withGame, withWizard } from './draft';
 import { validateGame } from './validation';
 
@@ -41,8 +42,18 @@ export type ContinueResult =
   | Rejected<GameAccessCode | 'stepNotInMode' | 'noNextStep'>;
 export type ChangeModeResult = Accepted | Rejected<GameAccessCode>;
 
-/** Moves the game to `step` and records it as the working location. */
-export function moveTo(state: AppState, game: GameDocument, step: StepId, returnToPreview: boolean): AppState {
+/**
+ * Moves the game to `step` and records it as the working location. Opening the Payout schedule step
+ * may preselect the suggested preset (`newId` makes its place ids).
+ */
+export function moveTo(
+  state: AppState,
+  game: GameDocument,
+  step: StepId,
+  returnToPreview: boolean,
+  newId: () => string,
+): AppState {
+  if (step === 'payouts') game = preselectSuggestedSchedule(game, newId);
   const draft = withWizard(game.planning, {
     lastStep: step,
     reachedSteps: addReached(game.planning.wizard.reachedSteps, step),
@@ -105,7 +116,7 @@ export function createWizardOperations(rt: Runtime) {
         return rejected('stepNotReached', 'Finish the earlier steps first.');
       }
       const returnToPreview = fromPreview ? step !== 'preview' : game.planning.wizard.returnToPreview;
-      await rt.apply(moveTo(state, game, step, returnToPreview));
+      await rt.apply(moveTo(state, game, step, returnToPreview, rt.newId));
       return { status: 'accepted', step };
     },
 
@@ -119,7 +130,7 @@ export function createWizardOperations(rt: Runtime) {
       const index = steps.indexOf(game.planning.wizard.lastStep);
       if (index <= 0) return rejected('noPreviousStep', 'This is the first step.');
       const step = steps[index - 1];
-      await rt.apply(moveTo(state, game, step, game.planning.wizard.returnToPreview));
+      await rt.apply(moveTo(state, game, step, game.planning.wizard.returnToPreview, rt.newId));
       return { status: 'accepted', step };
     },
 
@@ -140,7 +151,7 @@ export function createWizardOperations(rt: Runtime) {
       if (validateGame(game).byStep[step].length > 0) return failContinue(rt, game, step);
       if (step === 'chipSet') return { status: 'needsConfirmation', confirmation: chipSetScopeConfirmation(state, game) };
       const nextStep = nextStepAfter(game, step)!;
-      await rt.apply(moveTo(state, game, nextStep, game.planning.wizard.returnToPreview));
+      await rt.apply(moveTo(state, game, nextStep, game.planning.wizard.returnToPreview, rt.newId));
       return { status: 'accepted', nextStep };
     },
 

@@ -115,7 +115,7 @@ interface PlanningView {
               preference: 'fewer' | 'more'; coverage: FieldView;
               reserve: FieldView & { mode: 'automatic' | 'custom'; automaticCount: number };
               problems; continueAttempted };
-  payoutSchedule: { rows: { id, place, share: FieldView }[]; problems; continueAttempted };
+  payoutSchedule: PayoutScheduleView;   // see Payout schedule below
   preview: { blockers: { step, title, problems }[]; setupComplete: boolean };
 }
 interface ChipRowView { id; value: FieldView; quantity: FieldView; color: ChipColor | null; blank: boolean }
@@ -184,12 +184,82 @@ The scope choice is one-shot and never stored: Cancel in the popup just closes i
 While automatic, `settings.reserve.text` is the live automatic count. Focusing the field must not
 call anything; only typing does.
 
-### Payout schedule (placeholder)
+### Payout schedule
 
-`addPayoutRow(gameId)` → `accepted { rowId }`, `setPayoutShareText(gameId, rowId, text)` →
-`EditResult`, `removePayoutRow(gameId, rowId)`. Rows are raw share text per place. The only rule so
-far is "at least one paid place" (`noPaidPlaces`); presets and share validation arrive with
-`src/domain/payouts` and may change these operations.
+Tournament step 5 of 6 (C · Prize ladder). Shares are typed percentages, stored exactly as typed;
+the rules come from `src/domain/payouts`. While the mode is Cash game the step is hidden, its
+schedule kept and never validated.
+
+**Preselection.** Whenever a wizard operation opens the step (`continueFromStep`, `goToStep`,
+`goBack`) in a tournament with at least two players and no schedule, the suggested preset
+(2 players: Winner takes all, 3–6: Top 2, 7+: Top 3) becomes the plan's schedule and is saved.
+After that only the operations below change it; roster changes and mode switches never do.
+
+| Operation | Result |
+| --- | --- |
+| `choosePayoutPreset(gameId, presetId)` | `accepted` \| `rejected presetUnavailable` ("Top 4 needs at least 4 players."). Replaces every place and percentage; also the **Use <preset>** fix. |
+| `setPayoutShareText(gameId, rowId, text)` | `accepted` \| `savedInvalid` (that field's problem) \| `rejected rowNotFound`. The schedule becomes Custom. |
+| `addPayoutPlace(gameId)` | `accepted { rowId }` (empty place appended, Custom) \| `rejected tooManyPlaces` ("Can’t pay more places than players (N)."). |
+| `removePayoutPlace(gameId, rowId)` | `accepted` (Custom) \| `rejected rowNotFound \| notLastPlace \| onlyPlace`. Only the last place, never the only one. |
+
+`presetId` is `'winnerTakesAll' | 'top2' | 'top3' | 'top4' | 'top5'` (`PayoutPresetId`).
+
+```ts
+interface PayoutScheduleView {
+  needsPlayers: boolean;          // no schedule and < 2 players: "Add players first" + Edit players
+  playerCount: number;
+  prizePool: { kind: 'amount'; cents; amountText: 'EUR 120.00'; detail: '6 × EUR 20.00 · rebuys add to it' }
+           | { kind: 'noBuyIn'; label: 'Add a buy-in' };          // + Edit game settings
+  preset: { id: PayoutPresetId | null; name: 'Top 2' | 'Custom' | …;
+            suggestionLine: 'Suggested' | 'Suggested for 6 players: Top 2' | null };
+  suggested: { id; name } | null;
+  presets: { id; name; splitText: '70 / 30%'; suggested; current; available;
+             unavailableReason: 'Needs 4 players' | null }[];     // the sheet, in order
+  places: { id; place; placeLabel: '1st'; share: FieldView; shareLabel: '1st place share';
+            barPercent: number /* 0–100 */; amount: { kind: 'amount'; cents; text } | { kind: 'none'; text: '—' };
+            removable; removeLabel: 'Remove 3rd place' }[];
+  addPlace: { available: boolean; reason: 'Can’t pay more places than players (N).' | null };
+  total: { kind: 'exact' | 'under' | 'over' | 'incomplete'; text: 'Total 95% · 5% left';
+           icon: 'check' | null; tone: 'ok' | 'warning' | 'error' } | null;   // error = after Continue
+  equalSharesNote: string | null; // "Equal shares are fine. Places still come from the elimination order."
+  tooManyPlaces: { problem: Problem /* "4 paid places, but only 3 players." */;
+                   fix: { presetId; label: 'Use Top 2' } | null } | null;
+  problems: Problem[];            // screen order: too many places, each share, total
+  continueAttempted: boolean;
+}
+```
+
+- Share fields follow the `FieldView` contract (`field: 'payoutShare:<rowId>'`): "Enter a percentage.",
+  "Enter a number, like 30 or 12.5.", "Use at most 2 decimals, like 12.5.", "Must be more than 0%.",
+  "Can’t be more than 100%.", "Can’t be more than 2nd place (20%).". Dot or comma decimals.
+- Amounts appear only when the schedule is valid and the buy-in is valid: pool = buy-in × players,
+  each share floored to cents, leftover cents from 1st place down (EUR 20.01 at 50 / 30 / 20 →
+  10.01 / 6.00 / 4.00). Render `total.icon: 'check'` as the ✓ in “✓ Total 100%”.
+- Step-level problem codes (`field: 'payoutSchedule'`): `payoutScheduleMissing` ("Not filled in yet."),
+  `tooManyPaidPlaces`, `payoutTotalNotHundred` ("Total is 95%, needs 100%."). Continue returns them
+  in `stepInvalid` and stays on the step; status is Not filled in (no schedule) / Needs attention /
+  Complete.
+- `preview.blockers` lists the step as "Payout schedule"; its first problem is the Setup incomplete
+  reason, share problems prefixed with their place ("2nd place: Enter a percentage."). Use
+  **Choose payouts** for `payoutScheduleMissing`, else **Fix payouts**, both via
+  `goToStep(gameId, 'payouts', { fromPreview: true })`.
+- `validatePlan(game).plan.payoutSchedule` (internal, for Start and results) is
+  `{ shares /* basis points */, presetId, name: 'Top 2' | 'Custom' }`, `null` in cash games.
+
+```tsx
+const p = usePlanningView(gameId)!.payoutSchedule;
+// Preset sheet row
+<SheetItem title={o.name} detail={o.unavailableReason ?? o.splitText} tag={o.suggested ? 'Suggested' : undefined}
+  checked={o.current} disabled={!o.available} onPress={() => app.planning.choosePayoutPreset(gameId, o.id)} />
+// Ladder card
+<Text>{place.amount.text}</Text>
+<ShareBar percent={place.barPercent} />
+<TextField label={place.shareLabel} unit="%" keyboardType="decimal-pad" value={place.share.text}
+  onChangeText={(t) => void app.planning.setPayoutShareText(gameId, place.id, t)} error={/* as buy-in */} />
+// Too many places
+{p.tooManyPlaces?.fix && <Button label={p.tooManyPlaces.fix.label}
+  onPress={() => app.planning.choosePayoutPreset(gameId, p.tooManyPlaces!.fix!.presetId)} />}
+```
 
 ## Saved players
 

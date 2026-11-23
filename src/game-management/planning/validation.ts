@@ -7,11 +7,12 @@
 import { parseEurInput } from '@/domain/money';
 import type { Cents, ChipDenomination, DistributionPreference, GameMode } from '@/domain/types';
 
-import type { GameDocument, Participant, PayoutScheduleDraft, SettingsDraft, StepId } from '../core/documents';
+import type { GameDocument, Participant, SettingsDraft, StepId } from '../core/documents';
 import { type FieldKey, type Problem, problem } from '../core/problems';
 import { type ChipRowsValidation, validateChipRows } from '../shared/chip-rows';
 import { parseWholeNumber } from '../shared/numbers';
 import { automaticReserve, stepsForMode } from './draft';
+import { type PayoutStepValidation, type ValidPayoutSchedule, validatePayoutStep } from './payout-validation';
 
 export const MIN_PLAYERS = 2;
 
@@ -96,21 +97,11 @@ export function validateSettings(settings: SettingsDraft, rosterSize: number): S
   return { buyIn, depth, coverage, reserve, problems };
 }
 
-/**
- * Placeholder until payout rules arrive from `src/domain/payouts`: only requires at least one paid
- * place. Replace the body, keep the signature.
- */
-export function validatePayoutSchedule(schedule: PayoutScheduleDraft): Problem[] {
-  return schedule.rows.length === 0
-    ? [problem('noPaidPlaces', 'payoutSchedule', 'Add at least one paid place.')]
-    : [];
-}
-
 export interface GameValidation {
   roster: Problem[];
   chipSet: ChipRowsValidation;
   settings: SettingsValidation;
-  payouts: Problem[];
+  payouts: PayoutStepValidation;
   /** Problems of each step of the game's mode (Choose mode and preview have none of their own). */
   byStep: Readonly<Record<StepId, readonly Problem[]>>;
 }
@@ -120,7 +111,7 @@ export function validateGame(game: GameDocument): GameValidation {
   const roster = validateRoster(draft.participants);
   const chipSet = validateChipRows(draft.chipSet.rows);
   const settings = validateSettings(draft.settings, draft.participants.length);
-  const payouts = validatePayoutSchedule(draft.payoutSchedule);
+  const payouts = validatePayoutStep(draft.payoutSchedule, draft.participants.length);
   return {
     roster,
     chipSet,
@@ -131,7 +122,7 @@ export function validateGame(game: GameDocument): GameValidation {
       players: roster,
       chipSet: chipSet.problems,
       settings: settings.problems,
-      payouts: game.mode === 'tournament' ? payouts : [],
+      payouts: game.mode === 'tournament' ? payouts.problems : [],
       preview: [],
     },
   };
@@ -192,6 +183,8 @@ export interface ValidPlan {
   preference: DistributionPreference;
   coverage: number;
   reserve: number;
+  /** Tournament only (`null` in a cash game): the validated payout schedule. */
+  payoutSchedule: ValidPayoutSchedule | null;
 }
 
 export function validatePlan(game: GameDocument): { plan: ValidPlan | null; validation: GameValidation } {
@@ -210,6 +203,7 @@ export function validatePlan(game: GameDocument): { plan: ValidPlan | null; vali
       preference: game.planning.settings.preference,
       coverage: settings.coverage.value!,
       reserve: settings.reserve.value!,
+      payoutSchedule: game.mode === 'tournament' ? validation.payouts.valid : null,
     },
   };
 }
