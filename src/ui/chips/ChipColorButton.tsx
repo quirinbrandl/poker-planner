@@ -1,7 +1,9 @@
+import { type Ref } from 'react';
 import { Pressable, StyleSheet, View } from 'react-native';
 
 import { type ChipColor } from '@/domain/types';
 import { usePressFeedback } from '../motion';
+import { type ViewRef } from '../refs';
 import { Text } from '../Text';
 import { colors, radii, space, touchTarget } from '../theme';
 import { ChipSymbol } from './ChipSymbol';
@@ -15,6 +17,8 @@ export interface ChipColorButtonProps {
   accessibilityLabel: string;
   /** Caption above the colour name. Default "Chip color". */
   caption?: string;
+  /** For returning focus here when the palette closes. */
+  ref?: Ref<ViewRef>;
 }
 
 /** Tappable chip symbol with "Chip color / Red" text; opens the colour palette in a denomination row. */
@@ -24,10 +28,12 @@ export function ChipColorButton({
   onPress,
   accessibilityLabel,
   caption = 'Chip color',
+  ref,
 }: ChipColorButtonProps) {
   const feedback = usePressFeedback();
   return (
     <Pressable
+      ref={ref}
       onPress={onPress}
       accessibilityRole="button"
       accessibilityLabel={accessibilityLabel}

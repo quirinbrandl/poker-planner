@@ -17,6 +17,8 @@ export interface ChipRowInput {
 export interface ChipRowProblems {
   value: Problem | null;
   quantity: Problem | null;
+  /** The quantity as a whole number while it is valid (for the chip-case drawing), else `null`. */
+  chipCount: number | null;
 }
 
 export type ChipSetSummary =
@@ -85,7 +87,7 @@ export function validateChipRows(rows: readonly ChipRowInput[]): ChipRowsValidat
             : problem('quantityNotWholeNumber', quantityField, 'Enter a whole number of chips (0 or more).');
     }
 
-    result[row.id] = { value: valueProblem, quantity: quantityProblem };
+    result[row.id] = { value: valueProblem, quantity: quantityProblem, chipCount: quantity.ok ? quantity.value : null };
     if (valueProblem) problems.push(valueProblem);
     if (quantityProblem) problems.push(quantityProblem);
     if (!valueProblem && !quantityProblem && value.ok && quantity.ok) {

@@ -83,6 +83,7 @@ describe('raw input', () => {
     expect(b.value.problem).toMatchObject({ code: 'duplicateValue', message: 'Combine quantities in the existing row' });
     expect(b.quantity).toMatchObject({ text: '-3' });
     expect(b.quantity.problem?.code).toBe('quantityNotWholeNumber');
+    expect([a.chipCount, b.chipCount]).toEqual([null, null]);
     expect(v.chipSet.summary.label).toBe('Incomplete chip set');
   });
 

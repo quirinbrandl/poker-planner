@@ -39,5 +39,5 @@ export function chipColorName(color: ChipColor | null | undefined): string {
   return paintFor(color).name;
 }
 
-/** The twelve palette choices in picker order: the eleven colours, then No color. */
-export const chipColorChoices: readonly (ChipColor | null)[] = [...CHIP_COLORS, null];
+/** The twelve palette choices in picker order (approved palette): No color, then the eleven colours. */
+export const chipColorChoices: readonly (ChipColor | null)[] = [null, ...CHIP_COLORS];

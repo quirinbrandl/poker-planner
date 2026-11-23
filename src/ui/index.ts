@@ -59,6 +59,8 @@ export { chipPaint, noColorPaint, paintFor, chipColorName, chipColorChoices, typ
 export { ChipSymbol, type ChipSymbolProps } from './chips/ChipSymbol';
 export { ChipPill, ChipPillRow, type ChipPillProps } from './chips/ChipPill';
 export { ChipColorButton, type ChipColorButtonProps } from './chips/ChipColorButton';
+export { ChipColorPalette, type ChipColorPaletteProps } from './chips/ChipColorPalette';
+export { ChipTray, type ChipTrayProps, type ChipTrayItem } from './chips/ChipTray';
 export {
   ChipCase,
   chipCaseLayout,

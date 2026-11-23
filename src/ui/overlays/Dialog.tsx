@@ -34,6 +34,12 @@ export interface DialogProps {
   destructive?: boolean;
   /** Optional third choice between Cancel and confirm ("Also update template"). Actions then stack. */
   secondaryAction?: DialogAction;
+  /**
+   * `confirmFirst` stacks the confirm action on top (with initial focus), then `secondaryAction`,
+   * then a quiet text Cancel: for a choice popup whose confirm is the default ("Only this game",
+   * then "Also update template"). Default `cancelFirst`.
+   */
+  actionOrder?: 'cancelFirst' | 'confirmFirst';
   testID?: string;
 }
 
@@ -54,23 +60,53 @@ export function Dialog({
   cancelLabel = 'Cancel',
   destructive,
   secondaryAction,
+  actionOrder = 'cancelFirst',
   testID,
 }: DialogProps) {
   const insets = useSafeAreaInsets();
   const titleRef = useRef<ViewRef>(null);
   const cancelRef = useRef<ViewRef>(null);
+  const confirmRef = useRef<ViewRef>(null);
   const hasConfirm = Boolean(confirmLabel && onConfirm);
 
   useEffect(() => {
     if (!visible) return;
-    const timer = setTimeout(() => focusView(destructive ? cancelRef.current : titleRef.current), 50);
+    const target = () =>
+      destructive ? cancelRef.current : actionOrder === 'confirmFirst' ? confirmRef.current : titleRef.current;
+    const timer = setTimeout(() => focusView(target()), 50);
     return () => clearTimeout(timer);
-  }, [visible, destructive]);
+  }, [visible, destructive, actionOrder]);
 
   const { fontScale } = useWindowDimensions();
   // Long verbs ("Issue rebuy · EUR 20.00") and large text get full-width stacked buttons: Cancel above
   // the confirm action, as in the approved rebuy popup. Short pairs sit side by side.
-  const stacked = Boolean(secondaryAction) || fontScale >= 1.3 || (confirmLabel?.length ?? 0) > 18;
+  const confirmFirst = actionOrder === 'confirmFirst';
+  const stacked = confirmFirst || Boolean(secondaryAction) || fontScale >= 1.3 || (confirmLabel?.length ?? 0) > 18;
+  const cancelButton = (
+    <View style={stacked ? styles.stackedItem : styles.cancel}>
+      <Button
+        ref={cancelRef}
+        label={cancelLabel}
+        onPress={onCancel}
+        variant={confirmFirst ? 'tertiary' : 'secondary'}
+        fullWidth
+      />
+    </View>
+  );
+  const confirmButton = hasConfirm ? (
+    <View style={stacked ? styles.stackedItem : styles.confirm}>
+      <Button
+        ref={confirmRef}
+        label={confirmLabel!}
+        icon={confirmIcon}
+        onPress={onConfirm}
+        variant={destructive ? 'destructive' : 'primary'}
+        loading={confirmLoading}
+        loadingLabel={confirmLoadingLabel}
+        fullWidth
+      />
+    </View>
+  ) : null;
   return (
     <Modal
       visible={visible}
@@ -98,9 +134,8 @@ export function Dialog({
             </View>
             {children ? <View style={styles.body}>{children}</View> : null}
             <View style={[styles.actions, stacked && styles.actionsStacked]}>
-              <View style={stacked ? styles.stackedItem : styles.cancel}>
-                <Button ref={cancelRef} label={cancelLabel} onPress={onCancel} fullWidth />
-              </View>
+              {confirmFirst ? null : cancelButton}
+              {confirmFirst ? confirmButton : null}
               {secondaryAction ? (
                 <View style={styles.stackedItem}>
                   <Button
@@ -111,19 +146,8 @@ export function Dialog({
                   />
                 </View>
               ) : null}
-              {hasConfirm ? (
-                <View style={stacked ? styles.stackedItem : styles.confirm}>
-                  <Button
-                    label={confirmLabel!}
-                    icon={confirmIcon}
-                    onPress={onConfirm}
-                    variant={destructive ? 'destructive' : 'primary'}
-                    loading={confirmLoading}
-                    loadingLabel={confirmLoadingLabel}
-                    fullWidth
-                  />
-                </View>
-              ) : null}
+              {confirmFirst ? null : confirmButton}
+              {confirmFirst ? cancelButton : null}
             </View>
           </ScrollView>
         </View>
