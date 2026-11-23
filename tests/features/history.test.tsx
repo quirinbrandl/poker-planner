@@ -47,6 +47,7 @@ const card = (phase: GameCard['phase']): GameCard => ({
   participantNames: ['Alice', 'Bob'],
   lastStep: phase === 'planning' ? 'settings' : null,
   lastStepTitle: phase === 'planning' ? 'Game settings' : null,
+  startedAt: phase === 'planning' ? null : new Date(2026, 10, 23, 19, 45).toISOString(),
 });
 
 it('shows In progress, reopened and Planning cards and the History count', async () => {
