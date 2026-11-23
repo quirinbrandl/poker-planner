@@ -1,15 +1,28 @@
 import { useLocalSearchParams } from 'expo-router';
 
-import { Text } from '@/ui';
+import { ModeChoice } from '@/features/shared/ModeChoice';
+import { useGameManagement, usePlanningView } from '@/state';
 
 import { PlanningStepFrame } from './PlanningStepFrame';
 
-/** Placeholder until this wizard step is built. */
+/**
+ * Step 1, Choose mode, of an existing plan. Changing the mode applies straight away to the same
+ * plan (participants, chip set, settings and payout entries are kept), without a confirmation.
+ */
 export default function ModeStepScreen() {
   const { gameId } = useLocalSearchParams<{ gameId: string }>();
+  const app = useGameManagement();
+  const plan = usePlanningView(gameId);
   return (
     <PlanningStepFrame gameId={gameId} step="mode">
-      <Text tone="supporting">This step is not built yet.</Text>
+      {plan ? (
+        <ModeChoice
+          selected={plan.mode}
+          onSelect={(mode) => {
+            if (mode !== plan.mode) void app.planning.changeMode(gameId, mode);
+          }}
+        />
+      ) : null}
     </PlanningStepFrame>
   );
 }

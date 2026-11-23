@@ -44,7 +44,7 @@ Rules of use:
 **`TopBar`** — `backLabel` ("Games", "History", "Back") + `onBack`, optional `backIcon` (`back` arrow default, `chevronLeft`, `home`), `onMore` for ⋯ (`moreAccessibilityLabel`, default "Game actions"), `trailing`.
 `<TopBar backLabel="Games" onBack={goGames} onMore={openActions} />`
 
-**`ScreenHeader`** — `context` ("Cash game · 23 Nov, 19:30"), `badges` (a `BadgeRow`), `title`, optional `eyebrow`; `children` go under the title (a `StepLink`, a lead line).
+**`ScreenHeader`** — `context` ("Cash game · 23 Nov, 19:30"), `badges` (a `BadgeRow`), `title`, optional `eyebrow`; `children` go under the title (a `StepLink`, a lead line). Planning uses `badgesFirst` (badges, then the context line) and `beforeTitle` (the `StepLink` between identity and title).
 `<ScreenHeader context="Cash game · 23 Nov, 19:30" badges={<BadgeRow><Badge label="In progress" tone="primary" /></BadgeRow>} title="Play" />`
 
 **`FooterActions`** — the task dock at the end of a `Screen`: full-bleed raised band, optional `note` (draft/blocker line, `noteTone`), buttons in a wrapping row; the last button takes the remaining width.
@@ -78,7 +78,7 @@ Rules of use:
 **`StepperField`** — − / large quantity / +. Same text props as `TextField`; `onDecrement` / `onIncrement` are yours (no number rules inside), `decrementLabel` / `incrementLabel`, `decrementUnavailable`.
 `<StepperField label="Quantity (chips)" value={raw} onChangeText={setRaw} onDecrement={dec} onIncrement={inc} />`
 
-**`RadioRow`** / **`RadioGroup`** — whole-row single choice with visible indicator, border and tint; exposes checked state. `label`, `description`, `selected`, `onPress`, `unavailable`, `children` (extra content such as a chip preview). `RadioGroup` gives the set its visible `label`.
+**`RadioRow`** / **`RadioGroup`** — whole-row single choice with visible indicator, border and tint; exposes checked state. `label`, `description`, `selected`, `onPress`, `unavailable`, `children` (extra content such as a chip preview). `RadioGroup` gives the set its visible `label` (`hideLabel` keeps it for screen readers only, when the title already names the choice).
 `<RadioGroup label="Distribution preference"><RadioRow label="Fewer chips" selected={p === 'fewer'} onPress={…} />…</RadioGroup>`
 
 **`SegmentedTabs`** — workspace navigation. `tabs` `{ key, label }[]`, `selectedKey`, `onChange`. Tab roles with selected state; wraps at large text.
@@ -97,6 +97,8 @@ Rules of use:
 
 **`ToastProvider`** / **`useToast()`** — one toast slot (already mounted in the root layout). `show(message, { tone?: 'confirmed' | 'error' })`, `hide()`. Announced to screen readers; disappears after `TOAST_DURATION_MS`.
 `const toast = useToast(); toast.show('Result confirmed');`
+
+**`focusView(view)`** — moves screen-reader focus to a rendered view (a heading, the step action after the last field).
 
 ## Status and data display
 
@@ -155,3 +157,5 @@ Colours are `ChipColor | null` from `src/domain/types.ts`; `null` is "No color".
 ## Hooks
 
 **`usePressFeedback()`** — `(pressed, pressedBackground?) => style` for custom pressables: immediate colour change plus a 1-unit offset unless Reduce Motion is on. **`useReduceMotion()`** — the platform setting.
+
+**`ViewRef`**, **`TextInputRef`**, **`ScrollViewRef`** — ref types for `inputRef`, `scrollRef` and button `ref` (focus the next field, move focus to an action).

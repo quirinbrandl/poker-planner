@@ -3,6 +3,7 @@ export * from './theme';
 export { Text, type TextProps, type TextTone } from './Text';
 export { Icon, iconNames, type IconName, type IconProps } from './Icon';
 export { useReduceMotion, usePressFeedback } from './motion';
+export type { ViewRef, TextInputRef, ScrollViewRef } from './refs';
 
 export { Screen, type ScreenProps } from './layout/Screen';
 export { TopBar, type TopBarProps } from './layout/TopBar';
@@ -34,6 +35,7 @@ export {
 export { Dialog, type DialogProps, type DialogAction } from './overlays/Dialog';
 export { BottomSheet, type BottomSheetProps, type SheetAction } from './overlays/BottomSheet';
 export { ToastProvider, useToast, TOAST_DURATION_MS, type ToastApi, type ToastTone } from './overlays/Toast';
+export { focusView } from './overlays/focus';
 
 export { Badge, BadgeRow, type BadgeProps } from './status/Badge';
 export { Avatar, type AvatarProps } from './status/Avatar';
