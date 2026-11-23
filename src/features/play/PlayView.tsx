@@ -127,7 +127,7 @@ export function PlayView({
         />
         {data.playing.length === 0 ? (
           <Text tone="supporting" style={styles.empty}>
-            Everyone has finished playing.
+            Everyone is counted. Next: Results → Calculate Payments.
           </Text>
         ) : (
           data.playing.map((player) => (

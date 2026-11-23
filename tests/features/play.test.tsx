@@ -67,10 +67,10 @@ it('shows finished players with their signed balance, no Rebuy and no result tag
   expect(screen.queryByText(/Result confirmed|provisional/)).toBeNull();
 });
 
-it('says so when everyone has finished playing', async () => {
+it('points to Results once everyone is counted', async () => {
   await renderPlay('allFinished');
   expect(screen.getByText('Playing · 0')).toBeTruthy();
-  expect(screen.getByText('Everyone has finished playing.')).toBeTruthy();
+  expect(screen.getByText('Everyone is counted. Next: Results → Calculate Payments.')).toBeTruthy();
   expect(screen.queryByRole('button', { name: /^Rebuy for/ })).toBeNull();
 });
 

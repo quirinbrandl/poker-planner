@@ -83,6 +83,12 @@ it('step 3 asks for the new rebuy; done lists the three operations', async () =>
   expect(onFinish).toHaveBeenCalledTimes(1);
 });
 
+it('names removing the result as the next step of a result fix', async () => {
+  await renderFix(fixData(1, 'result'));
+  expect(screen.getByLabelText('Can’t remove Alice’s result yet')).toBeTruthy();
+  expect(screen.getByText('Next: remove Alice’s result, then give Bob a new rebuy.')).toBeTruthy();
+});
+
 it('fixes a result removal with the Return to play popup at step 2', async () => {
   await renderFix(fixData(2, 'result'));
   expect(screen.getByText('Fix Alice’s result')).toBeTruthy();

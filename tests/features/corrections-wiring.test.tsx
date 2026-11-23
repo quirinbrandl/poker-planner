@@ -5,7 +5,7 @@ import {
   screen,
 } from "expo-router/testing-library";
 import { type ReactNode } from "react";
-import { Text } from "react-native";
+import { BackHandler, Text } from "react-native";
 import { SafeAreaProvider } from "react-native-safe-area-context";
 
 import CountScreen from "@/features/count/CountScreen";
@@ -279,6 +279,46 @@ it("a correction a later rebuy depends on opens the fix flow, which advances one
   expect(
     screen.getByText("Swap Bob’s chips so they match this stack."),
   ).toBeTruthy();
+});
+
+it("Android back on the fix page goes to Play, like its Back to Play", async () => {
+  // Collect the hardware back handlers the screens register; the newest one runs first.
+  type Handler = Parameters<typeof BackHandler.addEventListener>[1];
+  const handlers: Handler[] = [];
+  const spy = jest
+    .spyOn(BackHandler, "addEventListener")
+    .mockImplementation((_event, handler) => {
+      handlers.push(handler);
+      return {
+        remove: () => {
+          handlers.splice(handlers.indexOf(handler), 1);
+        },
+      };
+    });
+  try {
+    const { gameId, router } = await open(
+      (gameId, ids) => `/game/${gameId}/count/${ids[0]}`,
+      async (app, gameId, ids) => {
+        await recordCount(app, gameId, ids[0], [15, 2, 5, 1]);
+        await rebuy(app, gameId, ids[1]);
+        expectStatus(
+          await app.play.setCorrectionText(gameId, ids[0], 1, "10"),
+          "accepted",
+        );
+      },
+      "48",
+    );
+    await press("Review correction");
+    expect(router.getPathname()).toBe(`/game/${gameId}/fix`);
+    await act(async () => {
+      expect(handlers.at(-1)?.({} as Parameters<Handler>[0])).toBe(true);
+    });
+    expect(router.getPathname()).toBe(`/game/${gameId}/play`);
+    // Step 1 recorded nothing, so Play offers no fix to continue.
+    expect(live.play.getPlayScreen(gameId)!.fixText).toBeNull();
+  } finally {
+    spy.mockRestore();
+  }
 });
 
 it("adds a forgotten rebuy with reduced coverage only after Accept & add", async () => {
