@@ -41,14 +41,14 @@ Rules of use:
 **`Screen`** — page scaffold: dark background, safe areas, vertical scroll, keyboard avoidance, 20 gutters. `topBar`, `footer` (part of the scroll content, pushed to the bottom when short), `gap` (16), `scrollRef`.
 `<Screen topBar={<TopBar … />} footer={<FooterActions>…</FooterActions>}>…</Screen>`
 
-**`TopBar`** — `backLabel` ("Games", "History", "Back") + `onBack`, optional `backIcon` (`back` arrow default, `chevronLeft`, `home`), `onMore` for ⋯ (`moreAccessibilityLabel`, default "Game actions"), `trailing`.
+**`TopBar`** — `backLabel` (the destination: "Games", "Play", "Players"; a leading "Back to " is shown without those words and kept in the spoken name) + `onBack`, always a chevron-left (`backIcon` is ignored), `onMore` for ⋯ (`moreAccessibilityLabel`, default "Game actions"), `trailing`.
 `<TopBar backLabel="Games" onBack={goGames} onMore={openActions} />`
 
-**`ScreenHeader`** — `context` ("Cash game · 23 Nov, 19:30"), `badges` (a `BadgeRow`), `title`, optional `eyebrow`; `children` go under the title (a `StepLink`, a lead line). Planning uses `badgesFirst` (badges, then the context line) and `beforeTitle` (the `StepLink` between identity and title).
+**`ScreenHeader`** — `context` ("Cash game · 23 Nov, 19:30"), `badges` (a `BadgeRow`), `title`, optional `eyebrow`; `children` go under the title (a `StepLink`, a lead line). `badgesFirst` puts badges before the context line; `beforeTitle` sits right above the title (Planning's `StepProgress` row).
 `<ScreenHeader context="Cash game · 23 Nov, 19:30" badges={<BadgeRow><Badge label="In progress" tone="primary" /></BadgeRow>} title="Play" />`
 
-**`FooterActions`** — the task dock at the end of a `Screen`: full-bleed raised band, optional `note` (draft/blocker line, `noteTone`), buttons in a wrapping row; the last button takes the remaining width.
-`<FooterActions note="Draft saved · no chips issued"><Button label="Back" icon="chevronLeft" onPress={back} /><Button label="Continue" variant="primary" trailingIcon="chevronRight" onPress={next} /></FooterActions>`
+**`FooterActions`** — the task dock at the end of a `Screen`: full-bleed raised band, optional `note` (only a blocker reason or a failed save, `noteTone`), buttons in a wrapping row; the last button takes the remaining width.
+`<FooterActions note="No valid distribution for current setup."><Button label="Back" icon="chevronLeft" onPress={back} /><Button label="Continue" variant="primary" trailingIcon="chevronRight" onPress={next} /></FooterActions>`
 
 **`Card`** — surface. `variant`: `raised` (default group), `highlight` (active game card), `inset` (page-coloured well, e.g. game identity in a dialog), `showcase` (radial stage). `padding` (18), `gap`, `onPress` + `accessibilityLabel` for a whole-card button.
 `<Card gap={space.xl}>…fields…</Card>`
@@ -90,7 +90,10 @@ Rules of use:
 **`SelectButton`** — full-width button showing the current choice and a chevron; opens a `ChoiceSheet`. `label` ("Preset"), `value` ("Top 2" / "Custom"), `description` ("Suggested for 6 players: Top 2"), `onPress`, `ref` (return focus here when the sheet closes).
 `<SelectButton label="Preset" value="Top 2" description="Suggested" onPress={openSheet} />`
 
-**`StepLink`** — underlined "Step 5 of 5 · Setup steps" control. `label`, `onPress`.
+**`StepProgress`** — segmented wizard progress, one segment per step (done / current / ahead). `count`, `current` (1-based), required `accessibilityLabel` ("Step 3 of 5, Chip set. Setup steps"), `onPress` makes it a button that opens the step list; without it a read-only progress bar (`size="small"` on a Games card).
+`<StepProgress count={5} current={3} accessibilityLabel="Step 3 of 5, Chip set. Setup steps" onPress={openSteps} />`
+
+**`StepLink`** — underlined "Step 5 of 5 · Setup steps" control (older form, no longer used by Planning). `label`, `onPress`.
 **`StepList`** — `steps: { key, label, status: 'notFilled' | 'needsAttention' | 'complete', current?, onPress? }[]`; steps without `onPress` show as not reached. `stepStatusLabel` maps statuses to their words.
 
 ## Overlays

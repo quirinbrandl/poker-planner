@@ -1,25 +1,25 @@
 import { router, useFocusEffect } from 'expo-router';
 import { type ReactNode, type Ref, useCallback, useEffect, useState } from 'react';
-import { BackHandler } from 'react-native';
+import { BackHandler, StyleSheet, View } from 'react-native';
 
 import { GameActionsSheet } from '@/features/game/GameActionsSheet';
-import { formatGameDateTime, modeLabel, playerCountLabel } from '@/features/shared/format';
+import { modeLabel } from '@/features/shared/format';
 import { gamesHref, paymentsHref, planningStepHref, playHref } from '@/features/shared/routes';
 import type { PlanningView, Problem, StepId, StepView } from '@/game-management';
 import { useGame, useGameManagement, usePersistenceStatus, usePlanningView } from '@/state';
 import {
-  Badge,
-  BadgeRow,
   Button,
   Dialog,
   FooterActions,
   InlineNotice,
   Screen,
   ScreenHeader,
-  StepLink,
   StepList,
+  StepProgress,
   type ScreenProps,
   type StepStatus,
+  space,
+  Text,
   TopBar,
   useToast,
   type ViewRef,
@@ -43,8 +43,8 @@ export interface PlanningStepFrameProps {
   /** Replaces the whole primary button (Distribution preview's Start). */
   primaryAction?: ReactNode;
   /**
-   * Replaces the draft-saved line above the footer buttons, e.g. a blocker reason. An empty string
-   * shows no line. A failed save is always reported, whatever is passed here.
+   * A line above the footer buttons, only when it is the reason an action is blocked. An empty
+   * string shows no line. A failed save is always reported, whatever is passed here.
    */
   footerNote?: string;
   footerNoteTone?: 'supporting' | 'warning' | 'error';
@@ -80,10 +80,10 @@ function stepProblems(plan: PlanningView, step: StepId): readonly Problem[] {
 }
 
 /**
- * The shared shell of every Planning wizard step: Games and game actions at the top; the mode and
- * Planning badges, date and roster size, the step link with its step list and the task heading;
- * the step's content; and the Back / Continue (or Return to preview) dock with truthful draft
- * feedback. On the first step Back is the exit to Games.
+ * The shared shell of every Planning wizard step: Games and game actions at the top; the segmented
+ * step progress (opens the step list) with the mode beside it and the task heading;
+ * the step's content; and the Back / Continue (or Return to preview) dock, with a note only for a
+ * blocker or a failed save. On the first step Back is the exit to Games.
  *
  * Leaving through Back, Games, the step list or Android's back button never needs valid input and
  * never applies anything; the draft is already saved.
@@ -168,12 +168,7 @@ export function PlanningStepFrame({
   };
 
   const saveFailed = persistence.state === 'failed';
-  const draftNote =
-    saveFailed
-      ? 'Couldn’t save the draft on this phone'
-      : persistence.state === 'saving'
-        ? 'Saving draft…'
-        : 'Draft saved on this phone · no chips issued';
+  const stepCount = plan.steps.length;
 
   return (
     <>
@@ -184,8 +179,8 @@ export function PlanningStepFrame({
         }
         footer={
           <FooterActions
-            note={saveFailed ? draftNote : (footerNote ?? draftNote)}
-            noteTone={saveFailed ? 'error' : footerNote ? footerNoteTone : undefined}
+            note={saveFailed ? 'Couldn’t save the draft on this phone' : footerNote || undefined}
+            noteTone={saveFailed ? 'error' : footerNoteTone}
           >
             {isFirst ? (
               <Button label="Games" icon="chevronLeft" onPress={goToGames} accessibilityLabel="Back to Games" />
@@ -205,19 +200,16 @@ export function PlanningStepFrame({
         }
       >
         <ScreenHeader
-          badgesFirst
-          badges={
-            <BadgeRow>
-              <Badge label={modeLabel(plan.mode)} />
-              <Badge label="Planning" tone="primary" />
-            </BadgeRow>
-          }
-          context={`${formatGameDateTime(plan.createdAt)} · ${playerCountLabel(plan.players.participants.length)}`}
           beforeTitle={
-            <StepLink
-              label={`Step ${position + 1} of ${plan.steps.length} · Setup steps`}
-              onPress={() => setStepsOpen(true)}
-            />
+            <View style={styles.progressRow}>
+              <StepProgress
+                count={stepCount}
+                current={position + 1}
+                accessibilityLabel={`Step ${position + 1} of ${stepCount}, ${current?.title ?? ''}. Setup steps`}
+                onPress={() => setStepsOpen(true)}
+              />
+              <Text variant="caption">{modeLabel(plan.mode)}</Text>
+            </View>
           }
           title={title ?? current?.title ?? ''}
         />
@@ -241,3 +233,7 @@ export function PlanningStepFrame({
     </>
   );
 }
+
+const styles = StyleSheet.create({
+  progressRow: { flexDirection: 'row', flexWrap: 'wrap', alignItems: 'center', justifyContent: 'space-between', columnGap: space.lg, rowGap: space.xs },
+});
