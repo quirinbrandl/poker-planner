@@ -7,6 +7,7 @@
  * completion); add them as new optional fields or bump `SCHEMA_VERSION` with a migration in
  * `core/persistence.ts`.
  */
+import type { PayoutPresetId } from '@/domain/payouts';
 import type { ChipColor, ChipDenomination, DistributionPreference, GameMode, GamePhase } from '@/domain/types';
 
 export const SCHEMA_VERSION = 1;
@@ -71,8 +72,13 @@ export interface PayoutRowDraft {
 }
 
 export interface PayoutScheduleDraft {
-  /** Ordered by finishing place: first row is first place. */
+  /** Ordered by finishing place: first row is first place. Empty: no schedule chosen yet. */
   rows: PayoutRowDraft[];
+  /**
+   * The preset the rows were last set from, until the host edits a share or adds or removes a place
+   * (then `null`: Custom). Absent in drafts saved before presets existed (= Custom).
+   */
+  presetId?: PayoutPresetId | null;
 }
 
 export interface WizardState {

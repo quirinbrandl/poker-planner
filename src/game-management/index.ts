@@ -31,7 +31,6 @@ export type {
   ChipSetSource,
   FieldView,
   ParticipantView,
-  PayoutRowView,
   PlanningView,
   StepView,
 } from './planning/view';
@@ -63,7 +62,21 @@ export type {
   PlayerPickerEntry,
   RemoveParticipantResult,
 } from './planning/participants';
-export type { AddPayoutRowResult, RemovePayoutRowResult } from './planning/payout-schedule';
+export type {
+  AddPayoutPlaceResult,
+  ChoosePayoutPresetResult,
+  RemovePayoutPlaceResult,
+} from './planning/payout-schedule';
+export type {
+  PayoutPlaceView,
+  PayoutPresetOption,
+  PayoutScheduleView,
+  PayoutTotalView,
+  PrizeAmountView,
+  PrizePoolView,
+} from './planning/payout-view';
+export type { ValidPayoutSchedule } from './planning/payout-validation';
+export type { PayoutPresetId, ShareBasisPoints } from '@/domain/payouts';
 
 // Reusable records
 export type {

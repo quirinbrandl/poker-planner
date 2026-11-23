@@ -175,8 +175,7 @@ describe('navigation', () => {
     await app.planning.changeMode(gameId, 'tournament');
     expectStatus(await app.planning.goToStep(gameId, 'payouts'), 'rejected');
     expectStatus(await app.planning.goToStep(gameId, 'payouts', { fromPreview: true }), 'accepted');
-    const { rowId } = expectStatus(await app.planning.addPayoutRow(gameId), 'accepted');
-    await app.planning.setPayoutShareText(gameId, rowId, '100');
+    expect(view(gameId).payoutSchedule.preset.name).toBe('Top 2');
     expect(await continueTo(gameId, 'payouts')).toBe('preview');
   });
 });

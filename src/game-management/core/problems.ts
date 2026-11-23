@@ -28,8 +28,16 @@ export type ProblemCode =
   | 'duplicateValue'
   | 'quantityMissing'
   | 'quantityNotWholeNumber'
-  // Payout schedule (placeholder until src/domain/payouts arrives)
-  | 'noPaidPlaces'
+  // Payout schedule (step level, then one percentage field)
+  | 'payoutScheduleMissing'
+  | 'tooManyPaidPlaces'
+  | 'payoutTotalNotHundred'
+  | 'shareMissing'
+  | 'shareMalformed'
+  | 'shareTooManyDecimals'
+  | 'shareNotPositive'
+  | 'shareOverHundred'
+  | 'shareAboveHigherPlace'
   // Names of saved players, participants and templates
   | 'nameRequired'
   | 'duplicateName';
