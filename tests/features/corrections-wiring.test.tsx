@@ -157,7 +157,7 @@ it("Correct opens a correction draft; Replace result records the new count once"
   );
   await press("Correct Alice’s final chips");
   expect(router.getPathname()).toBe(`/game/${gameId}/count/${ids[0]}`);
-  expect(screen.getByText("Correction draft · unconfirmed")).toBeTruthy();
+  expect(screen.getByText("Correction draft")).toBeTruthy();
   await typeQuantities([10, 3]);
 
   await press("Review correction");
@@ -217,7 +217,7 @@ it("Return to play removes the result and leaves the player playing", async () =
   await press("Back in the game");
   expect(await screen.findByText("Back in the game")).toBeTruthy();
   expect(
-    screen.getByRole("button", { name: "Count final chips" }),
+    screen.getByRole("button", { name: "Count chips" }),
   ).toBeTruthy();
   expect(screen.getByRole("button", { name: "Rebuy for Alice" })).toBeTruthy();
   expect(live.play.getCashPlayer(gameId, ids[0])).toMatchObject({
@@ -329,11 +329,7 @@ it("adds a forgotten rebuy with reduced coverage only after Accept & add", async
   await press("Add forgotten rebuy for Alice");
   expect(router.getPathname()).toBe(`/game/${gameId}/rebuy-mix/${ids[0]}`);
   expect(screen.getByText("Alice · Forgotten rebuy")).toBeTruthy();
-  expect(
-    screen.getByText(
-      "Enter the chips Alice actually got. They must add up to 200. Alice’s result stays.",
-    ),
-  ).toBeTruthy();
+  expect(screen.getByText("of 200 chip units")).toBeTruthy();
   await typeQuantities([10, 3, 3, 1]);
   expect(screen.getByText("Exactly 200 ✓")).toBeTruthy();
 

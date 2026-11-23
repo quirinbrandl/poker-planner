@@ -53,17 +53,19 @@ async function renderMix(texts: string[], kind?: 'forgotten' | 'correct', confir
 
 const review = () => fireEvent.press(screen.getByRole('button', { name: 'Review rebuy' }));
 
-it('shows the instruction line and the bar toward 200 as quantities change', async () => {
+it('shows the bar toward 200 as quantities change', async () => {
   await renderMix(['15', '2', '', '', '']);
   expect(screen.getByText('Alice · Forgotten rebuy')).toBeTruthy();
-  expect(screen.getByText('Enter the chips Alice actually got. They must add up to 200. Alice’s result stays.')).toBeTruthy();
+  // The goal bar states the target; no instruction line repeats it.
+  expect(screen.queryByText(/Enter the chips Alice actually got/)).toBeNull();
+  expect(screen.getByText('of 200 chip units')).toBeTruthy();
   expect(screen.getByText('175 to go')).toBeTruthy();
   await fireEvent.press(screen.getByRole('tab', { name: /^25 chip units/ }));
   await fireEvent.changeText(screen.getByLabelText('Quantity (chips)'), '3');
   await fireEvent.press(screen.getByRole('tab', { name: /^100 chip units/ }));
   await fireEvent.changeText(screen.getByLabelText('Quantity (chips)'), '1');
   expect(screen.getByText('200 so far · enter the rest, even if 0')).toBeTruthy();
-  await fireEvent.press(screen.getByRole('button', { name: 'Set remaining quantities to zero' }));
+  await fireEvent.press(screen.getByRole('button', { name: 'Rest is 0: set remaining quantities to zero' }));
   expect(screen.getByText('Exactly 200 ✓')).toBeTruthy();
   await fireEvent.changeText(screen.getByLabelText('Quantity (chips)'), '2');
   expect(screen.getByText('100 over')).toBeTruthy();

@@ -74,32 +74,32 @@ const press = async (name: string | RegExp) => {
 it('Results rows open the count editor and the player page', async () => {
   const { gameId, ids, router } = await open((gameId) => `/game/${gameId}/results`);
   expect(screen.getByText('3 still to count')).toBeTruthy();
-  expect(screen.getAllByText('Uncounted')).toHaveLength(3);
+  expect(screen.getAllByRole('button', { name: /, Not counted yet$/ })).toHaveLength(3);
 
-  await press('Count chips for Bob');
+  await press('Count for Bob');
   expect(router.getPathname()).toBe(`/game/${gameId}/count/${ids[1]}`);
   expect(screen.getByText('Bob · Final chips')).toBeTruthy();
 
-  await press('Leave count for now');
+  await press('Back');
   expect(router.getPathname()).toBe(`/game/${gameId}/results`);
   await act(async () => {
     await fireEvent.press(screen.getByText('Alice'));
   });
   expect(router.getPathname()).toBe(`/game/${gameId}/player/${ids[0]}`);
   expect(screen.getByRole('button', { name: /Back to Results/ })).toBeTruthy();
-  await press('Count final chips');
+  await press('Count chips');
   expect(router.getPathname()).toBe(`/game/${gameId}/count/${ids[0]}`);
 });
 
 it('the editor saves the raw text as the draft; Results shows it as a Count draft', async () => {
   const { gameId, ids } = await open((gameId) => `/game/${gameId}/results`);
-  await press('Count chips for Cleo');
+  await press('Count for Cleo');
   await act(async () => {
     fireEvent.changeText(screen.getByLabelText('Quantity (chips)'), 'x3');
   });
   await act(() => live.persistence.flush());
   expect(live.play.getCountEditor(gameId, ids[2])!.entries[0].quantityText).toBe('x3');
-  await press('Leave count for now');
+  await press('Back');
   expect(screen.getByText('Count draft')).toBeTruthy();
   expect(screen.getByRole('button', { name: 'Resume count for Cleo' })).toBeTruthy();
 });

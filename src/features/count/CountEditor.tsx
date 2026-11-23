@@ -147,7 +147,7 @@ export function CountEditor({
           label="Rest is 0"
           variant="tertiary"
           fullWidth
-          accessibilityLabel="Set remaining quantities to zero"
+          accessibilityLabel="Rest is 0: set remaining quantities to zero"
           unavailable={!hasBlank}
           onPress={onSetRemainingToZero}
         />
