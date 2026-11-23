@@ -4,7 +4,7 @@
  */
 import { formatEur, formatEurPerUnit } from '@/domain/money';
 import type { Cents, ChipColor } from '@/domain/types';
-import type { DistributionPlanView, PlanningView, Problem } from '@/game-management';
+import type { DistributionPlanView, DistributionPreviewView, Problem } from '@/game-management';
 
 import type { PreviewData } from './types';
 
@@ -110,8 +110,8 @@ function planned(plan: DistributionPlanView, payouts: PreviewData['payouts'] = n
 
 function blocked(
   mode: 'cash' | 'tournament',
-  distribution: Exclude<PlanningView['preview']['distribution'], { kind: 'planned' }>,
-  blockers: PlanningView['preview']['blockers'] = [],
+  distribution: Exclude<DistributionPreviewView, { kind: 'planned' }>,
+  blockers: PreviewData['preview']['blockers'] = [],
 ): PreviewData {
   return {
     mode,

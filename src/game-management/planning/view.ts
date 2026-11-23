@@ -6,9 +6,8 @@ import type { ChipColor, DistributionPreference, GameMode } from '@/domain/types
 import type { AppState, GameDocument, StepId } from '../core/documents';
 import type { Problem } from '../core/problems';
 import { type ChipSetSummary, isBlankRow } from '../shared/chip-rows';
-import type { DistributionPreviewView } from './distribution-view';
+import { previewBlockers } from './distribution';
 import { automaticReserve, DEFAULT_DEPTH_BB, STEP_TITLES, stepsForMode } from './draft';
-import { payoutBlockerProblems } from './payout-validation';
 import { buildPayoutScheduleView, type PayoutScheduleView } from './payout-view';
 import { STEP_STATUS_LABELS, type StepStatus, stepStatuses, validateGame } from './validation';
 
@@ -106,16 +105,15 @@ export interface PlanningView {
   };
   /** The Payout schedule step (tournament); kept (dormant) while the game is a cash game. */
   payoutSchedule: PayoutScheduleView;
-  /** Whole-plan check for Distribution preview: problems linked to their source steps. */
+  /**
+   * Whole-plan check: problems linked to their source steps. The recommendation itself is a
+   * separate read (`planning.getDistributionPreview`), so typing on other steps never runs it.
+   */
   preview: {
     /** Steps with problems, in wizard order, each with its problems. */
     blockers: readonly { step: StepId; title: string; problems: readonly Problem[] }[];
-    /** Every step's inputs are valid. Says nothing yet about whether a distribution exists. */
+    /** Every step's inputs are valid. Says nothing about whether a distribution exists. */
     setupComplete: boolean;
-    /** The recommendation for the current draft, recomputed on every change. */
-    distribution: DistributionPreviewView;
-    /** `distribution.kind === 'planned'`: Start is available. */
-    canStart: boolean;
   };
 }
 
@@ -232,22 +230,8 @@ export function buildPlanningView(state: AppState, game: GameDocument): Planning
       attempted('payouts'),
     ),
     preview: {
-      blockers: modeSteps
-        .filter((step) => validation.byStep[step].length > 0)
-        .map((step) => ({
-          step,
-          title: STEP_TITLES[step],
-          problems:
-            step === 'payouts'
-              ? payoutBlockerProblems(draft.payoutSchedule, validation.byStep.payouts)
-              : validation.byStep[step],
-        })),
+      blockers: previewBlockers(game, validation),
       setupComplete,
-      // Placeholder until the distribution solver is wired in: no recommendation yet.
-      distribution: setupComplete
-        ? { kind: 'tooComplex', message: 'The distribution preview is not built yet.' }
-        : { kind: 'setupIncomplete' },
-      canStart: false,
     },
   };
 }

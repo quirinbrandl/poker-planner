@@ -4,8 +4,9 @@ How screens use game management. Everything here is exported from `@/game-manage
 `@/state` (provider and hooks). Screens never import anything beneath those two paths, never compute
 validation or totals, and never talk to storage. Vocabulary follows [`CONTEXT.md`](../CONTEXT.md).
 
-Covers Planning (#11), saved players (#12) and chip set templates (#13). Later work adds
-distribution preview, Start, play, results and Payments to the same object.
+Covers Planning (#11), saved players (#12), chip set templates (#13), Distribution preview and
+Start (#14–#17, tournament Start of #26), Return to Planning and the In progress read model. Later
+work adds rebuys, late entry, results, corrections and Payments to the same object.
 
 ## Basics
 
@@ -29,8 +30,9 @@ const games = useGames();                 // reads, re-render on change
 const plan = usePlanningView(gameId);     // PlanningView | null
 ```
 
-Hooks: `useGames`, `usePlanningView(gameId)`, `usePlayerPicker(gameId)`, `useSavedPlayers`,
-`useTemplates`, `useWorkingLocation`, `usePersistenceStatus`. For any other read, call the method
+Hooks: `useGames`, `usePlanningView(gameId)`, `useDistributionPreview(gameId)`,
+`usePlayView(gameId)`, `usePlayerPicker(gameId)`, `useSavedPlayers`, `useTemplates`,
+`useWorkingLocation`, `usePersistenceStatus`. For any other read, call the method
 on `app` inside the component; reads are cheap, memoized and return the same object until
 something relevant changes.
 
@@ -61,7 +63,8 @@ English copy to display, `field` says where: `'roster' | 'buyIn' | 'depth' | 'co
 | 'chipSet' | 'chipValue:<rowId>' | 'chipQuantity:<rowId>' | 'payoutSchedule' |
 'payoutShare:<rowId>' | 'name'`.
 
-Every game-scoped operation can be rejected with `gameNotFound` or `setupLocked` (not in Planning).
+Every game-scoped operation can be rejected with `gameNotFound` or `setupLocked` (not in Planning;
+message "Setup is locked. To change it, use ⋯ → Return to Planning.").
 
 ### Showing errors
 
@@ -83,14 +86,15 @@ failed Continue). Once shown, keep it updating while the host corrects it.
 | `games.list(): GameCard[]` | In progress first, then Planning, each newest-created first. Completed games are not listed (History comes later). |
 | `games.get(gameId): GameCard \| null` | |
 | `games.create(mode)` | `accepted { gameId, location }`. Choosing the mode creates the autosaved game and opens Players. |
-| `games.open(gameId)` | `accepted { location }` (Planning: its last visited step) \| `rejected gameNotFound`. Records the working location. |
+| `games.open(gameId)` | `accepted { location }` (Planning: its last visited step; In progress: Play) \| `rejected gameNotFound`. Records the working location. Opening a tournament onto Payout schedule preselects like the wizard does. |
 | `games.delete(gameId)` | `accepted` \| `rejected gameNotFound`. Permanent; confirm in the screen first. Touches only that game. |
 
 ```ts
 interface GameCard {
   id: string; mode: 'cash' | 'tournament'; phase: 'planning' | 'inProgress' | 'completed';
   createdAt: string;                 // ISO 8601; format it for the card
-  participantNames: string[];        // captured names, joining order
+  participantNames: string[];        // captured names, joining order (In progress: everyone who joined)
+  startedAt: string | null;          // In progress / Completed: ISO 8601 of Start
   lastStep: StepId | null; lastStepTitle: string | null;   // Planning only
 }
 ```
@@ -116,7 +120,7 @@ interface PlanningView {
               reserve: FieldView & { mode: 'automatic' | 'custom'; automaticCount: number };
               problems; continueAttempted };
   payoutSchedule: PayoutScheduleView;   // see Payout schedule below
-  preview: { blockers: { step, title, problems }[]; setupComplete: boolean };
+  preview: { blockers: { step, title, problems }[]; setupComplete: boolean };  // recommendation: see below
 }
 interface ChipRowView { id; value: FieldView; quantity: FieldView; color: ChipColor | null;
                        chipCount: number | null /* valid quantity, for the chip case */; blank: boolean }
@@ -133,7 +137,7 @@ distribution. `summary.label` is the ready-made "N denominations · M chips · K
 
 | Operation | Result |
 | --- | --- |
-| `continueFromStep(gameId, step)` | `accepted { nextStep }` \| `stepInvalid { problems }` \| `needsConfirmation { confirmation: ChipSetScopeConfirmation }` (valid Chip set only) \| `rejected stepNotInMode \| noNextStep` (preview: Start is not available yet). During a correction a valid step returns `nextStep: 'preview'`. |
+| `continueFromStep(gameId, step)` | `accepted { nextStep }` \| `stepInvalid { problems }` \| `needsConfirmation { confirmation: ChipSetScopeConfirmation }` (valid Chip set only) \| `rejected stepNotInMode \| noNextStep` (preview: use `start`). During a correction a valid step returns `nextStep: 'preview'`. |
 | `completeChipSetStep(gameId, scope)` | `accepted { nextStep: 'settings' \| 'preview', templateId? }` \| `stepInvalid` \| `rejected sourceTemplateMissing \| invalidTemplate` (name problems in `reason.problems`). |
 | `goBack(gameId)` | `accepted { step }` \| `rejected noPreviousStep` (on Choose mode; Back there is the screen's exit to Games). Keeps the correction context. |
 | `goToStep(gameId, step, { fromPreview? })` | `accepted { step }` \| `rejected stepNotReached \| stepNotInMode`. Only reached steps, except `fromPreview: true` (a preview correction link), which may open any step of the mode and sets `returnToPreview`. Opening `preview` clears it. |
@@ -262,11 +266,119 @@ const p = usePlanningView(gameId)!.payoutSchedule;
   onPress={() => app.planning.choosePayoutPreset(gameId, p.tooManyPlaces!.fix!.presetId)} />}
 ```
 
+### Distribution preview and Start
+
+`planning.getDistributionPreview(gameId): PreviewStepView | null` (or `useDistributionPreview`) is
+the recommendation for the current draft. It is derived, never stored, and only worked out when
+read (memoized until players, chip set, settings or payouts change): read it on the preview step
+only, because an unusual chip set can take the solver a moment. It never changes the host's
+requested depth or reserve configuration.
+
+```ts
+interface PreviewStepView {
+  blockers: { step, title, problems }[];   // as PlanningView.preview.blockers
+  setupComplete: boolean;
+  distribution:
+    | { kind: 'setupIncomplete' }
+    | { kind: 'planned'; plan: DistributionPlanView }
+    | { kind: 'noValidDistribution'; reason: 'insufficientValue' | 'unsuitableDenominations' | 'insufficientBlindChips';
+        title: 'Not enough chip value' | 'Unsuitable denominations' | 'Not enough blind-paying chips';
+        message: string /* names the shortfall with the game's numbers */ }
+    | { kind: 'tooComplex'; message: string /* "…too large to work out on the phone. Simplify it…" */ };
+  canStart: boolean;                       // distribution.kind === 'planned'
+}
+interface DistributionPlanView {
+  players;                                 // N
+  stack: { value /* T */, chips, mix: ChipCountView[] };    // one entry per denomination, ascending
+  depth: { bb, requestedBb, adjusted };    // adjusted: "100 BB → 98 BB"
+  blinds: { small, big, text: '1 / 2', rounded };           // rounded: "Rounded SB"
+  money: { kind: 'cash'; buyIn; buyInText; rateText: 'EUR 0.10 / unit' }
+       | { kind: 'tournament'; buyIn; buyInText; prizePool; prizePoolText };
+  reserve: { stacks /* r */, target /* R */, reduced };     // reduced: "3 → 1 stack", "1 of 3 possible"
+  bank: { chips, mix: ChipCountView[] };
+}
+type ChipCountView = { value; color: ChipColor | null; count };
+```
+
+| Operation | Result |
+| --- | --- |
+| `planning.start(gameId, { depthBb, reserveStacks })` | `accepted { location: { kind: 'play', gameId } }` \| `rejected setupIncomplete \| noValidDistribution \| tooComplex \| previewChanged \| setupLocked \| gameNotFound`. |
+
+Pass the `depth.bb` and `reserve.stacks` the Start popup showed; Start recomputes the preview and is
+rejected with `previewChanged` ("The preview changed. Check it and start again.") if they differ.
+An accepted Start records, in one commit: In progress, the accepted terms, every player's buy-in
+and the starting stack actually handed to them. A second Start is `setupLocked`, so nothing is
+issued twice. Rejections change nothing.
+
+## In progress
+
+`play.getView(gameId): PlayView | null` (or `usePlayView`) is everything Play, the bank / reserve
+view and Game details show; `null` unless the game is In progress. Texts are ready to render, the
+raw numbers sit next to them. Later work (rebuys, late entry, results, eliminations) extends it.
+
+```ts
+interface PlayView {
+  gameId; mode; phase: 'inProgress'; createdAt; startedAt;
+  terms: { blinds: { small, big, text: '1 / 2', rounded };
+           depth: { bb, requestedBb, adjusted, text: '100 BB' }; stack: { value, text: '200 chip units' };
+           buyIn: MoneyView; rebuyPrice: MoneyView;            // MoneyView = { cents, text: 'EUR 20.00' }
+           money: { kind: 'cash'; rate: ExactCents; rateText } | { kind: 'tournament'; text: 'No chip money value' };
+           coverage: { payments, text: '4 payments of each blind' }; preference; preferenceText: 'Fewer chips' };
+  players: { id; name; savedPlayerId; joinOrder; entry: 'initial' | 'lateEntry';
+             contribution: { stacks, rebuys, cents, text: 'EUR 40.00 contribution · 1 rebuy' };
+             handedOut: ChipsView; firstStack: ChipsView }[];  // ChipsView = { chips, value, mix: ChipCountView[] }
+  totals: { contributions: MoneyView & { label: 'EUR 120.00 total contributions' }; buyIns; rebuys; stacks;
+            inPlay: ChipsView; prizePool: MoneyView | null /* tournaments */ };
+  bank: ChipsView & { label: '374 available chips'; valueText: '7,250 chip units' };
+  reserve: { configured /* R */; startedTarget /* r at Start */; consumed; unconsumed;
+             achievable: number | null /* formable at once; null if too complex */;
+             achievableText: '2 of 2'; weakened; summaryText: '2 reserve stacks available' };
+  details: { players; playersText: '6 players'; chipSet: { denominations, summaryText };
+             startingStack: ChipsView & { text }; depth: { requestedBb, acceptedBb, adjusted, text: '98 BB (requested 100 BB)' };
+             blindsText: '1 / 2 chip units · 100 BB'; buyInText: 'EUR 20.00 · rebuys the same';
+             rateText: string | null; coverageText; preferenceText;
+             reserve: { mode, configured, atStart, reduced, text: '3 stacks' | '1 of 3 stacks' };
+             payouts: { name: 'Top 2'; places: { place, placeLabel, shareText: '70%', amount, amountText }[];
+                        prizePool: MoneyView; prizePoolLine: 'Prize pool EUR 120.00 · 6 buy-ins. Rebuys raise every prize; the percentages stay.' } | null;
+             lockedNote: 'Setup is locked. To change it, use ⋯ → Return to Planning.' };
+}
+```
+
+| Operation | Result |
+| --- | --- |
+| `play.returnToPlanning(gameId, { confirmed? })` | `needsConfirmation { confirmation: ReturnToPlanningConfirmation }` until `confirmed` \| `accepted { location: { kind: 'planning', gameId, step: 'preview' } }` \| `rejected gameNotFound \| notInProgress \| gameCompleted`. |
+
+```ts
+interface ReturnToPlanningConfirmation {
+  kind: 'returnToPlanning';
+  clears: { rebuys; results; handedOutStacks; text: '2 rebuys · 6 results · all handed-out stacks' };  // zero parts omitted
+  keeps: { players; payoutSchedule: boolean; text: '6 players · buy-ins · settings' };            // + ' · payout schedule'
+  note: 'Collect all chips. You’ll hand out new stacks after Start.';
+}
+```
+
+Confirmed, it clears every play record and issuance and reopens Planning on Distribution preview
+with the full current roster, the buy-in and every setting (requested depth, coverage, preference,
+reserve configuration, payout schedule). An automatic reserve follows the roster, a custom one is
+kept; the preview is recomputed and may be infeasible (the game then stays in Planning). Show
+"✓ Back in Planning" after it. Cancel in the popup calls nothing.
+
+**The In progress document** (internal; `GameDocument.play`, absent in Planning): `startedAt`;
+`terms` (chip set ascending with colours, buy-in, requested and accepted depth, blinds, stack value,
+coverage, preference, reserve `{ mode, configured R, target r }`, exact `cashRate` or `null`, locked
+payout schedule or `null`); `roster` (participants in joining order with `entry`); `issuances`
+(`{ id, participantId, kind: 'initial' | 'rebuy' | 'lateEntry', contribution, mix, recordedAt }`).
+Only facts are stored: the bank (chip set − issuances, + returns later), contributions, reserve
+consumption (rebuys + late entries) and totals are derived in `play/ledger.ts`. The Planning draft
+stays untouched while In progress. Later record types become further fields of `play`, are cleared
+by Return to Planning and counted in its confirmation.
+
 ## Saved players
 
 | Operation | Result |
 | --- | --- |
 | `savedPlayers.list(): SavedPlayerView[]` | `{ id, name }`, alphabetical. |
+| `savedPlayers.checkName(name, { exceptId? }): Problem \| null` | Live check while typing: the problem `create` (or `rename` of `exceptId`) would reject with. Stores nothing. |
 | `savedPlayers.create(name)` | `accepted { savedPlayerId }` \| `rejected nameRequired \| duplicateName` (`reason.problems[0].field === 'name'`). |
 | `savedPlayers.rename(id, name)` | `accepted` \| `rejected nameRequired \| duplicateName \| savedPlayerNotFound`. |
 | `savedPlayers.delete(id)` | `accepted` \| `rejected savedPlayerNotFound`. Confirm in the screen first. |
@@ -294,10 +406,13 @@ fine). Template rows follow the same rules as a game's chip set.
 ## Working location
 
 `location.get(): WorkingLocation` is where to reopen the app:
-`{ kind: 'games' | 'history' | 'savedPlayers' | 'templates' }` or
-`{ kind: 'planning', gameId, step }`. It falls back to Games when the game is gone. Reading it never
-applies anything. Call `location.set({ kind: ... })` when the host navigates to Games, History,
-Saved players or Chip set templates; wizard operations and `games.open` record Planning locations.
+`{ kind: 'games' | 'history' | 'savedPlayers' | 'templates' }`, `{ kind: 'planning', gameId, step }`
+or `{ kind: 'play' | 'results' | 'details', gameId }` (`locationHref` maps it to a route). It falls
+back to Games when the game is gone and to the game's current workspace when its phase changed
+(Planning: its last step; In progress: Play). Reading it never applies anything. Call
+`location.set({ kind: ... })` when the host navigates to Games, History, Saved players, Chip set
+templates or a started game's tab (`rejected gameNotFound | wrongPhase`); wizard operations, Start,
+Return to Planning and `games.open` record their locations.
 Editors and pickers are not locations: after restart the host lands on the screen they came from.
 
 ## Examples
@@ -355,11 +470,11 @@ if (result.status === 'needsConfirmation' && (await confirmReplace(result.confir
 ## Extending game management
 
 - `src/game-management/application.ts` assembles the areas; `index.ts` only re-exports.
-- Each area keeps its own folder: `games/`, `planning/`, `reusable/`, `location/`, plus `core/`
+- Each area keeps its own folder: `games/`, `planning/`, `play/` (In progress), `reusable/`, `location/`, plus `core/`
   (documents, results, runtime, persistence) and `shared/` (names, numbers, chip rows).
 - `planning/validation.ts` → `validatePlan(game)` returns the parsed `ValidPlan` (participant ids,
   denominations, buy-in cents, requested depth, preference, coverage, reserve) for distribution.
-- New game sections (accepted setup, play, completion) are new fields on `GameDocument` in
+- New game sections (completion) and play records are new fields on `GameDocument` / `PlayRecord` in
   `core/documents.ts`; incompatible changes bump `SCHEMA_VERSION` with a migration in
   `core/persistence.ts`.
 - An operation reads `rt.state()`, validates, builds the next immutable state and calls

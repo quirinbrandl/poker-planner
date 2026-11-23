@@ -1,21 +1,21 @@
 import { router, useLocalSearchParams } from 'expo-router';
 
 import { planningStepHref, playHref } from '@/features/shared/routes';
-import type { PlanningView, StepId } from '@/game-management';
-import { useGameManagement, usePlanningView } from '@/state';
+import type { PlanningView, PreviewStepView, StepId } from '@/game-management';
+import { useDistributionPreview, useGameManagement, usePlanningView } from '@/state';
 import { useToast } from '@/ui';
 
 import { PlanningStepFrame } from './PlanningStepFrame';
 import { PreviewStep } from './preview/PreviewStep';
 import type { PreviewData } from './preview/types';
 
-/** The preview's data from the Planning view. */
-export function previewData(plan: PlanningView): PreviewData {
+/** The preview's data from the preview read and the Planning view. */
+export function previewData(plan: PlanningView, preview: PreviewStepView): PreviewData {
   const schedule = plan.payoutSchedule;
   return {
     mode: plan.mode,
     playerCount: plan.players.participants.length,
-    preview: plan.preview,
+    preview,
     payouts:
       plan.mode === 'tournament'
         ? {
@@ -36,9 +36,10 @@ export default function PreviewStepScreen() {
   const { gameId } = useLocalSearchParams<{ gameId: string }>();
   const app = useGameManagement();
   const plan = usePlanningView(gameId);
+  const preview = useDistributionPreview(gameId);
   const toast = useToast();
 
-  if (!plan) return <PlanningStepFrame gameId={gameId} step="preview" />;
+  if (!plan || !preview) return <PlanningStepFrame gameId={gameId} step="preview" />;
 
   // A correction opened from here: the step's primary action becomes "Return to preview".
   const openStep = async (step: StepId) => {
@@ -49,7 +50,7 @@ export default function PreviewStepScreen() {
 
   return (
     <PreviewStep
-      data={previewData(plan)}
+      data={previewData(plan, preview)}
       onOpenStep={(step) => void openStep(step)}
       onStart={(acceptance) => app.planning.start(gameId, acceptance)}
       onStarted={() => router.replace(playHref(gameId))}

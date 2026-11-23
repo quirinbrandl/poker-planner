@@ -68,6 +68,12 @@ export function locationHref(location: WorkingLocation): Href {
   switch (location.kind) {
     case 'planning':
       return planningStepHref(location.gameId, location.step);
+    case 'play':
+      return playHref(location.gameId);
+    case 'results':
+      return resultsHref(location.gameId);
+    case 'details':
+      return detailsHref(location.gameId);
     case 'history':
       return '/history' as Href;
     case 'savedPlayers':
