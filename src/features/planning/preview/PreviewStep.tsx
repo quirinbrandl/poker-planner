@@ -90,6 +90,8 @@ export function PreviewStep({
   let footerNote: string | undefined;
   switch (distribution.kind) {
     case 'planned':
+      // Approved: nothing above Back / Start when the game can start.
+      footerNote = '';
       content = <PlannedPreview plan={distribution.plan} payouts={payouts} onEditPayouts={() => onOpenStep('payouts')} />;
       break;
     case 'setupIncomplete':

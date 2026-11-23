@@ -42,7 +42,10 @@ export interface PlanningStepFrameProps {
   onStepInvalid?: (problems: readonly Problem[]) => void;
   /** Replaces the whole primary button (Distribution preview's Start). */
   primaryAction?: ReactNode;
-  /** Replaces the draft-saved line above the footer buttons, e.g. a blocker reason. */
+  /**
+   * Replaces the draft-saved line above the footer buttons, e.g. a blocker reason. An empty string
+   * shows no line. A failed save is always reported, whatever is passed here.
+   */
   footerNote?: string;
   footerNoteTone?: 'supporting' | 'warning' | 'error';
   scrollRef?: ScreenProps['scrollRef'];
@@ -158,8 +161,9 @@ export function PlanningStepFrame({
     } else if (result.status === 'rejected') toast.show(result.reason.message, { tone: 'error' });
   };
 
+  const saveFailed = persistence.state === 'failed';
   const draftNote =
-    persistence.state === 'failed'
+    saveFailed
       ? 'Couldn’t save the draft on this phone'
       : persistence.state === 'saving'
         ? 'Saving draft…'
@@ -174,8 +178,8 @@ export function PlanningStepFrame({
         }
         footer={
           <FooterActions
-            note={footerNote ?? draftNote}
-            noteTone={footerNote ? footerNoteTone : persistence.state === 'failed' ? 'error' : undefined}
+            note={saveFailed ? draftNote : (footerNote ?? draftNote)}
+            noteTone={saveFailed ? 'error' : footerNote ? footerNoteTone : undefined}
           >
             {isFirst ? (
               <Button label="Games" icon="chevronLeft" onPress={goToGames} accessibilityLabel="Back to Games" />
