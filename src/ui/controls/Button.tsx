@@ -163,6 +163,8 @@ export function Button({
 
 const styles = StyleSheet.create({
   base: {
+    // Explicit, so Android returns to a solid border when a dashed state ends.
+    borderStyle: 'solid',
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',

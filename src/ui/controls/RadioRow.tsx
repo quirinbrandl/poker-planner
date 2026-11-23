@@ -68,6 +68,7 @@ export function RadioGroup({ label, children, hideLabel }: RadioGroupProps) {
 
 const styles = StyleSheet.create({
   row: {
+    borderStyle: 'solid',
     flexDirection: 'row',
     alignItems: 'flex-start',
     gap: space.md,

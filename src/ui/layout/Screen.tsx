@@ -27,7 +27,8 @@ export interface ScreenProps {
 export function Screen({ topBar, children, footer, gap = space.lg, scrollRef, testID }: ScreenProps) {
   const insets = useSafeAreaInsets();
   return (
-    <View style={styles.root} testID={testID}>
+    // The top inset is kept outside the scroll area so content never scrolls under the status bar.
+    <View style={[styles.root, { paddingTop: insets.top }]} testID={testID}>
       <KeyboardAvoidingView style={styles.flex} behavior={Platform.OS === 'ios' ? 'padding' : 'height'}>
         <ScrollView
           ref={scrollRef}
@@ -35,7 +36,7 @@ export function Screen({ topBar, children, footer, gap = space.lg, scrollRef, te
           contentContainerStyle={[
             styles.content,
             {
-              paddingTop: insets.top + space.sm,
+              paddingTop: space.sm,
               paddingLeft: insets.left + space.gutter,
               paddingRight: insets.right + space.gutter,
               paddingBottom: footer ? 0 : insets.bottom + space.xxxl,

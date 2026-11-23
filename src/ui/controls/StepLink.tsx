@@ -111,6 +111,7 @@ const styles = StyleSheet.create({
   underline: { textDecorationLine: 'underline' },
   list: { gap: space.sm },
   step: {
+    borderStyle: 'solid',
     flexDirection: 'row',
     alignItems: 'center',
     gap: space.md,

@@ -136,6 +136,7 @@ const styles = StyleSheet.create({
   content: { padding: space.xl, gap: space.md },
   items: { gap: space.sm },
   item: {
+    borderStyle: 'solid',
     flexDirection: 'row',
     flexWrap: 'wrap',
     alignItems: 'center',
