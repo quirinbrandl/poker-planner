@@ -6,6 +6,9 @@ import type { GameMode, GamePhase } from '@/domain/types';
 import type { AppState, GameDocument, StepId, WorkingLocation } from '../core/documents';
 import { type Accepted, type Rejected, rejected } from '../core/results';
 import type { Runtime } from '../core/runtime';
+import { completedGame } from '../completion';
+import { buildHistoryGame } from '../completion/settlement';
+import type { HistoryGameView } from '../completion/types';
 import { findGame, newPlanningDraft, STEP_TITLES, withGame } from '../planning/draft';
 import { preselectSuggestedSchedule } from '../planning/payout-schedule';
 
@@ -20,6 +23,10 @@ export interface GameCard {
   participantNames: readonly string[];
   /** In progress and Completed: ISO 8601 date-time of Start. */
   startedAt: string | null;
+  /** Completed: ISO 8601 finishing date-time (when Payments were calculated); otherwise `null`. */
+  finishedAt: string | null;
+  /** In progress after Reopen, until Payments are calculated again (the card says so and opens Results). */
+  reopened: boolean;
   /** Planning only: the step the game resumes at, and its title. */
   lastStep: StepId | null;
   lastStepTitle: string | null;
@@ -40,15 +47,26 @@ function card(game: GameDocument): GameCard {
     createdAt: game.createdAt,
     participantNames: (game.play?.roster ?? game.planning.participants).map((p) => p.name),
     startedAt: game.play?.startedAt ?? null,
+    finishedAt: game.phase === 'completed' ? (game.completion?.finishedAt ?? null) : null,
+    reopened: game.phase === 'inProgress' && game.play?.reopenedAt !== undefined,
     lastStep: planning ? game.planning.wizard.lastStep : null,
     lastStepTitle: planning ? STEP_TITLES[game.planning.wizard.lastStep] : null,
   };
 }
 
-/** Where opening a game from a list leads: Planning resumes at its last step, a started game opens Play. */
+/**
+ * Where opening a game from a list leads: Planning resumes at its last step, an In progress game
+ * opens Play (a reopened one Results), a Completed game (listed on History) its Payments.
+ */
 function entryLocation(game: GameDocument): WorkingLocation {
-  if (game.phase === 'planning') return { kind: 'planning', gameId: game.id, step: game.planning.wizard.lastStep };
-  return { kind: game.phase === 'inProgress' ? 'play' : 'results', gameId: game.id };
+  switch (game.phase) {
+    case 'planning':
+      return { kind: 'planning', gameId: game.id, step: game.planning.wizard.lastStep };
+    case 'inProgress':
+      return { kind: game.play?.reopenedAt !== undefined ? 'results' : 'play', gameId: game.id };
+    case 'completed':
+      return { kind: 'payments', gameId: game.id, from: 'history' };
+  }
 }
 
 /**
@@ -82,6 +100,26 @@ export function createGamesApi(rt: Runtime) {
       );
     },
 
+    /**
+     * History: Completed games, most recently finished first, each with its captured names and its
+     * own settlement summary (never live saved players).
+     */
+    history(): readonly HistoryGameView[] {
+      const games = rt.state().games;
+      return rt.memo('games.history', [games], () =>
+        Object.values(games)
+          .map((g) => completedGame(g))
+          .filter((g) => g !== null)
+          .sort(
+            (a, b) =>
+              b.completion.finishedAt.localeCompare(a.completion.finishedAt) ||
+              b.createdAt.localeCompare(a.createdAt) ||
+              a.id.localeCompare(b.id),
+          )
+          .map((g) => buildHistoryGame(g, g.completion)),
+      );
+    },
+
     /** One game's card, or `null`. */
     get(gameId: string): GameCard | null {
       const game = findGame(rt.state(), gameId);
@@ -107,7 +145,7 @@ export function createGamesApi(rt: Runtime) {
 
     /**
      * Opens a game from a list: Planning resumes at its last visited step, an In progress game opens
-     * Play. Records the location.
+     * Play (reopened: Results), a Completed game its Payments with `from: 'history'`. Records the location.
      */
     async open(gameId: string): Promise<OpenGameResult> {
       const state = rt.state();
@@ -118,14 +156,19 @@ export function createGamesApi(rt: Runtime) {
       return { status: 'accepted', location };
     },
 
-    /** Deletes a game permanently (the screen confirms first). Touches nothing else. */
+    /**
+     * Deletes a game permanently (the screen confirms first). Touches nothing else. A location in
+     * the game falls back to the list it lived in: History for a Completed game, else Games.
+     */
     async delete(gameId: string): Promise<DeleteGameResult> {
       const state = rt.state();
-      if (!findGame(state, gameId)) return rejected('gameNotFound', 'This game no longer exists.');
+      const game = findGame(state, gameId);
+      if (!game) return rejected('gameNotFound', 'This game no longer exists.');
       const games = { ...state.games };
       delete games[gameId];
       const pointsHere = 'gameId' in state.location && state.location.gameId === gameId;
-      await rt.apply({ ...state, games, location: pointsHere ? { kind: 'games' } : state.location });
+      const list: WorkingLocation = { kind: game.phase === 'completed' ? 'history' : 'games' };
+      await rt.apply({ ...state, games, location: pointsHere ? list : state.location });
       return { status: 'accepted' };
     },
   };

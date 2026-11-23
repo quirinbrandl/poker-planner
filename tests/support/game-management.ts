@@ -119,3 +119,25 @@ export function observe(app: GameManagement, gameId: string) {
     location: app.location.get(),
   };
 }
+
+/** Starts a planned game on its recommended plan. Returns the participant ids in joining order. */
+export async function startPlannedGame(app: GameManagement, gameId: string): Promise<string[]> {
+  const preview = app.planning.getDistributionPreview(gameId)!;
+  if (preview.distribution.kind !== 'planned') throw new Error('Expected a feasible plan');
+  const { plan } = preview.distribution;
+  expectStatus(await app.planning.start(gameId, { depthBb: plan.depth.bb, reserveStacks: plan.reserve.stacks }), 'accepted');
+  return app.play.getView(gameId)!.players.map((p) => p.id);
+}
+
+/** Types, reviews and confirms one participant's complete final chip count (quantities ascending by value). */
+export async function recordCount(app: GameManagement, gameId: string, participantId: string, counts: readonly number[]) {
+  const editor = app.play.getCountEditor(gameId, participantId)!;
+  for (const [i, entry] of editor.entries.entries()) {
+    expectStatus(await app.play.setCountText(gameId, participantId, entry.value, String(counts[i])), 'accepted');
+  }
+  const review = expectStatus(app.play.reviewCount(gameId, participantId), 'needsConfirmation');
+  expectStatus(
+    await app.play.confirmResult(gameId, participantId, { counts: review.confirmation.mix.map((c) => c.count) }),
+    'accepted',
+  );
+}

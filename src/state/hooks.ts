@@ -5,6 +5,8 @@ import type {
   CashResultsView,
   CountEditorView,
   GameCard,
+  HistoryGameView,
+  PaymentsView,
   PersistenceStatus,
   PlanningView,
   PlayerPickerEntry,
@@ -27,6 +29,12 @@ function useRead<T>(read: () => T): T {
 export function useGames(): readonly GameCard[] {
   const app = useGameManagement();
   return useRead(() => app.games.list());
+}
+
+/** History: Completed games, most recently finished first. */
+export function useHistory(): readonly HistoryGameView[] {
+  const app = useGameManagement();
+  return useRead(() => app.games.history());
 }
 
 /** One game's card in any phase; `null` if it does not exist (any more). */
@@ -56,7 +64,13 @@ export function usePlayView(gameId: string): PlayView | null {
   return useRead(() => app.play.getView(gameId));
 }
 
-/** Cash-game Results: accounting status and player rows; `null` unless an In progress cash game. */
+/** A Completed game's Payments (instructions and Balances); `null` unless Completed. */
+export function usePayments(gameId: string): PaymentsView | null {
+  const app = useGameManagement();
+  return useRead(() => app.play.getPayments(gameId));
+}
+
+/** Cash-game Results: accounting status and player rows (Completed: read-only); `null` unless a started cash game. */
 export function useCashResults(gameId: string): CashResultsView | null {
   const app = useGameManagement();
   return useRead(() => app.play.getResults(gameId));
@@ -71,7 +85,7 @@ export function useCountEditor(gameId: string, participantId: string, showErrors
   return useRead(() => app.play.getCountEditor(gameId, participantId, { showErrors }));
 }
 
-/** One participant's cash player page; `null` unless an In progress cash game with that participant. */
+/** One participant's cash player page (Completed: read-only); `null` unless a started cash game with that participant. */
 export function useCashPlayer(gameId: string, participantId: string): CashPlayerView | null {
   const app = useGameManagement();
   return useRead(() => app.play.getCashPlayer(gameId, participantId));

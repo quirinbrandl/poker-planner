@@ -139,6 +139,28 @@ export type {
 } from './play/results/count';
 export type { ResultAccessCode } from './play/results/shared';
 
+// Completion: Calculate Payments, Payments, Reopen and History
+export type {
+  CalculatePaymentsCode,
+  CalculatePaymentsResult,
+  ReopenCode,
+  ReopenResult,
+} from './completion';
+export type {
+  BalanceDirection,
+  BalanceRow,
+  CalculateFact,
+  CalculatePaymentsConfirmation,
+  HistoryFact,
+  HistoryGameView,
+  PaymentInstructionView,
+  PaymentsMode,
+  PaymentsSummary,
+  PaymentsView,
+  ReopenConfirmation,
+} from './completion/types';
+export type { CompletedGuarded } from './completion/guard';
+
 // Reusable records
 export type {
   CreateSavedPlayerResult,

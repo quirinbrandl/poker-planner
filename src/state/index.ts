@@ -7,6 +7,8 @@ export {
   useDistributionPreview,
   useGame,
   useGames,
+  useHistory,
+  usePayments,
   usePersistenceStatus,
   usePlanningView,
   usePlayerPicker,

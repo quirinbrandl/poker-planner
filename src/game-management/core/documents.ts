@@ -37,6 +37,43 @@ export interface GameDocument {
   planning: PlanningDraft;
   /** Present from Start on (In progress, later Completed); removed by Return to Planning. */
   play?: PlayRecord;
+  /**
+   * The final settlement Calculate Payments stored. Present exactly while the game is Completed;
+   * Reopen withdraws it (it is not kept as stale data).
+   */
+  completion?: CompletionRecord;
+}
+
+/**
+ * A Completed game's final settlement: what Calculate Payments fixed at the finishing time. The
+ * records it was calculated from stay in `play`; this is the allocated outcome, so reads of a
+ * Completed game never recalculate (and never change when the solver or rounding code changes).
+ */
+export interface CompletionRecord {
+  /** ISO 8601 date-time Payments were calculated: the game's finishing time. */
+  finishedAt: string;
+  /** Every participant in joining order (the roster order), zero balances included. */
+  players: SettledPlayer[];
+  /** The direct payments settling the balances, in payer then receiver joining order. Empty: none needed. */
+  payments: SettlementPayment[];
+}
+
+/** One participant's allocated outcome. `balance = finalResult − contributions`; balances sum to zero. */
+export interface SettledPlayer {
+  participantId: string;
+  /** Final monetary result in whole cents (cash: allocated chip value; tournament: payout). */
+  finalResult: Cents;
+  /** Buy-in plus rebuys, in cents. */
+  contributions: Cents;
+  balance: Cents;
+}
+
+/** A direction for one participant to pay another; not a record that money changed hands. */
+export interface SettlementPayment {
+  fromId: string;
+  toId: string;
+  /** Positive whole cents. */
+  amount: Cents;
 }
 
 /**
@@ -70,6 +107,12 @@ export interface PlayRecord {
    * winner are derived from this order and the roster. Eliminations move no chips. Absent means none.
    */
   eliminations?: EliminationRecord[];
+  /**
+   * Set by Reopen: the ISO 8601 date-time this game was last reopened. Present while it is In
+   * progress again after Payments were calculated, until they are calculated again (Results and
+   * the Games card say so). Return to Planning removes it with the rest of `play`.
+   */
+  reopenedAt?: string;
 }
 
 /** An unconfirmed final chip count, exactly as typed. Empty text is "not entered", never zero. */
@@ -240,11 +283,14 @@ export type WorkingLocation =
   | { kind: 'savedPlayers' }
   | { kind: 'templates' }
   | { kind: 'planning'; gameId: string; step: StepId }
-  /** The workspace tabs of a started game. */
-  | { kind: 'play' | 'results' | 'details'; gameId: string };
+  /**
+   * The workspace tabs of a started game (`payments`: Completed only). `from: 'history'` when the
+   * game was opened from History, so its back control leads there.
+   */
+  | { kind: GameWorkspaceKind; gameId: string; from?: 'history' };
 
 /** The working-location kinds of a started game's workspace. */
-export type GameWorkspaceKind = 'play' | 'results' | 'details';
+export type GameWorkspaceKind = 'play' | 'results' | 'details' | 'payments';
 
 /** The whole application state, immutable. Each change produces a new object. */
 export interface AppState {
