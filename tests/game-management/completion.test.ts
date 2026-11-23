@@ -394,7 +394,7 @@ describe('History and Games', () => {
 describe('Delete game', () => {
   it('removes a Planning or In progress game only, keeping saved players, templates and other games', async () => {
     const templateId = expectStatus(
-      await app.templates.create({ name: 'Home', rows: [{ valueText: '1', quantityText: '100', color: null }] }),
+      await app.templates.create({ name: 'Home', rows: [{ id: 'row-1', valueText: '1', quantityText: '100', color: null }] }),
       'accepted',
     ).templateId;
     const done = await completedGame();
