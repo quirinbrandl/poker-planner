@@ -1,18 +1,9 @@
-import type { GameCard } from '@/game-management';
-import { formatGameDateTime, participantNamesLabel, phaseModeLabel } from '@/features/shared/format';
 import { Badge, Card, space, Text } from '@/ui';
 
-/** "Resume game settings", "Resume players": the explicit way back into a Planning game. */
-function entryLabel(game: GameCard): string {
-  if (game.phase === 'planning') {
-    if (game.lastStep === 'mode' || !game.lastStepTitle) return 'Resume mode choice';
-    return `Resume ${game.lastStepTitle.toLowerCase()}`;
-  }
-  return game.phase === 'inProgress' ? 'Back to Play' : 'Open Payments';
-}
+import type { GameCardData } from './types';
 
 export interface GameCardViewProps {
-  game: GameCard;
+  game: GameCardData;
   onPress: () => void;
 }
 
@@ -21,23 +12,19 @@ export interface GameCardViewProps {
  * opening it leads. In progress games get the prominent highlighted card, Planning games the quiet one.
  */
 export function GameCardView({ game, onPress }: GameCardViewProps) {
-  const identity = phaseModeLabel(game.phase, game.mode);
-  const names = participantNamesLabel(game.participantNames);
-  const date = formatGameDateTime(game.createdAt);
-  const entry = entryLabel(game);
   const prominent = game.phase === 'inProgress';
   return (
     <Card
       variant={prominent ? 'highlight' : 'raised'}
       gap={space.xs + 2}
       onPress={onPress}
-      accessibilityLabel={`${identity}. ${names}. ${date.replace(' · ', ', ')}. ${entry}`}
+      accessibilityLabel={`${game.identityLabel}. ${game.namesText}. ${game.dateText.replace(' · ', ', ')}. ${game.entryText}`}
     >
-      <Badge label={identity} tone={prominent ? 'primary' : 'neutral'} />
-      <Text variant="title">{names}</Text>
-      <Text variant="supporting">{date}</Text>
+      <Badge label={game.identityLabel} tone={prominent ? 'primary' : 'neutral'} />
+      <Text variant="title">{game.namesText}</Text>
+      <Text variant="supporting">{game.dateText}</Text>
       <Text variant="supporting" tone="main">
-        {`${entry} →`}
+        {`${game.entryText} →`}
       </Text>
     </Card>
   );

@@ -1,14 +1,15 @@
 import { router, useFocusEffect } from 'expo-router';
 import { useCallback } from 'react';
 
+import { HistoryView } from '@/features/history/HistoryView';
+import type { HistoryData } from '@/features/history/types';
 import { gamesHref } from '@/features/shared/routes';
 import { useGameManagement } from '@/state';
-import { EmptyState, Screen, ScreenHeader, TopBar } from '@/ui';
 
-/**
- * History: Completed games. Games can't be completed yet, so this is the approved empty state
- * until the History ticket fills it.
- */
+/** Games can't be completed yet: History stays empty until game management lists finished games. */
+const NO_FINISHED_GAMES: HistoryData = { games: [] };
+
+/** History route: records the working location and shows the finished games. */
 export default function HistoryScreen() {
   const app = useGameManagement();
   useFocusEffect(
@@ -18,15 +19,5 @@ export default function HistoryScreen() {
   );
   const goToGames = () => router.dismissTo(gamesHref);
 
-  return (
-    <Screen topBar={<TopBar backLabel="Games" onBack={goToGames} />}>
-      <ScreenHeader title="History" />
-      <EmptyState
-        icon="clock"
-        title="No finished games yet"
-        description="A game shows up here once you calculate its Payments."
-        action={{ label: 'Back to Games', onPress: goToGames }}
-      />
-    </Screen>
-  );
+  return <HistoryView data={NO_FINISHED_GAMES} onBack={goToGames} onOpenGame={() => undefined} />;
 }
