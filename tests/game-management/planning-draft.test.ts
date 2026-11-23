@@ -239,7 +239,7 @@ describe('mode change during Planning', () => {
     const gameId = await gameWithPlayers(app, 'cash', ['Alice', 'Bob']);
     await addChipRows(app, gameId, [['1', '100']]);
     await app.planning.setSettingText(gameId, 'buyIn', '10');
-    expect(view(gameId).preview).toEqual({ blockers: [], setupComplete: true });
+    expect(view(gameId).preview).toMatchObject({ blockers: [], setupComplete: true });
 
     await app.planning.changeMode(gameId, 'tournament');
     const preview = view(gameId).preview;

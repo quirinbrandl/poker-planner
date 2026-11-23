@@ -36,6 +36,15 @@ export type {
 } from './planning/view';
 export type { StepStatus } from './planning/validation';
 export type {
+  ChipCountView,
+  DistributionPlanView,
+  DistributionPreviewView,
+  NoValidDistributionReason,
+  StartAcceptance,
+  StartCode,
+  StartResult,
+} from './planning/distribution-view';
+export type {
   ChangeModeResult,
   ChipSetScopeConfirmation,
   ChipSetScopeOption,

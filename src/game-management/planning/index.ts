@@ -1,8 +1,10 @@
 /**
  * Everything the host can do and see while a game is in Planning.
  */
+import { rejected } from '../core/results';
 import type { Runtime } from '../core/runtime';
 import { createChipSetOperations } from './chip-set';
+import type { StartAcceptance, StartResult } from './distribution-view';
 import { findGame } from './draft';
 import { createParticipantOperations } from './participants';
 import { createPayoutScheduleOperations } from './payout-schedule';
@@ -24,6 +26,18 @@ export function createPlanningApi(rt: Runtime) {
     ...createChipSetOperations(rt),
     ...createSettingsOperations(rt),
     ...createPayoutScheduleOperations(rt),
+    /**
+     * Starts the game with the previewed distribution: records one identical starting stack per
+     * player and locks setup. `accept` repeats the depth and reserve the host confirmed in the
+     * Start popup; Start is rejected (`previewChanged`) if the current preview differs.
+     * Placeholder until Start is built: always rejected.
+     */
+    async start(gameId: string, accept: StartAcceptance): Promise<StartResult> {
+      void accept;
+      const game = findGame(rt.state(), gameId);
+      if (!game) return rejected('gameNotFound', 'This game no longer exists.');
+      return rejected('noValidDistribution', 'Starting a game is not built yet.');
+    },
   };
 }
 

@@ -6,6 +6,7 @@ import type { ChipColor, DistributionPreference, GameMode } from '@/domain/types
 import type { AppState, GameDocument, StepId } from '../core/documents';
 import type { Problem } from '../core/problems';
 import { type ChipSetSummary, isBlankRow } from '../shared/chip-rows';
+import type { DistributionPreviewView } from './distribution-view';
 import { automaticReserve, DEFAULT_DEPTH_BB, STEP_TITLES, stepsForMode } from './draft';
 import { payoutBlockerProblems } from './payout-validation';
 import { buildPayoutScheduleView, type PayoutScheduleView } from './payout-view';
@@ -111,6 +112,10 @@ export interface PlanningView {
     blockers: readonly { step: StepId; title: string; problems: readonly Problem[] }[];
     /** Every step's inputs are valid. Says nothing yet about whether a distribution exists. */
     setupComplete: boolean;
+    /** The recommendation for the current draft, recomputed on every change. */
+    distribution: DistributionPreviewView;
+    /** `distribution.kind === 'planned'`: Start is available. */
+    canStart: boolean;
   };
 }
 
@@ -154,6 +159,7 @@ export function buildPlanningView(state: AppState, game: GameDocument): Planning
   const sv = validation.settings;
   const settingsAttempted = attempted('settings');
   const automaticCount = automaticReserve(draft.participants.length);
+  const setupComplete = modeSteps.every((step) => validation.byStep[step].length === 0);
 
   return {
     gameId: game.id,
@@ -236,7 +242,12 @@ export function buildPlanningView(state: AppState, game: GameDocument): Planning
               ? payoutBlockerProblems(draft.payoutSchedule, validation.byStep.payouts)
               : validation.byStep[step],
         })),
-      setupComplete: modeSteps.every((step) => validation.byStep[step].length === 0),
+      setupComplete,
+      // Placeholder until the distribution solver is wired in: no recommendation yet.
+      distribution: setupComplete
+        ? { kind: 'tooComplex', message: 'The distribution preview is not built yet.' }
+        : { kind: 'setupIncomplete' },
+      canStart: false,
     },
   };
 }
