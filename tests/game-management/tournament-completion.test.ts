@@ -203,6 +203,16 @@ describe('tournament Return to Planning', () => {
     expect(app.play.getView(gameId)!.totals.stacks).toBe(7);
   });
 
+  it('is the only way to change the payout schedule once started', async () => {
+    const gameId = await tournament();
+    const locked = { status: 'rejected', reason: { code: 'setupLocked', message: 'Setup is locked. To change it, use ⋯ → Return to Planning.' } };
+    expect(await expectUnchanged(gameId, () => app.planning.choosePayoutPreset(gameId, 'top3'))).toEqual(locked);
+    expect(await expectUnchanged(gameId, () => app.planning.setPayoutShareText(gameId, 'place-1', '60'))).toEqual(locked);
+    expect(await expectUnchanged(gameId, () => app.planning.addPayoutPlace(gameId))).toEqual(locked);
+    expect(await expectUnchanged(gameId, () => app.planning.removePayoutPlace(gameId, 'place-2'))).toEqual(locked);
+    expect(app.play.getGameDetails(gameId)!.payouts!.places.map((p) => p.shareText)).toEqual(['70%', '30%']);
+  });
+
   it('is rejected for a Completed tournament until it is reopened', async () => {
     const gameId = await tournament(['Cleo', 'Dan']);
     await out(gameId, 'Dan');
