@@ -48,20 +48,17 @@ export default function TemplatesScreen() {
 
   return (
     <>
-      <Screen topBar={<TopBar backLabel="Games" backIcon="home" onBack={goToGames} />}>
+      <Screen topBar={<TopBar backLabel="Games" onBack={goToGames} />}>
         <ScreenHeader title="Chip set templates" />
-        <Stack gap="md">
-          <Button
-            label="New template"
-            icon="plus"
-            variant="primary"
-            fullWidth
-            onPress={() => router.push(templateEditorHref('new'))}
-          />
-          <Text variant="supporting">Changes here affect future selections, not existing games.</Text>
-        </Stack>
+        <Button
+          label="New template"
+          icon="plus"
+          variant="primary"
+          fullWidth
+          onPress={() => router.push(templateEditorHref('new'))}
+        />
         {templates.length === 0 ? (
-          <EmptyTemplates description="Save a chip set for future games." />
+          <EmptyTemplates />
         ) : (
           <View>
             {templates.map((template) => (
@@ -104,8 +101,7 @@ export default function TemplatesScreen() {
       >
         {deleting ? (
           <Text variant="supporting">
-            Permanently delete “{deleting.name}”? Every existing game keeps its chip set. Future games can no longer select
-            this template.
+            Permanently delete “{deleting.name}”? Existing games keep their chip sets.
           </Text>
         ) : null}
       </Dialog>

@@ -223,7 +223,7 @@ After that only the operations below change it; roster changes and mode switches
 interface PayoutScheduleView {
   needsPlayers: boolean;          // no schedule and < 2 players: "Add players first" + Edit players
   playerCount: number;
-  prizePool: { kind: 'amount'; cents; amountText: 'EUR 120.00'; detail: '6 × EUR 20.00 · rebuys add to it' }
+  prizePool: { kind: 'amount'; cents; amountText: 'EUR 120.00'; detail: '6 × EUR 20.00' }
            | { kind: 'noBuyIn'; label: 'Add a buy-in' };          // + Edit game settings
   preset: { id: PayoutPresetId | null; name: 'Top 2' | 'Custom' | …;
             suggestionLine: 'Suggested' | 'Suggested for 6 players: Top 2' | null };

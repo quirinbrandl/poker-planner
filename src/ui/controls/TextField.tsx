@@ -17,7 +17,7 @@ import { type TextInputRef } from '../refs';
 export type FieldKeyboard = 'text' | 'decimal' | 'whole';
 
 export interface TextFieldProps {
-  /** Persistent visible label. Never replaced by a placeholder. */
+  /** Persistent visible label. Never replaced by a placeholder, except a search field (`labelHidden` + `inputIcon`). */
   label: string;
   value: string;
   onChangeText: (text: string) => void;
@@ -27,6 +27,8 @@ export interface TextFieldProps {
   unitSpoken?: string;
   /** Leading icon beside the label (decorative). */
   icon?: IconName;
+  /** Decorative icon inside the box before the text (the search field, with `labelHidden` and a placeholder). */
+  inputIcon?: IconName;
   /** Short helper line under the field. Shown together with an error. */
   helper?: string;
   /** Actionable error for this field. Shown under it in words and colour, and spoken with the field. */
@@ -47,6 +49,20 @@ export interface TextFieldProps {
    * then take the rest of the row. Default: the box fills the row.
    */
   inputWidth?: number;
+  /**
+   * Spoken name when it says more than the visible label ("Value (chip units), denomination 2" for a
+   * field shown under a "Value" column heading). Default: `label`.
+   */
+  spokenLabel?: string;
+  /**
+   * The error keeps its red border and stays in the spoken hint, but its words are shown by the
+   * caller (under a whole compact row instead of a narrow column). Default false.
+   */
+  errorTextHidden?: boolean;
+  /** Content at the end of the label row: an info `IconButton`, an "Auto" `Badge`. */
+  labelAccessory?: ReactNode;
+  /** Spoken after the helper but not shown, e.g. the reserve's "Automatic for 6 players." beside an "Auto" tag. */
+  spokenHint?: string;
   /** Content beside the input box (e.g. stepper − and + buttons). */
   before?: ReactNode;
   after?: ReactNode;
@@ -83,11 +99,16 @@ export function TextField({
   unit,
   unitSpoken,
   icon,
+  inputIcon,
   helper,
   error,
   keyboard = 'text',
   size = 'regular',
   labelHidden,
+  spokenLabel: spokenLabelProp,
+  errorTextHidden,
+  labelAccessory,
+  spokenHint,
   inputWidth,
   before,
   after,
@@ -110,8 +131,9 @@ export function TextField({
   const { fontScale } = useWindowDimensions();
   const large = size === 'large';
   const compact = size === 'compact';
-  const spokenLabel = unit ? `${label}, ${unitSpoken ?? unit}` : label;
-  const hint = [error ? `Error: ${error}` : null, helper ?? null].filter(Boolean).join('. ') || undefined;
+  const named = spokenLabelProp ?? label;
+  const spokenLabel = unit ? `${named}, ${unitSpoken ?? unit}` : named;
+  const hint = [error ? `Error: ${error}` : null, helper ?? null, spokenHint ?? null].filter(Boolean).join(' ') || undefined;
   const borderColor = error ? colors.error : focused ? colors.primary : colors.controlBorder;
   const borderWidth = error || focused ? 2 : 1;
 
@@ -123,6 +145,7 @@ export function TextField({
           <Text variant="label" nativeID={labelId} align={centerLabel ? 'center' : undefined}>
             {label}
           </Text>
+          {labelAccessory}
         </View>
       )}
       <View style={styles.inputRow}>
@@ -146,6 +169,11 @@ export function TextField({
             !editable && styles.readOnly,
           ]}
         >
+          {inputIcon ? (
+            <View style={styles.inputIcon}>
+              <Icon name={inputIcon} size={20} color={colors.textSupporting} />
+            </View>
+          ) : null}
           <TextInput
             ref={inputRef}
             testID={testID}
@@ -180,6 +208,7 @@ export function TextField({
               large ? styles.inputLarge : null,
               compact ? styles.inputCompact : null,
               keyboard !== 'text' && { fontVariant: tabularNums },
+              inputIcon ? styles.inputAfterIcon : null,
             ]}
           />
           {unit ? (
@@ -195,7 +224,7 @@ export function TextField({
         </View>
         {after}
       </View>
-      {error ? (
+      {error && !errorTextHidden ? (
         <View style={styles.message} accessibilityLiveRegion="polite">
           <Icon name="error" size={16} color={colors.error} />
           <Text variant="supporting" tone="error" style={styles.messageText}>
@@ -240,6 +269,8 @@ const styles = StyleSheet.create({
     fontSize: 18,
   },
   inputCompact: { paddingHorizontal: space.md, paddingVertical: space.sm },
+  inputIcon: { paddingLeft: space.lg },
+  inputAfterIcon: { paddingLeft: space.sm },
   inputLarge: { ...type.amountHero, color: colors.text, textAlign: 'center', paddingVertical: space.sm },
   unit: { paddingRight: space.lg, paddingLeft: space.xs },
   unitCompact: { paddingRight: space.md },

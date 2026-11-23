@@ -6,33 +6,39 @@
 import { useLocalSearchParams } from 'expo-router';
 
 import { GamesView } from '@/features/games/GamesView';
-import type { GamesData } from '@/features/games/types';
+import type { GameCardData, GamesData } from '@/features/games/types';
 import { HISTORY_FIXTURES, type HistoryFixtureName } from '@/features/history/fixtures';
 import { HistoryView } from '@/features/history/HistoryView';
 import { useToast } from '@/ui';
 
-const PLANNING = {
+const PLANNING: GameCardData = {
   id: 'g2',
   phase: 'planning',
   identityLabel: 'Planning · Cash game',
+  modeText: 'Cash game',
+  reopened: false,
+  progress: { current: 4, count: 5 },
   namesText: 'Maya, Jonas, Lena, Sam, Alex, Noor',
   dateText: '25 Nov 2026 · 19:30',
   entryText: 'Resume game settings',
-} as const;
+};
 
-const IN_PROGRESS = {
+const IN_PROGRESS: GameCardData = {
   id: 'g1',
   phase: 'inProgress',
   identityLabel: 'In progress · Cash game',
+  modeText: 'Cash game',
+  reopened: false,
+  progress: null,
   namesText: 'Alice, Bob, Clara, David, Emma, Felix',
   dateText: '23 Nov 2026 · 19:30',
   entryText: 'Open Play',
-} as const;
+};
 
 const GAMES: Record<string, GamesData> = {
   games: { inProgress: [IN_PROGRESS], planning: [PLANNING], historyCount: 3 },
   'games-reopened': {
-    inProgress: [{ ...IN_PROGRESS, entryText: 'Reopened · calculate Payments again' }],
+    inProgress: [{ ...IN_PROGRESS, reopened: true, entryText: 'Reopened · calculate Payments again' }],
     planning: [PLANNING],
     historyCount: 3,
   },

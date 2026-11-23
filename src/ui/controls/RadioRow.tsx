@@ -1,6 +1,7 @@
 import { type ReactNode } from 'react';
 import { Pressable, StyleSheet, View } from 'react-native';
 
+import { Icon, type IconName } from '../Icon';
 import { usePressFeedback } from '../motion';
 import { Text } from '../Text';
 import { colors, radii, space, touchTarget } from '../theme';
@@ -15,10 +16,12 @@ export interface RadioRowProps {
   children?: ReactNode;
   unavailable?: boolean;
   testID?: string;
+  /** Decorative icon at the right edge (the New game mode cards). */
+  icon?: IconName;
 }
 
 /** Labelled single-choice row. The whole row is the target and exposes its checked state. */
-export function RadioRow({ label, description, selected, onPress, children, unavailable, testID }: RadioRowProps) {
+export function RadioRow({ label, description, selected, onPress, children, unavailable, testID, icon }: RadioRowProps) {
   const feedback = usePressFeedback();
   return (
     <Pressable
@@ -44,6 +47,11 @@ export function RadioRow({ label, description, selected, onPress, children, unav
         {description ? <Text variant="supporting">{description}</Text> : null}
         {children}
       </View>
+      {icon ? (
+        <View style={[styles.iconTile, selected && styles.iconTileSelected]}>
+          <Icon name={icon} size={26} color={selected ? colors.primary : colors.textSupporting} />
+        </View>
+      ) : null}
     </Pressable>
   );
 }
@@ -99,6 +107,16 @@ const styles = StyleSheet.create({
   radioSelected: { borderColor: colors.primary, backgroundColor: colors.onPrimary },
   dot: { width: 12, height: 12, borderRadius: 6, backgroundColor: colors.primary },
   text: { flex: 1, minWidth: 0, gap: 2 },
+  iconTile: {
+    width: 48,
+    height: 48,
+    borderRadius: radii.control,
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: colors.surfaceSunken,
+    alignSelf: 'center',
+  },
+  iconTileSelected: { backgroundColor: colors.onPrimary },
   group: { gap: space.md },
   options: { gap: space.sm },
 });

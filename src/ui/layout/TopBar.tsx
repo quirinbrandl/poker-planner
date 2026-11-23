@@ -8,12 +8,15 @@ import { Text } from '../Text';
 import { colors, radii, space, touchTarget } from '../theme';
 
 export interface TopBarProps {
-  /** Visible back text: "Games", "History", "Back". Omit for a root screen. */
+  /**
+   * Back destination: "Games", "Play", "Players". A leading "Back to " is dropped from the visible
+   * text ("Back to Play" shows "Play") and kept in the spoken name. Omit for a root screen.
+   */
   backLabel?: string;
   onBack?: () => void;
   /** Spoken name; default "Back to <backLabel>", or the label itself when it already starts with "Back". */
   backAccessibilityLabel?: string;
-  /** Default arrow; `chevronLeft` for in-wizard Back, `home` for Games from the wizard. */
+  /** @deprecated Ignored: every back control shows the same chevron. Kept for compatibility. */
   backIcon?: IconName;
   /** Shows the ⋯ control. */
   onMore?: () => void;
@@ -28,12 +31,12 @@ export function TopBar({
   backLabel,
   onBack,
   backAccessibilityLabel,
-  backIcon = 'back',
   onMore,
   moreAccessibilityLabel = 'Game actions',
   trailing,
 }: TopBarProps) {
   const feedback = usePressFeedback();
+  const visibleBack = backLabel?.replace(/^back to\s+/i, '');
   return (
     <View style={styles.bar}>
       {backLabel && onBack ? (
@@ -43,9 +46,9 @@ export function TopBar({
           accessibilityLabel={backAccessibilityLabel ?? (/^back\b/i.test(backLabel) ? backLabel : `Back to ${backLabel}`)}
           style={({ pressed }) => [styles.back, feedback(pressed, colors.surface)]}
         >
-          <Icon name={backIcon} size={20} color={colors.text} />
+          <Icon name="chevronLeft" size={22} color={colors.text} />
           <Text variant="body" style={styles.backText}>
-            {backLabel}
+            {visibleBack}
           </Text>
         </Pressable>
       ) : (

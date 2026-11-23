@@ -20,7 +20,7 @@ export interface ScreenHeaderProps {
    * workspaces.
    */
   badgesFirst?: boolean;
-  /** Content between the identity (context, badges) and the title, e.g. the wizard StepLink. */
+  /** Content between the identity (context, badges) and the title, e.g. the wizard step progress. */
   beforeTitle?: ReactNode;
 }
 
@@ -49,5 +49,5 @@ const styles = StyleSheet.create({
   header: { gap: space.sm + 2 },
   eyebrow: { letterSpacing: 1.6, fontWeight: '700' },
   title: { marginTop: 2 },
-  beforeTitle: { marginTop: space.sm, marginBottom: space.xs },
+  beforeTitle: { marginTop: -space.sm },
 });

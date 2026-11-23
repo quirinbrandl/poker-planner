@@ -32,7 +32,7 @@ it('offers New game on an empty Games screen; choosing a mode creates a plan tha
   expect(await screen.findByText('No games yet.')).toBeTruthy();
 
   await fireEvent.press(screen.getByRole('button', { name: 'New game' }));
-  expect(await screen.findByText('Choose mode')).toBeTruthy();
+  expect(await screen.findByRole('radio', { name: 'Tournament' })).toBeTruthy();
 
   // Continue without a choice creates nothing.
   await fireEvent.press(screen.getByRole('button', { name: 'Continue' }));
@@ -45,9 +45,7 @@ it('offers New game on an empty Games screen; choosing a mode creates a plan tha
 
   await fireEvent.press(screen.getAllByRole('button', { name: 'Back to Games' })[0]);
   await waitFor(() => expect(router.getPathname()).toBe('/'));
-  expect(await screen.findByText('Planning · Tournament')).toBeTruthy();
-  expect(screen.getByText('Resume players →')).toBeTruthy();
-  expect(screen.getByText('1 draft')).toBeTruthy();
+  expect(await screen.findByRole('button', { name: /^Planning · Tournament\. .*Step 2 of 6\. Resume players$/ })).toBeTruthy();
 });
 
 it('reopens on the saved step, with Games underneath', async () => {
@@ -58,7 +56,7 @@ it('reopens on the saved step, with Games underneath', async () => {
 
   await fireEvent.press(screen.getAllByRole('button', { name: 'Back to Games' })[0]);
   await waitFor(() => expect(router.getPathname()).toBe('/'));
-  expect(await screen.findByText('Resume game settings →')).toBeTruthy();
+  expect(await screen.findByRole('button', { name: /Step 4 of 5\. Resume game settings$/ })).toBeTruthy();
 });
 
 it('stays on Game settings after an invalid Continue and shows the problems', async () => {
@@ -83,17 +81,24 @@ it('keeps the reserve automatic on focus, makes it custom on typing, and restore
   const reserve = await screen.findByLabelText('Chip reserve, stacks');
   expect(reserve.props.value).toBe('3');
 
+  const hint = () => screen.getByLabelText('Chip reserve, stacks').props.accessibilityHint;
   await fireEvent(reserve, 'focus');
   await fireEvent(reserve, 'blur');
-  expect(screen.getByText('For rebuys and late arrivals. Automatic for 6 players.', HIDDEN)).toBeTruthy();
+  expect(hint()).toBe('Automatic for 6 players.');
+  expect(screen.getByText('Auto')).toBeTruthy();
   expect(screen.queryByRole('button', { name: 'Use automatic (3)' })).toBeNull();
 
   await fireEvent.changeText(reserve, '3');
-  expect(await screen.findByText('For rebuys and late arrivals. Custom amount.', HIDDEN)).toBeTruthy();
+  await waitFor(() => expect(hint()).toBe('Custom amount.'));
+  expect(screen.queryByText('Auto')).toBeNull();
 
   await fireEvent.press(screen.getByRole('button', { name: 'Use automatic (3)' }));
-  expect(await screen.findByText('For rebuys and late arrivals. Automatic for 6 players.', HIDDEN)).toBeTruthy();
+  await waitFor(() => expect(hint()).toBe('Automatic for 6 players.'));
+  expect(screen.getByText('Auto')).toBeTruthy();
   expect(screen.getByLabelText('Chip reserve, stacks').props.value).toBe('3');
+
+  await fireEvent.press(screen.getByRole('button', { name: 'About the chip reserve' }));
+  expect(screen.getByText('For rebuys and late arrivals.', HIDDEN)).toBeTruthy();
 });
 
 it('deletes a game only after confirmation; Cancel changes nothing', async () => {

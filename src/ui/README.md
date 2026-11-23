@@ -33,7 +33,7 @@ Rules of use:
 **`Text`** — the only text primitive. `variant` (a `type` key, default `body`), `tone` (`main`, `supporting`, `primary`, `onPrimary`, `error`, `warning`, `confirmed`, `even`), `tabular`, `strong`, `strike`, `align`. Heading variants get the header role.
 `<Text variant="supporting">EUR 20.00 contribution · 1 rebuy</Text>`
 
-**`Icon`** — 24-grid stroke icons: `back`, `forward`, `chevronLeft/Right/Up/Down`, `arrowUp/Down`, `external`, `more`, `plus`, `minus`, `removeCircle`, `close`, `check`, `edit`, `trash`, `warning`, `error`, `info`, `clock`, `players`, `user`, `userPlus`, `templates`, `chip`, `play`, `lock`, `undo`, `reopen`, `wallet`, `shield`, `reserve`, `list`, `calculator`, `exit`, `home`, `count`. Decorative unless `accessibilityLabel` is set. Props `name`, `size` (22), `color`.
+**`Icon`** — 24-grid stroke icons: `back`, `forward`, `chevronLeft/Right/Up/Down`, `arrowUp/Down`, `external`, `more`, `plus`, `minus`, `removeCircle`, `close`, `check`, `edit`, `trash`, `warning`, `error`, `info`, `clock`, `players`, `user`, `userPlus`, `templates`, `chip`, `play`, `lock`, `undo`, `reopen`, `wallet`, `shield`, `reserve`, `list`, `calculator`, `exit`, `home`, `count`, `trophy`, `search`. Decorative unless `accessibilityLabel` is set. Props `name`, `size` (22), `color`.
 `<Icon name="clock" />`
 
 ## Layout
@@ -41,14 +41,14 @@ Rules of use:
 **`Screen`** — page scaffold: dark background, safe areas, vertical scroll, keyboard avoidance, 20 gutters. `topBar`, `footer` (part of the scroll content, pushed to the bottom when short), `gap` (16), `scrollRef`.
 `<Screen topBar={<TopBar … />} footer={<FooterActions>…</FooterActions>}>…</Screen>`
 
-**`TopBar`** — `backLabel` ("Games", "History", "Back") + `onBack`, optional `backIcon` (`back` arrow default, `chevronLeft`, `home`), `onMore` for ⋯ (`moreAccessibilityLabel`, default "Game actions"), `trailing`.
+**`TopBar`** — `backLabel` (the destination: "Games", "Play", "Players"; a leading "Back to " is shown without those words and kept in the spoken name) + `onBack`, always a chevron-left (`backIcon` is ignored), `onMore` for ⋯ (`moreAccessibilityLabel`, default "Game actions"), `trailing`.
 `<TopBar backLabel="Games" onBack={goGames} onMore={openActions} />`
 
-**`ScreenHeader`** — `context` ("Cash game · 23 Nov, 19:30"), `badges` (a `BadgeRow`), `title`, optional `eyebrow`; `children` go under the title (a `StepLink`, a lead line). Planning uses `badgesFirst` (badges, then the context line) and `beforeTitle` (the `StepLink` between identity and title).
+**`ScreenHeader`** — `context` ("Cash game · 23 Nov, 19:30"), `badges` (a `BadgeRow`), `title`, optional `eyebrow`; `children` go under the title (a `StepLink`, a lead line). `badgesFirst` puts badges before the context line; `beforeTitle` sits right above the title (Planning's `StepProgress` row).
 `<ScreenHeader context="Cash game · 23 Nov, 19:30" badges={<BadgeRow><Badge label="In progress" tone="primary" /></BadgeRow>} title="Play" />`
 
-**`FooterActions`** — the task dock at the end of a `Screen`: full-bleed raised band, optional `note` (draft/blocker line, `noteTone`), buttons in a wrapping row; the last button takes the remaining width.
-`<FooterActions note="Draft saved · no chips issued"><Button label="Back" icon="chevronLeft" onPress={back} /><Button label="Continue" variant="primary" trailingIcon="chevronRight" onPress={next} /></FooterActions>`
+**`FooterActions`** — the task dock at the end of a `Screen`: full-bleed raised band, optional `note` (only a blocker reason or a failed save, `noteTone`), buttons in a wrapping row; the last button takes the remaining width.
+`<FooterActions note="No valid distribution for current setup."><Button label="Back" icon="chevronLeft" onPress={back} /><Button label="Continue" variant="primary" trailingIcon="chevronRight" onPress={next} /></FooterActions>`
 
 **`Card`** — surface. `variant`: `raised` (default group), `highlight` (active game card), `inset` (page-coloured well, e.g. game identity in a dialog), `showcase` (radial stage). `padding` (18), `gap`, `onPress` + `accessibilityLabel` for a whole-card button.
 `<Card gap={space.xl}>…fields…</Card>`
@@ -72,7 +72,7 @@ Rules of use:
 **`IconButton`** — 48×48, required `accessibilityLabel` naming the specific action. `icon`, `variant` (`outline` / `plain`), `tone` (`destructive`, `primary`), `unavailable`.
 `<IconButton icon="trash" accessibilityLabel="Remove denomination 2 (value 5)" onPress={remove} />`
 
-**`TextField`** — persistent `label`, `value` (raw text, kept as typed), `onChangeText`, `unit` (EUR, BB, payments, stacks, chip units, chips, %) with `unitSpoken`, `icon`, `helper`, `error` (shown in words under the field, spoken as the input's hint, announced), `keyboard` (`text` / `decimal` / `whole`), `onBlur`, `onSubmitEditing` + `returnKeyType`, `inputRef`, `footer` (e.g. "Use automatic (3)"), `editable`, `size="large"` / `size="compact"` (48-high box inside cards), `before` / `after`, `inputWidth` (fixed box width that grows with text size; `before` / `after` take the rest), `labelHidden` (spoken but not shown, only where visible context names the field, such as a payout place's share). Never placeholder-only.
+**`TextField`** — persistent `label`, `value` (raw text, kept as typed), `onChangeText`, `unit` (EUR, BB, payments, stacks, chip units, chips, %) with `unitSpoken`, `icon`, `helper`, `error` (shown in words under the field, spoken as the input's hint, announced), `keyboard` (`text` / `decimal` / `whole`), `onBlur`, `onSubmitEditing` + `returnKeyType`, `inputRef`, `footer` (e.g. "Use automatic (3)"), `editable`, `size="large"` / `size="compact"` (48-high box inside cards), `before` / `after`, `inputWidth` (fixed box width that grows with text size; `before` / `after` take the rest), `labelHidden` (spoken but not shown, only where visible context names the field, such as a payout place's share), `inputIcon` (decorative icon inside the box), `spokenLabel` (a fuller spoken name than the visible label, e.g. "Value (chip units), denomination 2" under a "Value" column heading), `errorTextHidden` (border and spoken error stay; the caller shows the words, e.g. under a compact row), `labelAccessory` (end of the label row: an ⓘ `IconButton`, an "Auto" badge), `spokenHint` (spoken after the helper, not shown). Never placeholder-only, except a search field: `labelHidden` + `inputIcon="search"` + `placeholder="Search"`.
 `<TextField label="Buy-in per player" icon="wallet" unit="EUR" unitSpoken="euros" keyboard="decimal" value={raw} onChangeText={setRaw} error={buyInError} />`
 
 **`SearchField`** — search box with a magnifier and a "Search" placeholder inside, no visible label. `value`, `onChangeText`, required `accessibilityLabel` ("Search saved names"), `placeholder`.
@@ -81,11 +81,14 @@ Rules of use:
 **`StepperField`** — − / large quantity / +. Same text props as `TextField` (including `labelHidden`); `onDecrement` / `onIncrement` are yours (no number rules inside), `decrementLabel` / `incrementLabel`, `decrementUnavailable`.
 `<StepperField label="Quantity (chips)" value={raw} onChangeText={setRaw} onDecrement={dec} onIncrement={inc} />`
 
-**`RadioRow`** / **`RadioGroup`** — whole-row single choice with visible indicator, border and tint; exposes checked state. `label`, `description`, `selected`, `onPress`, `unavailable`, `children` (extra content such as a chip preview). `RadioGroup` gives the set its visible `label` (`hideLabel` keeps it for screen readers only, when the title already names the choice).
+**`RadioRow`** / **`RadioGroup`** — whole-row single choice with visible indicator, border and tint; exposes checked state. `label`, `description`, `selected`, `onPress`, `unavailable`, `children` (extra content such as a chip preview), `icon` (decorative tile at the right edge, the New game mode cards). `RadioGroup` gives the set its visible `label` (`hideLabel` keeps it for screen readers only, when the title already names the choice).
 `<RadioGroup label="Distribution preference"><RadioRow label="Fewer chips" selected={p === 'fewer'} onPress={…} />…</RadioGroup>`
 
 **`CheckboxRow`** — whole-row multiple choice (the saved-player picker): visible box with tick, border and tint; exposes checked state. `label`, `description` (e.g. the reason it is unavailable), `checked`, `onPress`, `unavailable` (focusable, reports disabled, never toggles), `ref`.
 `<CheckboxRow label="Chris" checked={selected.has(id)} onPress={toggle} />`
+
+**`SegmentedChoice`** — a short single choice on one line with radio semantics ("Fewer chips" | "More chips"). Visible `label` (also the group name), `options` `{ key, label }[]`, `selectedKey`, `onChange`; segments wrap at large text.
+`<SegmentedChoice label="Distribution preference" options={[{ key: 'fewer', label: 'Fewer chips' }, { key: 'more', label: 'More chips' }]} selectedKey={p} onChange={setP} />`
 
 **`SegmentedTabs`** — workspace navigation. `tabs` `{ key, label }[]`, `selectedKey`, `onChange`. Tab roles with selected state; wraps at large text.
 `<SegmentedTabs tabs={[{ key: 'play', label: 'Play' }, …]} selectedKey="play" onChange={go} />`
@@ -93,7 +96,10 @@ Rules of use:
 **`SelectButton`** — full-width button showing the current choice and a chevron; opens a `ChoiceSheet`. `label` ("Preset"), `value` ("Top 2" / "Custom"), `description` ("Suggested for 6 players: Top 2"), `onPress`, `ref` (return focus here when the sheet closes).
 `<SelectButton label="Preset" value="Top 2" description="Suggested" onPress={openSheet} />`
 
-**`StepLink`** — underlined "Step 5 of 5 · Setup steps" control. `label`, `onPress`.
+**`StepProgress`** — segmented wizard progress, one segment per step (done / current / ahead). `count`, `current` (1-based), required `accessibilityLabel` ("Step 3 of 5, Chip set. Setup steps"), `onPress` makes it a button that opens the step list; without it a read-only progress bar (`size="small"` on a Games card).
+`<StepProgress count={5} current={3} accessibilityLabel="Step 3 of 5, Chip set. Setup steps" onPress={openSteps} />`
+
+**`StepLink`** — underlined "Step 5 of 5 · Setup steps" control (older form, no longer used by Planning). `label`, `onPress`.
 **`StepList`** — `steps: { key, label, status: 'notFilled' | 'needsAttention' | 'complete', current?, onPress? }[]`; steps without `onPress` show as not reached. `stepStatusLabel` maps statuses to their words.
 
 ## Overlays
@@ -163,10 +169,10 @@ Colours are `ChipColor | null` from `src/domain/types.ts`; `null` is "No color".
 **`ChipPill`** / **`ChipPillRow`** — symbol + `×N`; spoken "N × value color". `color`, `value`, `count`, `showValue` (accepted, no effect: the value is readable on the chip), `showColorName` ("×135 White", where the set is the record), `size="compact"`, `delta` ("−5" badge).
 `<ChipPill color="grey" value={1} count={110} showValue />`
 
-**`ChipColorButton`** — tappable chip + "Chip color / Red" in a denomination row. `color`, `value`, `onPress`, specific `accessibilityLabel`. `ref` lets the palette return focus to it.
+**`ChipColorButton`** — tappable chip + "Chip color / Red" in a denomination row; `layout="compact"` is a 48 chip with only the colour name under it (the one-line denomination row). `color`, `value`, `onPress`, specific `accessibilityLabel`. `ref` lets the palette return focus to it.
 
 **`ChipColorPalette`** — the "Chip color" dialog: all twelve choices as labelled radio tiles, staged until **Apply color**; Cancel keeps the old colour. `visible`, `color`, `description`, `onApply(color)`, `onCancel`, `returnFocusRef` (the chip button that opened it).
-`<ChipColorPalette visible={open} color={row.color} description="Value: 5 chip units. Match your physical chips." onApply={apply} onCancel={close} returnFocusRef={chipRef} />`
+`<ChipColorPalette visible={open} color={row.color} onApply={apply} onCancel={close} returnFocusRef={chipRef} />`
 
 **`ChipTray`** — compact chip preview of a set (template picker and list): chip symbol, value and colour name per denomination, wrapping. `chips: { key, color, value }[]`, `accessibilityLabel`.
 

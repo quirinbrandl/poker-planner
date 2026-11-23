@@ -400,7 +400,7 @@ describe('prize pool and amounts', () => {
       kind: 'amount',
       cents: 2001,
       amountText: 'EUR 20.01',
-      detail: '3 × EUR 6.67 · rebuys add to it',
+      detail: '3 × EUR 6.67',
     });
     await app.planning.choosePayoutPreset(gameId, 'top3');
     expect(amounts(gameId)).toEqual(['EUR 10.01', 'EUR 6.00', 'EUR 4.00']);

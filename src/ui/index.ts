@@ -25,6 +25,12 @@ export { RadioRow, RadioGroup, type RadioRowProps, type RadioGroupProps } from '
 export { CheckboxRow, type CheckboxRowProps } from './controls/CheckboxRow';
 export { SegmentedTabs, type SegmentedTabsProps, type TabItem } from './controls/SegmentedTabs';
 export { SelectButton, type SelectButtonProps } from './controls/SelectButton';
+export { StepProgress, type StepProgressProps } from './controls/StepProgress';
+export {
+  SegmentedChoice,
+  type SegmentedChoiceProps,
+  type SegmentedChoiceOption,
+} from './controls/SegmentedChoice';
 export {
   StepLink,
   StepList,

@@ -32,15 +32,14 @@ export default function NewGameScreen() {
 
   return (
     <Screen
-      topBar={<TopBar backLabel="Games" backIcon="chevronLeft" onBack={goToGames} />}
+      topBar={<TopBar backLabel="Games" onBack={goToGames} />}
       footer={
-        <FooterActions note="Continue starts a draft saved on this phone">
-          <Button label="Games" icon="chevronLeft" onPress={goToGames} accessibilityLabel="Back to Games" />
-          <Button label="Continue" variant="primary" trailingIcon="chevronRight" onPress={create} />
+        <FooterActions>
+          <Button label="Continue" variant="primary" trailingIcon="chevronRight" fullWidth onPress={create} />
         </FooterActions>
       }
     >
-      <ScreenHeader context="New game" title="Choose mode" />
+      <ScreenHeader title="New game" />
       {missing && !mode ? <InlineNotice tone="error">Choose a game mode to continue.</InlineNotice> : null}
       <ModeChoice
         selected={mode}

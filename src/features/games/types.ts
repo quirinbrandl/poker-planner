@@ -6,15 +6,21 @@ export interface GameCardData {
   id: string;
   /** In progress games get the prominent highlighted card, Planning games the quiet one. */
   phase: 'planning' | 'inProgress';
-  /** Badge: "In progress · Cash game". */
+  /** Spoken identity: "In progress · Cash game". */
   identityLabel: string;
+  /** Visible badge (the section heading names the phase): "Cash game". */
+  modeText: string;
+  /** In progress after Reopen: the card shows a "Reopened" tag. */
+  reopened: boolean;
+  /** Planning: how far the setup is (1-based current step of `count`), shown as a small step progress. */
+  progress: { current: number; count: number } | null;
   /** Captured names in joining order, or "No players yet". */
   namesText: string;
   /** Creation date and time: "23 Nov 2026 · 19:30". */
   dateText: string;
   /**
-   * Where opening it leads, without the arrow: "Resume game settings", "Open Play", or for a
-   * reopened game "Reopened · calculate Payments again".
+   * Where opening it leads, spoken only (the card shows a chevron): "Resume game settings",
+   * "Open Play", or for a reopened game "Reopened · calculate Payments again".
    */
   entryText: string;
 }

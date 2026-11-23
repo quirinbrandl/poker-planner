@@ -29,13 +29,13 @@ it('lists finished games with their summary and opens one', async () => {
   expect(onOpenGame).toHaveBeenCalledWith('h3');
 });
 
-it('shows the empty state with Back to Games', async () => {
+it('shows the empty state; the top bar leads back to Games', async () => {
   const onBack = jest.fn();
   await renderUi(<HistoryView data={HISTORY_FIXTURES.empty} onBack={onBack} onOpenGame={jest.fn()} />);
   expect(screen.getByText('No finished games yet')).toBeTruthy();
-  expect(screen.getByText('A game shows up here once you calculate its Payments.')).toBeTruthy();
   const buttons = screen.getAllByRole('button', { name: 'Back to Games' });
-  await fireEvent.press(buttons[buttons.length - 1]);
+  expect(buttons).toHaveLength(1);
+  await fireEvent.press(buttons[0]);
   expect(onBack).toHaveBeenCalled();
 });
 
@@ -69,10 +69,12 @@ it('shows In progress, reopened and Planning cards and the History count', async
       onOpenTemplates={jest.fn()}
     />,
   );
-  expect(screen.getByText('Reopened · calculate Payments again →')).toBeTruthy();
-  expect(screen.getByText('Open Play →')).toBeTruthy();
-  expect(screen.getByText('Resume game settings →')).toBeTruthy();
-  expect(screen.getByText('1 draft')).toBeTruthy();
+  expect(screen.getByText('Reopened')).toBeTruthy();
+  expect(screen.getByRole('button', { name: 'In progress · Cash game. Alice, Bob. 23 Nov 2026, 19:30. Open Play' })).toBeTruthy();
+  expect(
+    screen.getByRole('button', { name: 'Planning · Cash game. Alice, Bob. 23 Nov 2026, 19:30. Step 4 of 5. Resume game settings' }),
+  ).toBeTruthy();
+  expect(screen.queryByText('1 draft')).toBeNull();
   await fireEvent.press(
     screen.getByRole('button', { name: 'In progress · Cash game. Alice, Bob. 23 Nov 2026, 19:30. Reopened · calculate Payments again' }),
   );
@@ -82,8 +84,8 @@ it('shows In progress, reopened and Planning cards and the History count', async
 });
 
 it('labels the History row by its count', () => {
-  expect(historyCountLabel(undefined)).toBe('Empty');
-  expect(historyCountLabel(0)).toBe('Empty');
+  expect(historyCountLabel(undefined)).toBe('');
+  expect(historyCountLabel(0)).toBe('');
   expect(historyCountLabel(1)).toBe('1 game');
   expect(historyCountLabel(3)).toBe('3 games');
 });

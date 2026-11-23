@@ -2,7 +2,7 @@ import { router, useLocalSearchParams } from 'expo-router';
 import { useRef, useState } from 'react';
 
 import { ChipSetBlock } from '@/features/planning/chip-set/ChipSetBlock';
-import { paletteDescription, removeDenominationText } from '@/features/planning/chip-set/copy';
+import { removeDenominationText } from '@/features/planning/chip-set/copy';
 import { DenominationRow } from '@/features/planning/chip-set/DenominationRow';
 import { type RefMap, useRefMap } from '@/features/planning/chip-set/useRefMap';
 import { ScopeDialogs } from '@/features/planning/chip-set/ScopeDialogs';
@@ -120,9 +120,9 @@ function ChipSetStep({
               onPress={() => router.push(templatePickerHref(gameId))}
             />
             {source.kind === 'template' ? (
-              <Text variant="supporting">Copied from “{source.templateName}” · this game’s copy</Text>
+              <Text variant="caption">From “{source.templateName}”</Text>
             ) : source.kind === 'deletedTemplate' ? (
-              <Text variant="supporting">Source template deleted · this game’s copy is kept</Text>
+              <Text variant="caption">From a deleted template</Text>
             ) : null}
           </Stack>
         }
@@ -148,7 +148,6 @@ function ChipSetStep({
       <ChipColorPalette
         visible={paletteRow !== null}
         color={paletteRow?.color ?? null}
-        description={paletteRow ? paletteDescription(paletteRow.value.text) : undefined}
         returnFocusRef={paletteReturn}
         onCancel={() => setPaletteRowId(null)}
         onApply={(color) => {
