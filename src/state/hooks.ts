@@ -2,6 +2,8 @@ import { useSyncExternalStore } from 'react';
 
 import type {
   GameCard,
+  OrderDraft,
+  OrderEditorView,
   PersistenceStatus,
   PlanningView,
   PlayerPickerEntry,
@@ -9,6 +11,9 @@ import type {
   PreviewStepView,
   SavedPlayerView,
   TemplateView,
+  TournamentPlayerView,
+  TournamentPlayView,
+  TournamentResultsView,
   WorkingLocation,
 } from '@/game-management';
 
@@ -51,6 +56,30 @@ export function useDistributionPreview(gameId: string): PreviewStepView | null {
 export function usePlayView(gameId: string): PlayView | null {
   const app = useGameManagement();
   return useRead(() => app.play.getView(gameId));
+}
+
+/** Tournament Play (standings, still in, Out previews); `null` unless an In progress tournament. */
+export function useTournamentPlay(gameId: string): TournamentPlayView | null {
+  const app = useGameManagement();
+  return useRead(() => app.play.getTournamentPlay(gameId));
+}
+
+/** Tournament Results (status, finishing order, Calculate state); `null` unless an In progress tournament. */
+export function useTournamentResults(gameId: string): TournamentResultsView | null {
+  const app = useGameManagement();
+  return useRead(() => app.play.getTournamentResults(gameId));
+}
+
+/** One tournament player's page; `null` unless an In progress tournament with that participant. */
+export function useTournamentPlayer(gameId: string, participantId: string): TournamentPlayerView | null {
+  const app = useGameManagement();
+  return useRead(() => app.play.getTournamentPlayer(gameId, participantId));
+}
+
+/** What the finishing-order editor shows for a draft the screen keeps; `null` without a draft or game. */
+export function useOrderEditor(draft: OrderDraft | null): OrderEditorView | null {
+  const app = useGameManagement();
+  return useRead(() => (draft ? app.play.describeOrderDraft(draft) : null));
 }
 
 /** The saved-player picker for a game. */
