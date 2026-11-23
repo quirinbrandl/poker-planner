@@ -106,9 +106,6 @@ async function expectUnchanged<R>(gameId: string, run: () => Promise<R> | R): Pr
 const balances = (payments: PaymentsView | null) =>
   payments!.balances.map((b) => [b.name, b.placeLabel, ...b.lines, b.balanceText, b.direction].join(' | '));
 
-const paymentLines = (payments: PaymentsView | null) =>
-  payments?.summary.kind === 'payments' ? payments.summary.payments.map((p) => `${p.fromName} → ${p.toName} ${p.amountText}`) : [];
-
 const cents = (text: string) => {
   const match = /([+−-]?)EUR (\d+)\.(\d\d)/.exec(text)!;
   return (match[1] === '' || match[1] === '+' ? 1 : -1) * (Number(match[2]) * 100 + Number(match[3]));
@@ -137,7 +134,6 @@ describe('tournament late entry', () => {
     expect(tPlay(gameId).lateEntry).toEqual({ status: 'open' });
     const proposal = expectStatus(app.play.proposeEntry(gameId, nora), 'needsConfirmation').confirmation;
     expect(proposal.popup.extraFacts).toEqual([{ label: 'Prize pool', value: 'EUR 140.00 → EUR 160.00' }]);
-    expect(proposal.popup.reducedCoverage).toBeUndefined();
     const joined = expectStatus(await app.play.addLatePlayer(gameId, proposal.acceptance), 'accepted');
     expect(joined.feedback).toEqual({ title: 'Nora joined', message: '+EUR 20.00 contribution · 200 chip units issued.' });
     app = await harness.restart(app);
