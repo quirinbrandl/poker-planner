@@ -2,13 +2,10 @@ import { router, useLocalSearchParams } from 'expo-router';
 import { useEffect, useState } from 'react';
 import { StyleSheet, View } from 'react-native';
 
-import { formatGameDateTime, modeLabel, playerCountLabel } from '@/features/shared/format';
 import { gamesHref, planningStepHref } from '@/features/shared/routes';
 import type { ReplaceChipSetConfirmation } from '@/game-management';
 import { useGameManagement, usePlanningView, useTemplates } from '@/state';
 import {
-  Badge,
-  BadgeRow,
   Button,
   ChipTray,
   Dialog,
@@ -67,14 +64,14 @@ export default function TemplatePickerScreen() {
   return (
     <>
       <Screen
-        topBar={<TopBar backLabel="Back" backIcon="chevronLeft" onBack={backToStep} />}
+        topBar={<TopBar backLabel="Chip set" onBack={backToStep} />}
         footer={
           <FooterActions>
-            <Button label="Back" icon="chevronLeft" onPress={backToStep} />
             <Button
               label="Use template"
               icon="check"
               variant="primary"
+              fullWidth
               unavailable={!chosen}
               onUnavailablePress={() => toast.show('Choose a template first.')}
               onPress={() => chosen && void use(chosen.id)}
@@ -82,18 +79,7 @@ export default function TemplatePickerScreen() {
           </FooterActions>
         }
       >
-        <ScreenHeader
-          badges={
-            <BadgeRow>
-              <Badge label={modeLabel(plan.mode)} />
-              <Badge label="Planning" tone="primary" />
-            </BadgeRow>
-          }
-          context={`${formatGameDateTime(plan.createdAt)} · ${playerCountLabel(plan.players.participants.length)}`}
-          title="Choose template"
-        >
-          <Text variant="supporting">Selecting here doesn’t change the game until Use template.</Text>
-        </ScreenHeader>
+        <ScreenHeader title="Choose template" />
         <Button
           label="New template"
           icon="plus"
@@ -101,7 +87,7 @@ export default function TemplatePickerScreen() {
           onPress={() => router.push(templateEditorHref('new', gameId))}
         />
         {templates.length === 0 ? (
-          <EmptyTemplates description="Create one here, or go back and enter chips only for this game." />
+          <EmptyTemplates />
         ) : (
           <View accessibilityRole="radiogroup" accessibilityLabel="Templates" style={styles.list}>
             {templates.map((template) => (

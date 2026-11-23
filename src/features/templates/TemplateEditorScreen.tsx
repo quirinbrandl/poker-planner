@@ -43,7 +43,7 @@ export default function TemplateEditorScreen() {
 
   if (!initial) {
     return (
-      <Screen topBar={<TopBar backLabel="Back" backIcon="chevronLeft" onBack={() => router.back()} />}>
+      <Screen topBar={<TopBar backLabel="Back" onBack={() => router.back()} />}>
         <EmptyState icon="templates" title="This template no longer exists." />
       </Screen>
     );
@@ -158,10 +158,10 @@ function TemplateEditor({
   return (
     <>
       <Screen
-        topBar={<TopBar backLabel="Back" backIcon="chevronLeft" onBack={leave} />}
+        topBar={<TopBar backLabel={gameId ? 'Choose template' : 'Templates'} onBack={leave} />}
         footer={
-          <FooterActions note={dirty ? 'Unsaved changes' : 'Not changed'}>
-            <Button label="Cancel" icon="chevronLeft" onPress={leave} />
+          <FooterActions note={dirty ? 'Unsaved changes' : undefined}>
+            <Button label="Cancel" onPress={leave} />
             <Button
               label={gameId ? 'Save and use' : 'Save'}
               icon="check"
@@ -171,9 +171,7 @@ function TemplateEditor({
           </FooterActions>
         }
       >
-        <ScreenHeader title={templateId ? 'Edit template' : 'New template'}>
-          <Text variant="supporting">Changes apply only after Save. Existing games stay unchanged.</Text>
-        </ScreenHeader>
+        <ScreenHeader title={templateId ? 'Edit template' : 'New template'} />
         <TextField
           label="Template name"
           value={name}
