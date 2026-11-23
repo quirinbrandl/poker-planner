@@ -23,6 +23,8 @@ export const palette = {
   lavenderInk: '#2B1E45',
   lavenderTint: '#322B45',
   lavenderMuted: '#85749E',
+  /** Start of the share-bar gradient. */
+  lavenderDeep: '#8F78D8',
   coral: '#FFB3AA',
   coralBg: '#3D2427',
   coralBorder: '#6B4447',

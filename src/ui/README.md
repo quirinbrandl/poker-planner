@@ -72,7 +72,7 @@ Rules of use:
 **`IconButton`** — 48×48, required `accessibilityLabel` naming the specific action. `icon`, `variant` (`outline` / `plain`), `tone` (`destructive`, `primary`), `unavailable`.
 `<IconButton icon="trash" accessibilityLabel="Remove denomination 2 (value 5)" onPress={remove} />`
 
-**`TextField`** — persistent `label`, `value` (raw text, kept as typed), `onChangeText`, `unit` (EUR, BB, payments, stacks, chip units, chips, %) with `unitSpoken`, `icon`, `helper`, `error` (shown in words under the field, spoken as the input's hint, announced), `keyboard` (`text` / `decimal` / `whole`), `onBlur`, `onSubmitEditing` + `returnKeyType`, `inputRef`, `footer` (e.g. "Use automatic (3)"), `editable`, `size="large"`, `before` / `after`. Never placeholder-only.
+**`TextField`** — persistent `label`, `value` (raw text, kept as typed), `onChangeText`, `unit` (EUR, BB, payments, stacks, chip units, chips, %) with `unitSpoken`, `icon`, `helper`, `error` (shown in words under the field, spoken as the input's hint, announced), `keyboard` (`text` / `decimal` / `whole`), `onBlur`, `onSubmitEditing` + `returnKeyType`, `inputRef`, `footer` (e.g. "Use automatic (3)"), `editable`, `size="large"` / `size="compact"` (48-high box inside cards), `before` / `after`, `inputWidth` (fixed box width that grows with text size; `before` / `after` take the rest), `labelHidden` (spoken but not shown, only where visible context names the field, such as a payout place's share). Never placeholder-only.
 `<TextField label="Buy-in per player" icon="wallet" unit="EUR" unitSpoken="euros" keyboard="decimal" value={raw} onChangeText={setRaw} error={buyInError} />`
 
 **`StepperField`** — − / large quantity / +. Same text props as `TextField`; `onDecrement` / `onIncrement` are yours (no number rules inside), `decrementLabel` / `incrementLabel`, `decrementUnavailable`.
@@ -83,6 +83,9 @@ Rules of use:
 
 **`SegmentedTabs`** — workspace navigation. `tabs` `{ key, label }[]`, `selectedKey`, `onChange`. Tab roles with selected state; wraps at large text.
 `<SegmentedTabs tabs={[{ key: 'play', label: 'Play' }, …]} selectedKey="play" onChange={go} />`
+
+**`SelectButton`** — full-width button showing the current choice and a chevron; opens a `ChoiceSheet`. `label` ("Preset"), `value` ("Top 2" / "Custom"), `description` ("Suggested for 6 players: Top 2"), `onPress`, `ref` (return focus here when the sheet closes).
+`<SelectButton label="Preset" value="Top 2" description="Suggested" onPress={openSheet} />`
 
 **`StepLink`** — underlined "Step 5 of 5 · Setup steps" control. `label`, `onPress`.
 **`StepList`** — `steps: { key, label, status: 'notFilled' | 'needsAttention' | 'complete', current?, onPress? }[]`; steps without `onPress` show as not reached. `stepStatusLabel` maps statuses to their words.
@@ -95,6 +98,11 @@ Rules of use:
 **`BottomSheet`** — action sheet. `visible`, `title`, `subtitle`, `actions: { key, label, description, icon, destructive?, onPress }[]`, `onCancel`.
 `<BottomSheet visible={open} title="Game actions" subtitle="In progress · Cash game · 23 Nov, 19:30" actions={…} onCancel={close} />`
 
+**`ChoiceSheet`** — single-choice sheet (radio rows). `visible`, `title`, `choices: { key, title, detail, tag?, selected?, unavailable?, onPress }[]` (selected: tint + check; unavailable: dashed, reason in `detail`, never calls `onPress`), `footer` line under the list, `onCancel`, `cancelLabel` ("Close").
+`<ChoiceSheet visible={open} title="Preset" choices={…} footer="Or type your own percentages on the ladder." onCancel={close} />`
+
+**`focusView(view)`** — moves screen-reader focus to a rendered view (a correction target after a failed Continue, the invoking control after a sheet closes). Ref types: `ViewRef`, `TextInputRef`, `ScrollViewRef`.
+
 **`ToastProvider`** / **`useToast()`** — one toast slot (already mounted in the root layout). `show(message, { tone?: 'confirmed' | 'error' })`, `hide()`. Announced to screen readers; disappears after `TOAST_DURATION_MS`.
 `const toast = useToast(); toast.show('Result confirmed');`
 
@@ -103,9 +111,14 @@ Rules of use:
 **`Badge`** / **`BadgeRow`** — pill with words. `label`, `tone` (`neutral` mode/count tags, `primary` Planning / In progress, `confirmed` Completed, `warning` open work like Count draft, `error`), `icon`, `size="small"`.
 `<Badge label="Count draft" tone="warning" size="small" />`
 
+**`PlaceBadge`** — round finishing-place badge ("1st"), Lavender ring with `highlight`; grows into a pill at large text. Decorative: the row or field speaks the place.
+
 **`Avatar`** — initial in a circle, decorative (the name is always shown too). `name`, `size` (40).
 
 **`ProgressBar`** — `value`, `max`, required `accessibilityLabel`, `tone`, `segments` for step progress.
+
+**`ShareBar`** — proportional Lavender gradient bar for one share of a whole (`percent` 0–100). Decorative; the number sits beside it.
+`<ShareBar percent={place.barPercent} />`
 
 **`StatusCard`** — big centred status ("Everything adds up"). `tone`, `icon` or `ringText` ("4/6"), `title`, `description`, `progress` `{ value, max, accessibilityLabel }`, `children`, `ref` (to move focus here).
 `<StatusCard title="Everything adds up" description="All 6 counted · 1,600 chip units" />`
