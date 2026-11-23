@@ -1,10 +1,11 @@
 /**
  * Everything the host can do and see while a game is in Planning.
  */
-import { rejected } from '../core/results';
 import type { Runtime } from '../core/runtime';
+import { startGame } from '../play/start';
 import { createChipSetOperations } from './chip-set';
-import type { StartAcceptance, StartResult } from './distribution-view';
+import { buildPreviewStepView } from './distribution';
+import type { PreviewStepView, StartAcceptance, StartResult } from './distribution-view';
 import { findGame } from './draft';
 import { createParticipantOperations } from './participants';
 import { createPayoutScheduleOperations } from './payout-schedule';
@@ -27,16 +28,23 @@ export function createPlanningApi(rt: Runtime) {
     ...createSettingsOperations(rt),
     ...createPayoutScheduleOperations(rt),
     /**
-     * Starts the game with the previewed distribution: records one identical starting stack per
-     * player and locks setup. `accept` repeats the depth and reserve the host confirmed in the
-     * Start popup; Start is rejected (`previewChanged`) if the current preview differs.
-     * Placeholder until Start is built: always rejected.
+     * Distribution preview: the recommendation for the current draft (or why there is none) and the
+     * setup blockers. `null` if the game does not exist or is no longer in Planning. Works out the
+     * recommendation on first read after a relevant change; read it only on the preview step.
      */
-    async start(gameId: string, accept: StartAcceptance): Promise<StartResult> {
-      void accept;
+    getDistributionPreview(gameId: string): PreviewStepView | null {
       const game = findGame(rt.state(), gameId);
-      if (!game) return rejected('gameNotFound', 'This game no longer exists.');
-      return rejected('noValidDistribution', 'Starting a game is not built yet.');
+      if (!game || game.phase !== 'planning') return null;
+      return buildPreviewStepView(rt, game);
+    },
+    /**
+     * Start: records the previewed starting stack as handed out to every player, their buy-ins and
+     * the accepted terms, and makes the game In progress (setup locked). `accept` repeats the depth
+     * and reserve the host confirmed in the Start popup; Start is rejected (`previewChanged`) if the
+     * current preview differs, and with `setupLocked` once the game has started (no second issue).
+     */
+    start(gameId: string, accept: StartAcceptance): Promise<StartResult> {
+      return startGame(rt, gameId, accept);
     },
   };
 }

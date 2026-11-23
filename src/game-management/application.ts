@@ -4,6 +4,7 @@ import { createRuntime, type PersistenceStatus } from './core/runtime';
 import { createGamesApi } from './games/games';
 import { createLocationApi } from './location/working-location';
 import { createPlanningApi } from './planning';
+import { createPlayApi } from './play';
 import { createSavedPlayerOperations } from './reusable/saved-players';
 import { createTemplateOperations } from './reusable/templates';
 import type { DocumentStore } from './storage/document-store';
@@ -42,6 +43,7 @@ export async function createGameManagement(options: GameManagementOptions) {
     subscribe: rt.subscribe,
     games: createGamesApi(rt),
     planning: createPlanningApi(rt),
+    play: createPlayApi(rt),
     savedPlayers: createSavedPlayerOperations(rt),
     templates: createTemplateOperations(rt),
     location: createLocationApi(rt),

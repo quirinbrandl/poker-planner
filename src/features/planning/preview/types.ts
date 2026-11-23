@@ -1,5 +1,5 @@
 import type { GameMode } from '@/domain/types';
-import type { PlanningView, StartAcceptance, StartResult, StepId } from '@/game-management';
+import type { PreviewStepView, StartAcceptance, StartResult, StepId } from '@/game-management';
 
 /** One paid place on the preview's Payouts card and in the Start tournament? popup. */
 export interface PreviewPayoutPlace {
@@ -12,12 +12,12 @@ export interface PreviewPayoutPlace {
   amountText: string;
 }
 
-/** Everything Distribution preview shows, taken straight from the Planning view. */
+/** Everything Distribution preview shows, taken straight from the preview and Planning views. */
 export interface PreviewData {
   mode: GameMode;
   /** Initial players: "Edit players (N)". */
   playerCount: number;
-  preview: PlanningView['preview'];
+  preview: PreviewStepView;
   /** Tournament payout schedule ("Payouts · Top 2"); `null` in cash games. */
   payouts: { name: string; places: readonly PreviewPayoutPlace[] } | null;
 }

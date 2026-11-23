@@ -3,6 +3,7 @@
  * or deleting a saved player never changes any game.
  */
 import type { AppState, SavedPlayer } from '../core/documents';
+import type { Problem } from '../core/problems';
 import { type Accepted, type Rejected, rejected } from '../core/results';
 import type { Runtime } from '../core/runtime';
 import { byName, checkName } from '../shared/names';
@@ -43,6 +44,20 @@ export function createSavedPlayerOperations(rt: Runtime) {
     list(): readonly SavedPlayerView[] {
       const players = rt.state().savedPlayers;
       return rt.memo('savedPlayers.list', [players], () => [...players].sort(byName));
+    },
+
+    /**
+     * Live check of a name while the host types: the problem `create` (or `rename`, with
+     * `exceptId` = the player being renamed) would reject it with, or `null` if it would be accepted.
+     */
+    checkName(name: string, options: { exceptId?: string } = {}): Problem | null {
+      const others = rt.state().savedPlayers.filter((p) => p.id !== options.exceptId);
+      const check = checkName(
+        name,
+        others.map((p) => p.name),
+        'player',
+      );
+      return check.ok ? null : check.problem;
     },
 
     /** Creates a saved player. Name required; trimmed; unique ignoring case and outer spaces. */

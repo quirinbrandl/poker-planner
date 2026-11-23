@@ -2,43 +2,63 @@
  * The host's working location, restored when the app reopens. Restoring only reads it; it never
  * applies an operation.
  */
-import type { WorkingLocation } from '../core/documents';
+import type { GameDocument, WorkingLocation } from '../core/documents';
 import { type Accepted, type Rejected, rejected } from '../core/results';
 import type { Runtime } from '../core/runtime';
 import { findGame, stepsForMode } from '../planning/draft';
 
-export type SetLocationResult = Accepted | Rejected<'gameNotFound'>;
+export type SetLocationResult = Accepted | Rejected<'gameNotFound' | 'wrongPhase'>;
 
 const GAMES: WorkingLocation = { kind: 'games' };
+
+/** Where `location` belongs now that the game is in its current phase (`null`: as stored). */
+function restored(location: WorkingLocation & { gameId: string }, game: GameDocument): WorkingLocation | null {
+  switch (game.phase) {
+    case 'planning':
+      if (location.kind === 'planning' && stepsForMode(game.mode).includes(location.step)) return null;
+      return { kind: 'planning', gameId: game.id, step: game.planning.wizard.lastStep };
+    case 'inProgress':
+      return location.kind === 'planning' ? { kind: 'play', gameId: game.id } : null;
+    case 'completed':
+      // A Completed game's workspace has Results, Game details and Payments, but no Play.
+      return location.kind === 'planning' || location.kind === 'play' ? { kind: 'results', gameId: game.id } : null;
+  }
+}
+
+/** Whether a game in its current phase has this workspace. */
+function fitsPhase(location: WorkingLocation & { gameId: string }, game: GameDocument): boolean {
+  if (location.kind === 'planning') return game.phase === 'planning';
+  if (location.kind === 'play') return game.phase === 'inProgress';
+  return game.phase !== 'planning';
+}
 
 export function createLocationApi(rt: Runtime) {
   return {
     /**
-     * Where to reopen the app. Falls back to Games when the stored location's game is gone or no
-     * longer in that phase, and to the game's last visited step if the stored step left its mode.
+     * Where to reopen the app. Falls back to Games when the stored location's game is gone, to the
+     * game's current workspace when its phase changed (Planning ↔ In progress), and to the game's
+     * last visited step if the stored step left its mode.
      */
     get(): WorkingLocation {
       const state = rt.state();
       const location = state.location;
-      if (location.kind !== 'planning') return location;
+      if (!('gameId' in location)) return location;
       const game = findGame(state, location.gameId);
-      if (!game || game.phase !== 'planning') return GAMES;
-      if (stepsForMode(game.mode).includes(location.step)) return location;
-      return rt.memo(`location.fallback:${game.id}`, [game], () => ({
-        kind: 'planning',
-        gameId: game.id,
-        step: game.planning.wizard.lastStep,
-      }));
+      if (!game) return GAMES;
+      return rt.memo('location.restored', [location, game], () => restored(location, game) ?? location);
     },
 
     /**
      * Records a location the host navigated to outside the wizard (Games, Saved players, Chip set
-     * templates, History). Wizard operations record Planning locations themselves.
+     * templates, History, and the Play / Results / Game details tabs of a started game). Wizard
+     * operations, Start, Return to Planning and `games.open` record their locations themselves.
      */
     async set(location: WorkingLocation): Promise<SetLocationResult> {
       const state = rt.state();
-      if (location.kind === 'planning' && findGame(state, location.gameId)?.phase !== 'planning') {
-        return rejected('gameNotFound', 'This game no longer exists.');
+      if ('gameId' in location) {
+        const game = findGame(state, location.gameId);
+        if (!game) return rejected('gameNotFound', 'This game no longer exists.');
+        if (!fitsPhase(location, game)) return rejected('wrongPhase', 'This game has no such screen in its current phase.');
       }
       const current = state.location;
       if (JSON.stringify(current) === JSON.stringify(location)) return { status: 'accepted' };

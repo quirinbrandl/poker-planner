@@ -70,7 +70,9 @@ export function planningGame(state: AppState, gameId: string): GameAccess {
       ok: false,
       rejection: rejected(
         'setupLocked',
-        'This game has started, so its setup is locked. Use Return to Planning to change it.',
+        game.phase === 'completed'
+          ? 'This game is completed, so its setup is locked.'
+          : 'Setup is locked. To change it, use ⋯ → Return to Planning.',
       ),
     };
   }

@@ -19,7 +19,7 @@ export type {
 export type { FieldKey, Problem, ProblemCode } from './core/problems';
 export type { PersistenceStatus } from './core/runtime';
 export { CorruptDataError, UnsupportedDataVersionError } from './core/persistence';
-export type { StepId, WorkingLocation } from './core/documents';
+export type { GameWorkspaceKind, StepId, WorkingLocation } from './core/documents';
 
 // Games
 export type { CreateGameResult, DeleteGameResult, GameCard, OpenGameResult } from './games/games';
@@ -40,6 +40,7 @@ export type {
   DistributionPlanView,
   DistributionPreviewView,
   NoValidDistributionReason,
+  PreviewStepView,
   StartAcceptance,
   StartCode,
   StartResult,
@@ -86,6 +87,23 @@ export type {
 } from './planning/payout-view';
 export type { ValidPayoutSchedule } from './planning/payout-validation';
 export type { PayoutPresetId, ShareBasisPoints } from '@/domain/payouts';
+
+// In progress
+export type { PlayApi } from './play';
+export type {
+  ChipsView,
+  LockedDetailsView,
+  MoneyView,
+  PlayPlayerView,
+  PlayTermsView,
+  PlayView,
+  ReserveStatusView,
+} from './play/view';
+export type {
+  ReturnToPlanningCode,
+  ReturnToPlanningConfirmation,
+  ReturnToPlanningResult,
+} from './play/return-to-planning';
 
 // Reusable records
 export type {

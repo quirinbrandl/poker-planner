@@ -67,7 +67,7 @@ function Fixture({ state, reject }: { state: string; reject: boolean }) {
               resolve(
                 reject
                   ? { status: 'rejected', reason: { code: 'previewChanged', message: 'The preview changed. Check it and start again.' } }
-                  : { status: 'accepted' },
+                  : { status: 'accepted', location: { kind: 'play', gameId: gameId ?? '' } },
               ),
             800,
           ),

@@ -5,6 +5,8 @@ import type {
   PersistenceStatus,
   PlanningView,
   PlayerPickerEntry,
+  PlayView,
+  PreviewStepView,
   SavedPlayerView,
   TemplateView,
   WorkingLocation,
@@ -28,6 +30,21 @@ export function useGames(): readonly GameCard[] {
 export function usePlanningView(gameId: string): PlanningView | null {
   const app = useGameManagement();
   return useRead(() => app.planning.getView(gameId));
+}
+
+/**
+ * Distribution preview of a Planning game: the recommendation (or why there is none) and the setup
+ * blockers; `null` if it does not exist or has left Planning. Use it on the preview step only.
+ */
+export function useDistributionPreview(gameId: string): PreviewStepView | null {
+  const app = useGameManagement();
+  return useRead(() => app.planning.getDistributionPreview(gameId));
+}
+
+/** One In progress game's view (Play, bank / reserve, locked Game details); `null` unless In progress. */
+export function usePlayView(gameId: string): PlayView | null {
+  const app = useGameManagement();
+  return useRead(() => app.play.getView(gameId));
 }
 
 /** The saved-player picker for a game. */

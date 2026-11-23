@@ -3,10 +3,11 @@
  */
 import type { GameMode, GamePhase } from '@/domain/types';
 
-import type { GameDocument, StepId, WorkingLocation } from '../core/documents';
+import type { AppState, GameDocument, StepId, WorkingLocation } from '../core/documents';
 import { type Accepted, type Rejected, rejected } from '../core/results';
 import type { Runtime } from '../core/runtime';
-import { findGame, newPlanningDraft, STEP_TITLES } from '../planning/draft';
+import { findGame, newPlanningDraft, STEP_TITLES, withGame } from '../planning/draft';
+import { preselectSuggestedSchedule } from '../planning/payout-schedule';
 
 /** What a game card on Games shows. */
 export interface GameCard {
@@ -15,8 +16,10 @@ export interface GameCard {
   phase: GamePhase;
   /** ISO 8601 creation date-time. */
   createdAt: string;
-  /** Captured names in joining order. */
+  /** Captured names in joining order (In progress: everyone who has joined). */
   participantNames: readonly string[];
+  /** In progress and Completed: ISO 8601 date-time of Start. */
+  startedAt: string | null;
   /** Planning only: the step the game resumes at, and its title. */
   lastStep: StepId | null;
   lastStepTitle: string | null;
@@ -35,15 +38,27 @@ function card(game: GameDocument): GameCard {
     mode: game.mode,
     phase: game.phase,
     createdAt: game.createdAt,
-    participantNames: game.planning.participants.map((p) => p.name),
+    participantNames: (game.play?.roster ?? game.planning.participants).map((p) => p.name),
+    startedAt: game.play?.startedAt ?? null,
     lastStep: planning ? game.planning.wizard.lastStep : null,
     lastStepTitle: planning ? STEP_TITLES[game.planning.wizard.lastStep] : null,
   };
 }
 
-/** Where opening a game from a list leads. Later phases add their workspaces here. */
+/** Where opening a game from a list leads: Planning resumes at its last step, a started game opens Play. */
 function entryLocation(game: GameDocument): WorkingLocation {
-  return { kind: 'planning', gameId: game.id, step: game.planning.wizard.lastStep };
+  if (game.phase === 'planning') return { kind: 'planning', gameId: game.id, step: game.planning.wizard.lastStep };
+  return { kind: game.phase === 'inProgress' ? 'play' : 'results', gameId: game.id };
+}
+
+/**
+ * Opening a tournament straight onto its Payout schedule step preselects the suggested preset,
+ * exactly as reaching the step through the wizard does.
+ */
+function opened(state: AppState, game: GameDocument, newId: () => string): AppState {
+  if (game.phase !== 'planning' || game.planning.wizard.lastStep !== 'payouts') return state;
+  const next = preselectSuggestedSchedule(game, newId);
+  return next === game ? state : withGame(state, next);
 }
 
 export function createGamesApi(rt: Runtime) {
@@ -90,13 +105,16 @@ export function createGamesApi(rt: Runtime) {
       return { status: 'accepted', gameId: game.id, location };
     },
 
-    /** Opens a game from a list: Planning resumes at its last visited step. Records the location. */
+    /**
+     * Opens a game from a list: Planning resumes at its last visited step, an In progress game opens
+     * Play. Records the location.
+     */
     async open(gameId: string): Promise<OpenGameResult> {
       const state = rt.state();
       const game = findGame(state, gameId);
       if (!game) return rejected('gameNotFound', 'This game no longer exists.');
       const location = entryLocation(game);
-      await rt.apply({ ...state, location });
+      await rt.apply({ ...opened(state, game, rt.newId), location });
       return { status: 'accepted', location };
     },
 

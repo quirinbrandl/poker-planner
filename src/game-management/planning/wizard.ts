@@ -147,7 +147,7 @@ export function createWizardOperations(rt: Runtime) {
       if (!stepsForMode(game.mode).includes(step)) {
         return rejected('stepNotInMode', 'This step is not part of this game’s mode.');
       }
-      if (step === 'preview') return rejected('noNextStep', 'Starting a game is not available yet.');
+      if (step === 'preview') return rejected('noNextStep', 'This is the last step. Use Start to begin the game.');
       if (validateGame(game).byStep[step].length > 0) return failContinue(rt, game, step);
       if (step === 'chipSet') return { status: 'needsConfirmation', confirmation: chipSetScopeConfirmation(state, game) };
       const nextStep = nextStepAfter(game, step)!;

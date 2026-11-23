@@ -18,7 +18,7 @@ function Frame({ children, footerNote, primaryAction }: PreviewFrameProps) {
   );
 }
 
-async function renderPreview(name: PreviewFixtureName, start: (accept: unknown) => Promise<StartResult> = async () => ({ status: 'accepted' })) {
+async function renderPreview(name: PreviewFixtureName, start: (accept: unknown) => Promise<StartResult> = async () => ({ status: 'accepted', location: { kind: 'play', gameId: 'game-1' } })) {
   const handlers = {
     onOpenStep: jest.fn(),
     onStart: jest.fn(start),
@@ -142,7 +142,7 @@ it('starts once with the previewed depth and reserve', async () => {
   await fireEvent.press(confirm);
   expect(onStart).toHaveBeenCalledTimes(1);
   expect(onStart).toHaveBeenCalledWith({ depthBb: 98, reserveStacks: 1 });
-  await act(async () => finish({ status: 'accepted' }));
+  await act(async () => finish({ status: 'accepted', location: { kind: 'play', gameId: 'game-1' } }));
   expect(onStarted).toHaveBeenCalledTimes(1);
 });
 

@@ -1,12 +1,16 @@
 /**
  * The Distribution preview step's read model and the Start operation's contract.
  *
- * The preview is derived, never stored: every read recomputes it from the current draft, so an
- * edit to players, chip set or settings always shows a fresh recommendation against the host's
- * requested depth and configured reserve. Nothing is issued before Start.
+ * The preview is derived, never stored: every read reflects the current draft, so an edit to
+ * players, chip set or settings always shows a fresh recommendation against the host's requested
+ * depth and configured reserve. Nothing is issued before Start. Read it with
+ * `planning.getDistributionPreview(gameId)` (`useDistributionPreview`), not on every Planning step:
+ * working out the recommendation can take a moment for an unusual chip set.
  */
 import type { Cents, ChipColor } from '@/domain/types';
 
+import type { StepId, WorkingLocation } from '../core/documents';
+import type { Problem } from '../core/problems';
 import type { Accepted, GameAccessCode, Rejected } from '../core/results';
 
 /** One denomination of a stack or of the bank, with the colour configured in the chip set. */
@@ -99,13 +103,28 @@ export type DistributionPreviewView =
   /** The chip set is too large to work out reliably on the phone; the host must simplify it. */
   | { kind: 'tooComplex'; message: string };
 
+/** Everything the Distribution preview step shows besides the payout schedule. */
+export interface PreviewStepView {
+  /** Steps with problems, in wizard order, each with its problems. */
+  blockers: readonly { step: StepId; title: string; problems: readonly Problem[] }[];
+  /** Every step's inputs are valid. Says nothing about whether a distribution exists. */
+  setupComplete: boolean;
+  /** The recommendation for the current draft. */
+  distribution: DistributionPreviewView;
+  /** `distribution.kind === 'planned'`: Start is available. */
+  canStart: boolean;
+}
+
 /** What the host saw and confirmed in the Start popup. Start is rejected if the preview differs. */
 export interface StartAcceptance {
   depthBb: number;
   reserveStacks: number;
 }
 
-export type StartCode = GameAccessCode | 'setupIncomplete' | 'noValidDistribution' | 'previewChanged';
+export type StartCode = GameAccessCode | 'setupIncomplete' | 'noValidDistribution' | 'tooComplex' | 'previewChanged';
 
-/** `accepted`: the game is In progress and the starting stacks are recorded as handed out. */
-export type StartResult = Accepted | Rejected<StartCode>;
+/**
+ * `accepted`: the game is In progress and the starting stacks are recorded as handed out;
+ * `location` is the Play working location to open.
+ */
+export type StartResult = Accepted<{ location: WorkingLocation }> | Rejected<StartCode>;
