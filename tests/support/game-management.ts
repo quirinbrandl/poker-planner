@@ -70,3 +70,46 @@ export async function addChipRows(app: GameManagement, gameId: string, rows: [st
   }
   return ids;
 }
+
+export interface PlanSetup {
+  players: string[];
+  /** (value, quantity) rows, typed in this order. */
+  chips: [string, string][];
+  buyIn?: string;
+  depth?: string;
+  coverage?: string;
+  /** Typed into the reserve field (custom); omitted: automatic. */
+  reserve?: string;
+  preference?: 'fewer' | 'more';
+}
+
+/**
+ * A game set up through the wizard and standing on Distribution preview, as a host would do it.
+ * Tournaments keep the suggested payout preset.
+ */
+export async function plannedGame(app: GameManagement, mode: 'cash' | 'tournament', setup: PlanSetup) {
+  const gameId = await gameWithPlayers(app, mode, setup.players);
+  await addChipRows(app, gameId, setup.chips);
+  await app.planning.setSettingText(gameId, 'buyIn', setup.buyIn ?? '20');
+  if (setup.depth !== undefined) await app.planning.setSettingText(gameId, 'depth', setup.depth);
+  if (setup.coverage !== undefined) await app.planning.setSettingText(gameId, 'coverage', setup.coverage);
+  if (setup.reserve !== undefined) await app.planning.setSettingText(gameId, 'reserve', setup.reserve);
+  if (setup.preference) await app.planning.setDistributionPreference(gameId, setup.preference);
+  expectStatus(await app.planning.continueFromStep(gameId, 'players'), 'accepted');
+  expectStatus(await app.planning.completeChipSetStep(gameId, { kind: 'onlyThisGame' }), 'accepted');
+  let step = expectStatus(await app.planning.continueFromStep(gameId, 'settings'), 'accepted').nextStep;
+  if (step === 'payouts') step = expectStatus(await app.planning.continueFromStep(gameId, 'payouts'), 'accepted').nextStep;
+  if (step !== 'preview') throw new Error(`Expected to reach the preview, got ${step}`);
+  return gameId;
+}
+
+/** Everything a host can observe about one game and the working location. */
+export function observe(app: GameManagement, gameId: string) {
+  return {
+    card: app.games.get(gameId),
+    planning: app.planning.getView(gameId),
+    preview: app.planning.getDistributionPreview(gameId),
+    play: app.play.getView(gameId),
+    location: app.location.get(),
+  };
+}
