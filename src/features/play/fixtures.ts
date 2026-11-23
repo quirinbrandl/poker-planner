@@ -73,6 +73,7 @@ function playData(story: Story): PlayData {
     backLabel: 'Games',
     terms: { blindsText: '1 / 2', rebuyText: '20.00', currency: 'EUR', stackText: '200' },
     reserveText: story.reserveText,
+    fixText: null,
     playing: story.players
       .filter((player) => player.balance === undefined)
       .map((player) => ({

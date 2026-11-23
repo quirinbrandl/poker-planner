@@ -42,7 +42,7 @@ const QUANTITY_ERRORS = {
   tooLarge: 'Enter a smaller number.',
 } as const;
 
-const COUNT_INCOMPLETE: EditorProblem = {
+export const COUNT_INCOMPLETE: EditorProblem = {
   title: 'Count incomplete.',
   message: 'Your entries are kept. Fix the marked quantities.',
 };
@@ -80,7 +80,7 @@ export interface ReviewedCount {
 export type ConfirmResultCode = ResultAccessCode | 'resultExists' | 'countIncomplete' | 'countChanged';
 export type ConfirmResultResult = Accepted | CountBlocked | Rejected<ConfirmResultCode>;
 
-interface ParsedCount {
+export interface ParsedCount {
   entries: QuantityEntry[];
   /** Every quantity is a valid whole number. */
   complete: boolean;
@@ -89,12 +89,12 @@ interface ParsedCount {
   units: number;
 }
 
-function draftTexts(play: PlayRecord, participantId: string): string[] {
+export function draftTexts(play: PlayRecord, participantId: string): string[] {
   const draft = countDraftOf(play, participantId);
   return play.terms.chipSet.map((_, i) => draft?.quantityTexts[i] ?? '');
 }
 
-function parseCount(play: PlayRecord, texts: readonly string[], showErrors: boolean): ParsedCount {
+export function parseCount(play: PlayRecord, texts: readonly string[], showErrors: boolean): ParsedCount {
   let units = 0;
   const counts: number[] = [];
   const entries = play.terms.chipSet.map((d, i): QuantityEntry => {
@@ -117,20 +117,25 @@ function parseCount(play: PlayRecord, texts: readonly string[], showErrors: bool
   return { entries, complete: entries.every((e) => e.state === 'entered'), counts, units };
 }
 
-function mixFrom(play: PlayRecord, counts: readonly number[]): ChipMix {
+export function mixFrom(play: PlayRecord, counts: readonly number[]): ChipMix {
   return play.terms.chipSet.map((d, i) => ({ value: d.value, count: counts[i] }));
 }
 
 /** The editor read (without the screen's context line). */
-export function buildCountEditor(access: CashAccess, showErrors: boolean): CountEditorView {
+export function buildCountEditor(
+  access: CashAccess,
+  showErrors: boolean,
+  texts: readonly string[] = draftTexts(access.play, access.participant.id),
+  kind: CountEditorView['kind'] = 'count',
+): CountEditorView {
   const { play, rate, participant } = access;
-  const parsed = parseCount(play, draftTexts(play, participant.id), showErrors);
+  const parsed = parseCount(play, texts, showErrors);
   const contributions = contributionsOf(play, participant.id);
   return {
     gameId: access.game.id,
     playerId: participant.id,
     playerName: participant.name,
-    kind: 'count',
+    kind,
     entries: parsed.entries,
     totals: {
       unitsText: formatCount(parsed.units),
@@ -145,8 +150,9 @@ export function buildCountEditor(access: CashAccess, showErrors: boolean): Count
 }
 
 /** Denominations of which the count returns more chips than are out at the table. */
-function surplus(play: PlayRecord, counts: readonly number[]): BlockedMixData | null {
-  const inPlay = inPlayMix(play);
+export function surplus(play: PlayRecord, counts: readonly number[], alreadyReturned?: ChipMix): BlockedMixData | null {
+  // A correction replaces the player's own return: those chips count as out at the table again.
+  const inPlay = inPlayMix(play).map((chip, i) => ({ ...chip, count: chip.count + (alreadyReturned?.[i].count ?? 0) }));
   const over = play.terms.chipSet
     .map((d, i) => ({ value: d.value, color: d.color, extra: counts[i] - inPlay[i].count }))
     .filter((chip) => chip.extra > 0);
@@ -159,11 +165,15 @@ function surplus(play: PlayRecord, counts: readonly number[]): BlockedMixData | 
   };
 }
 
-function confirmation(access: CashAccess, parsed: ParsedCount): ResultConfirmationData {
+export function confirmation(
+  access: CashAccess,
+  parsed: Pick<ParsedCount, 'counts' | 'units'>,
+  kind: ResultConfirmationData['kind'] = 'confirm',
+): ResultConfirmationData {
   const { play, rate, participant } = access;
   const contributions = contributionsOf(play, participant.id);
   return {
-    kind: 'confirm',
+    kind,
     playerName: participant.name,
     mix: coloredMix(play, mixFrom(play, parsed.counts)),
     unitsText: formatCount(parsed.units),
@@ -192,7 +202,7 @@ function withDraftTexts(play: PlayRecord, participantId: string, texts: readonly
   return next;
 }
 
-function sameTexts(a: readonly string[], b: readonly string[]): boolean {
+export function sameTexts(a: readonly string[], b: readonly string[]): boolean {
   return a.length === b.length && a.every((t, i) => t === b[i]);
 }
 

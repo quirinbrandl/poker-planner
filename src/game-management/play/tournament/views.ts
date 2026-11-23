@@ -325,8 +325,8 @@ function buyInRecords(play: PlayRecord, participantId: string): TournamentBuyInR
       label: isRebuy ? `Rebuy ${rebuy}` : 'Buy-in',
       amountText: formatEur(issuance.contribution),
       mix: withColors(issuance.mix, play.terms.chipSet),
-      addedLater: false,
-      corrected: false,
+      addedLater: issuance.addedLater === true,
+      corrected: issuance.corrected === true,
       coverageText:
         issuance.reducedCoverage !== undefined ? `${issuance.reducedCoverage} of ${play.terms.coverage} coverage` : null,
       undo: null,

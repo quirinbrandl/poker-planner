@@ -14,6 +14,8 @@ export interface RebuyDialogProps {
   onCancel: () => void;
   /** Open Bank & reserve from a blocked request. */
   onViewBank: () => void;
+  /** One extra line under the facts, e.g. in the fix flow "Swap Bob’s chips so they match this stack." */
+  note?: string | null;
 }
 
 /**
@@ -21,7 +23,7 @@ export interface RebuyDialogProps {
  * contribution, and the issue action. A reduced-coverage proposal keeps its warning visible and
  * needs Accept & issue; a blocked request explains why and offers Back to Play / View bank.
  */
-export function RebuyDialog({ rebuy, busy, onConfirm, onCancel, onViewBank }: RebuyDialogProps) {
+export function RebuyDialog({ rebuy, busy, onConfirm, onCancel, onViewBank, note }: RebuyDialogProps) {
   const confirm = useSingleConfirm(busy, rebuy, onConfirm);
   const cancel = () => {
     if (!busy) onCancel();
@@ -71,6 +73,7 @@ export function RebuyDialog({ rebuy, busy, onConfirm, onCancel, onViewBank }: Re
         extraFacts={rebuy.extraFacts}
       />
       {rebuy.reserveNote ? <Text variant="supporting">{rebuy.reserveNote}</Text> : null}
+      {note ? <Text variant="supporting">{note}</Text> : null}
     </Dialog>
   );
 }

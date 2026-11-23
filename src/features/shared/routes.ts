@@ -53,9 +53,12 @@ export function rebuyMixHref(gameId: string, participantId: string, rebuyId?: st
   return `/game/${gameId}/rebuy-mix/${participantId}${rebuyId ? `?rebuyId=${rebuyId}` : ''}` as Href;
 }
 
-/** The one-step-at-a-time fix for a blocked correction. */
-export function fixHref(gameId: string): Href {
-  return `/game/${gameId}/fix` as Href;
+/**
+ * The one-step-at-a-time fix for a blocked correction: the recorded fix, or (with `start`, from a
+ * `dependent` answer) step 1 for that participant's count correction or result removal.
+ */
+export function fixHref(gameId: string, start?: { participantId: string; target: 'count' | 'result' }): Href {
+  return `/game/${gameId}/fix${start ? `?participantId=${start.participantId}&target=${start.target}` : ''}` as Href;
 }
 
 /** Late entry: choose who joins. */

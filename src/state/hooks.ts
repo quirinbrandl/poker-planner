@@ -6,6 +6,8 @@ import type {
   CashPlayerView,
   CashResultsView,
   CountEditorView,
+  FixStart,
+  FixView,
   GameCard,
   GameDetailsScreenView,
   HistoryGameView,
@@ -14,10 +16,12 @@ import type {
   PaymentsView,
   PersistenceStatus,
   PlanningView,
+  PlayerBuyInsView,
   PlayerPickerEntry,
   PlayScreenView,
   PlayView,
   PreviewStepView,
+  RebuyMixEditorView,
   SavedPlayerView,
   TemplateView,
   TournamentPlayerView,
@@ -98,6 +102,43 @@ export function useCountEditor(gameId: string, participantId: string, showErrors
 export function useCashPlayer(gameId: string, participantId: string): CashPlayerView | null {
   const app = useGameManagement();
   return useRead(() => app.play.getCashPlayer(gameId, participantId));
+}
+
+/**
+ * The count editor as a correction draft of a confirmed result (the saved draft, or the confirmed
+ * counts); `null` unless an In progress cash game where the participant has a result.
+ */
+export function useCorrectionEditor(gameId: string, participantId: string, showErrors = false): CountEditorView | null {
+  const app = useGameManagement();
+  return useRead(() => app.play.getCorrectionEditor(gameId, participantId, { showErrors }));
+}
+
+/** The Buy-ins section of a player page, both modes (rows, Undo popups, what is offered); `null` without one. */
+export function usePlayerBuyIns(gameId: string, participantId: string): PlayerBuyInsView | null {
+  const app = useGameManagement();
+  return useRead(() => app.play.getPlayerBuyIns(gameId, participantId));
+}
+
+/**
+ * The forgotten-rebuy (no `rebuyId`) or Correct mix editor for the texts the screen holds (`null`:
+ * the starting texts); `null` unless an In progress game with that participant and rebuy.
+ */
+export function useRebuyMixEditor(
+  gameId: string,
+  participantId: string,
+  options: { rebuyId?: string; texts: readonly string[] | null; showErrors: boolean },
+): RebuyMixEditorView | null {
+  const app = useGameManagement();
+  const { rebuyId, texts, showErrors } = options;
+  return useRead(() =>
+    app.play.getRebuyMixEditor(gameId, participantId, { ...(rebuyId ? { rebuyId } : {}), ...(texts ? { texts } : {}), showErrors }),
+  );
+}
+
+/** The fix page: the recorded fix, or step 1 for `start`; `null` when there is nothing to fix. */
+export function useFix(gameId: string, start: FixStart | null): FixView | null {
+  const app = useGameManagement();
+  return useRead(() => app.play.getFix(gameId, start ?? undefined));
 }
 
 /** Play of an In progress cash game (terms, reserve line, Playing / Finished rows); `null` otherwise. */

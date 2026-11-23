@@ -80,7 +80,7 @@ export function RebuyMixEditor({
       const outcome = await onReview();
       if (outcome.kind === 'confirm') setDialog({ kind: 'confirm', confirmation: outcome.confirmation });
       else if (outcome.kind === 'blocked') setDialog({ kind: 'blocked', blocked: outcome.blocked });
-      else if (outcome.firstDenominationValue !== null) {
+      else if (outcome.kind === 'needsCorrection' && outcome.firstDenominationValue !== null) {
         const target = data.entries.findIndex((entry) => entry.value === outcome.firstDenominationValue);
         if (target >= 0) setIndex(target);
         setTimeout(() => quantityRef.current?.focus(), 50);

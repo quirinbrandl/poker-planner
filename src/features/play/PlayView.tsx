@@ -41,6 +41,8 @@ export interface PlayViewProps {
   onAddPlayer: () => void;
   /** Open Bank & reserve. */
   onViewBank: () => void;
+  /** "Fixing Alice’s count · Step 2 of 3 →": continue the unfinished fix (shown while `data.fixText` is set). */
+  onContinueFix?: () => void;
   onSelectTab: (tab: WorkspaceTab) => void;
   onBack: () => void;
   onMore: () => void;
@@ -62,6 +64,7 @@ export function PlayView({
   onOpenPlayer,
   onAddPlayer,
   onViewBank,
+  onContinueFix,
   onSelectTab,
   onBack,
   onMore,
@@ -108,6 +111,9 @@ export function PlayView({
         accessibilityLabel={`${data.reserveText}. Bank and reserve`}
         onPress={onViewBank}
       />
+      {data.fixText && onContinueFix ? (
+        <Button label={data.fixText} trailingIcon="forward" variant="primary" fullWidth onPress={onContinueFix} />
+      ) : null}
       {feedback ? (
         <InlineNotice tone="confirmed" title={feedback.title}>
           {feedback.message}
