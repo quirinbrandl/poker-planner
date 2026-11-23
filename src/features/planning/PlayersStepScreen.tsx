@@ -9,7 +9,6 @@ import { useGameManagement, usePlanningView, usePlayerPicker } from '@/state';
 import { focusView, type ScrollViewRef, useToast, type ViewRef } from '@/ui';
 
 import { PlanningStepFrame } from './PlanningStepFrame';
-import { planningContext } from './players/gameContext';
 import { PlayerPicker } from './players/PlayerPicker';
 import { PlayerRoster } from './players/PlayerRoster';
 
@@ -95,7 +94,6 @@ export default function PlayersStepScreen() {
   if (mode.kind === 'picker') {
     return (
       <PlayerPicker
-        plan={plan}
         entries={entries}
         selection={staged}
         onToggle={(id) => {
@@ -121,16 +119,12 @@ export default function PlayersStepScreen() {
   }
 
   if (mode.kind === 'newPlayer') {
-    const { badges, context } = planningContext(plan);
     const alsoAdding = namesOf(staged);
     return (
       <SavedPlayerEditor
         title="New player"
-        backLabel="Back"
-        badges={badges}
-        context={context}
+        backLabel="Add players"
         initialName={mode.initialName}
-        helper="Saved for future games."
         note={alsoAdding.length > 0 ? `Also adding ${joinNames(alsoAdding)}.` : undefined}
         saveLabel={staged.length > 0 ? `Save and add ${staged.length + 1} players` : 'Save and add'}
         unchangedNote="Your saved players and game roster haven’t changed."
@@ -151,9 +145,8 @@ export default function PlayersStepScreen() {
     return (
       <SavedPlayerEditor
         title="Edit saved player"
-        backLabel="Back"
+        backLabel="Add players"
         initialName={mode.initialName}
-        helper="Existing games keep their captured names."
         saveLabel="Save"
         unchangedNote="Your saved players and game roster haven’t changed."
         onClose={backToPicker}

@@ -1,11 +1,13 @@
 import { useEffect } from 'react';
 import { BackHandler, StyleSheet, View } from 'react-native';
 
-import type { PlanningView, PlayerPickerEntry } from '@/game-management';
+import type { PlayerPickerEntry } from '@/game-management';
 import {
   Button,
   CheckboxRow,
+  colors,
   FooterActions,
+  Icon,
   IconButton,
   InlineNotice,
   Screen,
@@ -14,12 +16,10 @@ import {
   TextField,
   TopBar,
   space,
+  touchTarget,
 } from '@/ui';
 
-import { planningContext } from './gameContext';
-
 export interface PlayerPickerProps {
-  plan: PlanningView;
   entries: readonly PlayerPickerEntry[];
   /** Staged saved-player ids, in the order they were ticked. */
   selection: readonly string[];
@@ -45,9 +45,18 @@ function addLabel(count: number): string {
   return `Add ${count} ${count === 1 ? 'player' : 'players'}`;
 }
 
-/** Add players: search and tick saved names, or create a new one. Nothing changes until Add. */
+/** Spoken name of a saved player who is already on the roster. */
+function inGameLabel(entry: PlayerPickerEntry): string {
+  return entry.capturedName && entry.capturedName !== entry.name
+    ? `${entry.name}, already in this game as ${entry.capturedName}`
+    : `${entry.name}, already in this game`;
+}
+
+/**
+ * Add players: search and tick saved names, or create a new one. Nothing changes until Add. Saved
+ * players already on the roster follow the selectable ones as dimmed rows with a tick.
+ */
 export function PlayerPicker({
-  plan,
   entries,
   selection,
   onToggle,
@@ -60,8 +69,8 @@ export function PlayerPicker({
   onEdit,
   onManage,
 }: PlayerPickerProps) {
-  const { badges, context } = planningContext(plan);
   const shown = entries.filter((entry) => matches(entry.name, search));
+  const ordered = [...shown.filter((entry) => !entry.inGame), ...shown.filter((entry) => entry.inGame)];
 
   useEffect(() => {
     // Android back means Cancel: the picker is part of the Players step, not a route of its own.
@@ -74,17 +83,27 @@ export function PlayerPicker({
 
   return (
     <Screen
-      topBar={<TopBar backLabel="Players" backIcon="chevronLeft" onBack={onCancel} />}
+      topBar={<TopBar backLabel="Players" onBack={onCancel} />}
       footer={
-        <FooterActions note={`${selection.length} selected · ${plan.players.participants.length} in this game`}>
-          <Button label="Cancel" icon="chevronLeft" onPress={onCancel} />
-          <Button label={addLabel(selection.length)} variant="primary" icon="check" onPress={onAdd} />
+        <FooterActions>
+          <Button label="Cancel" onPress={onCancel} />
+          <Button
+            label={addLabel(selection.length)}
+            variant="primary"
+            icon="check"
+            unavailable={selection.length === 0}
+            onUnavailablePress={onAdd}
+            onPress={onAdd}
+          />
         </FooterActions>
       }
     >
-      <ScreenHeader badges={badges} context={context} title="Add players" />
+      <ScreenHeader title="Add players" />
       <TextField
         label="Search saved names"
+        labelHidden
+        inputIcon="search"
+        placeholder="Search"
         keyboard="text"
         autoCapitalize="none"
         returnKeyType="search"
@@ -93,22 +112,26 @@ export function PlayerPicker({
       />
       {shown.length > 0 ? (
         <View accessibilityRole="list" accessibilityLabel="Saved players" style={styles.list}>
-          {shown.map((entry) => {
-            const description = entry.inGame
-              ? entry.capturedName && entry.capturedName !== entry.name
-                ? `Already in this game as ${entry.capturedName}`
-                : 'Already in this game'
-              : undefined;
+          {ordered.map((entry) => {
             return (
               <View key={entry.savedPlayerId} style={styles.row}>
                 <View style={styles.choice}>
-                  <CheckboxRow
-                    label={entry.name}
-                    description={description}
-                    checked={selection.includes(entry.savedPlayerId)}
-                    unavailable={entry.inGame}
-                    onPress={() => onToggle(entry.savedPlayerId)}
-                  />
+                  {entry.inGame ? (
+                    <View accessible accessibilityLabel={inGameLabel(entry)} style={styles.inGame}>
+                      <Icon name="check" size={18} color={colors.textSupporting} />
+                      <Text tone="supporting" style={styles.inGameName}>
+                        {entry.capturedName && entry.capturedName !== entry.name
+                          ? `${entry.name} (${entry.capturedName})`
+                          : entry.name}
+                      </Text>
+                    </View>
+                  ) : (
+                    <CheckboxRow
+                      label={entry.name}
+                      checked={selection.includes(entry.savedPlayerId)}
+                      onPress={() => onToggle(entry.savedPlayerId)}
+                    />
+                  )}
                 </View>
                 <IconButton
                   icon="edit"
@@ -136,5 +159,14 @@ const styles = StyleSheet.create({
   list: { gap: space.sm + 2 },
   row: { flexDirection: 'row', alignItems: 'center', gap: space.sm },
   choice: { flex: 1, minWidth: 0 },
+  inGame: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: space.md,
+    minHeight: touchTarget,
+    paddingHorizontal: space.lg + 2,
+    opacity: 0.75,
+  },
+  inGameName: { flexShrink: 1 },
   empty: { paddingVertical: space.xl },
 });

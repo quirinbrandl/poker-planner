@@ -79,7 +79,6 @@ export default function SavedPlayersScreen() {
         title={editing ? 'Edit saved player' : 'New player'}
         backLabel="Saved players"
         initialName={mode.initialName}
-        helper={editing ? 'Existing games keep their captured names.' : 'Saved for future games.'}
         saveLabel="Save"
         onClose={closeEditor}
         onSave={async (name) => {
@@ -116,16 +115,12 @@ export default function SavedPlayersScreen() {
       <Screen
         topBar={
           <TopBar
-            backLabel={fromPlanning ? 'Back' : 'Games'}
-            backIcon="chevronLeft"
-            backAccessibilityLabel={fromPlanning ? 'Back to Add players' : 'Back to Games'}
+            backLabel={fromPlanning ? 'Add players' : 'Games'}
             onBack={leave}
           />
         }
       >
-        <ScreenHeader title="Saved players">
-          <Text tone="supporting">Changes apply to future selections. Existing games keep their names.</Text>
-        </ScreenHeader>
+        <ScreenHeader title="Saved players" />
         <Button
           ref={newButton}
           label="New player"
@@ -180,7 +175,7 @@ export default function SavedPlayersScreen() {
         onConfirm={() => void confirmDelete()}
       >
         <Text tone="supporting">
-          Delete this saved-player entry. Existing games keep their captured player and name.
+          Existing games keep their captured player and name.
         </Text>
       </Dialog>
     </>

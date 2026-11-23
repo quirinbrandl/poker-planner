@@ -17,7 +17,7 @@ import { type TextInputRef } from '../refs';
 export type FieldKeyboard = 'text' | 'decimal' | 'whole';
 
 export interface TextFieldProps {
-  /** Persistent visible label. Never replaced by a placeholder. */
+  /** Persistent visible label. Never replaced by a placeholder, except a search field (`labelHidden` + `inputIcon`). */
   label: string;
   value: string;
   onChangeText: (text: string) => void;
@@ -27,6 +27,8 @@ export interface TextFieldProps {
   unitSpoken?: string;
   /** Leading icon beside the label (decorative). */
   icon?: IconName;
+  /** Decorative icon inside the box before the text (the search field, with `labelHidden` and a placeholder). */
+  inputIcon?: IconName;
   /** Short helper line under the field. Shown together with an error. */
   helper?: string;
   /** Actionable error for this field. Shown under it in words and colour, and spoken with the field. */
@@ -83,6 +85,7 @@ export function TextField({
   unit,
   unitSpoken,
   icon,
+  inputIcon,
   helper,
   error,
   keyboard = 'text',
@@ -146,6 +149,11 @@ export function TextField({
             !editable && styles.readOnly,
           ]}
         >
+          {inputIcon ? (
+            <View style={styles.inputIcon}>
+              <Icon name={inputIcon} size={20} color={colors.textSupporting} />
+            </View>
+          ) : null}
           <TextInput
             ref={inputRef}
             testID={testID}
@@ -180,6 +188,7 @@ export function TextField({
               large ? styles.inputLarge : null,
               compact ? styles.inputCompact : null,
               keyboard !== 'text' && { fontVariant: tabularNums },
+              inputIcon ? styles.inputAfterIcon : null,
             ]}
           />
           {unit ? (
@@ -240,6 +249,8 @@ const styles = StyleSheet.create({
     fontSize: 18,
   },
   inputCompact: { paddingHorizontal: space.md, paddingVertical: space.sm },
+  inputIcon: { paddingLeft: space.lg },
+  inputAfterIcon: { paddingLeft: space.sm },
   inputLarge: { ...type.amountHero, color: colors.text, textAlign: 'center', paddingVertical: space.sm },
   unit: { paddingRight: space.lg, paddingLeft: space.xs },
   unitCompact: { paddingRight: space.md },

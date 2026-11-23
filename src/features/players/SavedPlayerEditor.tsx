@@ -18,15 +18,15 @@ export function editorRejection(reason: {
 export interface SavedPlayerEditorProps {
   /** "New player" or "Edit saved player". */
   title: string;
-  /** Top bar back text ("Back"). Back means the same as Cancel. */
+  /** Top bar back destination ("Add players", "Saved players"). Back means the same as Cancel. */
   backLabel: string;
   /** Badges and context line when the editor belongs to a game. */
   badges?: ReactNode;
   context?: string;
   /** The accepted name being edited, or the starting text of a new name. Unchanged text is not dirty. */
   initialName: string;
-  /** One quiet line under the field about the save boundary. */
-  helper: string;
+  /** Optional quiet line under the field. */
+  helper?: string;
   /** "Also adding Chris, Robin." when the save also adds picker selections. */
   note?: string;
   /** "Save", "Save and add", "Save and add 3 players". */
@@ -93,7 +93,7 @@ export function SavedPlayerEditor({
 
   return (
     <>
-      <Screen topBar={<TopBar backLabel={backLabel} backIcon="chevronLeft" onBack={cancel} />}>
+      <Screen topBar={<TopBar backLabel={backLabel} onBack={cancel} />}>
         <ScreenHeader badges={badges} context={context} title={title} />
         <TextField
           label="Player name"
