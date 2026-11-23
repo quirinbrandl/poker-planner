@@ -4,8 +4,16 @@
  * late entry, eliminations) extends the player rows and adds sections.
  */
 import { reserveCapacity } from '@/domain/distribution';
-import { formatEur, formatEurPerUnit, type ExactCents } from '@/domain/money';
+import {
+  eurInputText,
+  formatEur,
+  formatEurPerUnit,
+  formatExactEur,
+  formatSignedExactEur,
+  type ExactCents,
+} from '@/domain/money';
 import { formatSharePercent, payoutPreset, placeLabel, prizeAmounts } from '@/domain/payouts';
+import { exactWinLoss } from '@/domain/settlement';
 import type { Cents, DistributionPreference, GameMode } from '@/domain/types';
 
 import type { GameDocument, PlayRecord } from '../core/documents';
@@ -16,12 +24,14 @@ import { withColors } from '../planning/distribution';
 import type { ChipCountView } from '../planning/distribution-view';
 import {
   bankMix,
+  countDraftOf,
   issuancesOf,
   issuedMix,
   mixChips,
   mixValue,
   reserveConsumed,
   reserveUnconsumed,
+  resultOf,
   totalContributions,
 } from './ledger';
 
@@ -353,4 +363,269 @@ export function getPlayView(rt: Runtime, game: GameDocument | undefined): PlayVi
   if (!game || game.phase !== 'inProgress' || !game.play) return null;
   const started = game as GameDocument & { play: PlayRecord };
   return rt.memo(`play.view:${game.id}`, [game], () => buildPlayView(started));
+}
+
+// ---------------------------------------------------------------------------------------------
+// Screen-ready reads: Play (cash), Bank & reserve and Game details. Each is the screen's data
+// without the context line, back label and dates the workspace adds (`src/features/game`).
+// ---------------------------------------------------------------------------------------------
+
+/** Physical chips of one denomination, as drawn in towers and pills (same shape as `ChipCountView`). */
+export type DisplayChip = ChipCountView;
+
+/** A player in the Playing group (no confirmed result). */
+export interface PlayingPlayerRow {
+  /** Participant id. */
+  id: string;
+  /** Captured name. */
+  name: string;
+  /** "EUR 40.00 contribution · 1 rebuy". */
+  contributionText: string;
+  /** A saved, unconfirmed final chip count: tagged "Count draft", and the shortcut reads Resume. */
+  hasCountDraft: boolean;
+}
+
+/** A player in the Finished playing group (confirmed final result). */
+export interface FinishedPlayerRow {
+  /** Participant id. */
+  id: string;
+  /** Captured name. */
+  name: string;
+  /** "EUR 20.00 contribution". */
+  contributionText: string;
+  /** Signed provisional balance: exact chip value minus all contributions, "+EUR 5.00" / "−EUR 5.00" / "EUR 0.00". */
+  balanceText: string;
+  /** Sign of the balance; decides the colour and agrees with `balanceCaption`. */
+  direction: 'gain' | 'loss' | 'even';
+  /** "Won", "Lost", "Break-even". */
+  balanceCaption: string;
+  /** An unconfirmed correction of the confirmed result is saved: tagged "Correction draft". */
+  hasCorrectionDraft: boolean;
+}
+
+/** Play of an In progress cash game (`play.getPlayScreen`). */
+export interface PlayScreenView {
+  terms: {
+    /** "1 / 2". */
+    blindsText: string;
+    /** The rebuy price without currency: "20.00". */
+    rebuyText: string;
+    /** "EUR". */
+    currency: string;
+    /** Starting stack chip units: "200". */
+    stackText: string;
+  };
+  /**
+   * The reserve line that opens Bank & reserve: "2 reserve stacks available", "1 of 2 reserve stacks
+   * available" (weakened), "Reserve used · more stacks may be possible", "No reserve target · more
+   * stacks may be possible".
+   */
+  reserveText: string;
+  /** Players without a confirmed result, in joining order. */
+  playing: readonly PlayingPlayerRow[];
+  /** Players with a confirmed result, in joining order. */
+  finished: readonly FinishedPlayerRow[];
+  /** "EUR 140.00 total contributions". */
+  totalContributionsText: string;
+}
+
+/** Bank & reserve (`play.getBankReserve`). */
+export interface BankReserveScreenView {
+  /** "75 available chips". */
+  chipsText: string;
+  /** Every denomination in the bank, ascending, zero counts included. */
+  chips: readonly DisplayChip[];
+  /** "1,480 chip units in the bank. Total value alone does not prove a 200-unit stack is possible." */
+  valueNote: string;
+  reserve: {
+    /** "3 stacks". */
+    startedTargetText: string;
+    /** Rebuys and late entries recorded since Start: "1". */
+    consumedText: string;
+    /** Started target minus consumption, floored at zero: "2". */
+    unconsumedText: string;
+    /** "2 of 2" ("—" when too complex to work out). */
+    achievableText: string;
+  };
+}
+
+/** One paid place of a tournament's locked payout schedule. */
+export interface DetailsPayoutPlace {
+  /** Stable key. */
+  id: string;
+  /** "1st". */
+  placeLabel: string;
+  /** "70%". */
+  shareText: string;
+  /** The current prize: "EUR 98.00". */
+  amountText: string;
+}
+
+/** A participant in joining order. */
+export interface DetailsPlayer {
+  id: string;
+  /** Captured name. */
+  name: string;
+  /** "Joined late", or `null` for an initial player. */
+  note: string | null;
+}
+
+/** Locked Game details of an In progress game (`play.getGameDetails`), both modes. */
+export interface GameDetailsScreenView {
+  mode: GameMode;
+  phase: 'inProgress';
+  /** ISO 8601; the screen formats it ("13 Nov 2026 · 19:30"). */
+  createdAt: string;
+  /** "EUR 20.00". */
+  buyInText: string;
+  /** Cash: "EUR 0.10 per chip unit"; tournament: "No chip money value". */
+  chipValueText: string;
+  /** "1 / 2 chip units". */
+  blindsText: string;
+  /** "100 BB", "98 BB (requested 100 BB)". */
+  depthText: string;
+  /** "4 payments of each blind". */
+  coverageText: string;
+  /** "Fewer chips" / "More chips". */
+  preferenceText: string;
+  /** "3 stacks", "1 stack (configured 3)". */
+  reserveText: string;
+  /** The recorded starting stack of the initial players. */
+  startingStack: { unitsText: string; chips: readonly DisplayChip[] };
+  /** The configured chip set (quantities as configured, not the current bank). */
+  chipSet: readonly DisplayChip[];
+  players: readonly DetailsPlayer[];
+  /** Tournament only: the locked schedule with current amounts. */
+  payouts: { name: string; places: readonly DetailsPayoutPlace[]; /** "Prize pool EUR 140.00 · …" */ note: string } | null;
+}
+
+type StartedGame = GameDocument & { play: PlayRecord };
+
+function startedGame(game: GameDocument | undefined): StartedGame | null {
+  return game && game.phase === 'inProgress' && game.play ? (game as StartedGame) : null;
+}
+
+function reserveLine(reserve: ReserveStatusView): string {
+  if (reserve.startedTarget === 0) return 'No reserve target · more stacks may be possible';
+  if (reserve.unconsumed === 0) return 'Reserve used · more stacks may be possible';
+  if (reserve.achievable === null) return 'Reserve could not be worked out';
+  if (reserve.weakened) return `${reserve.achievable} of ${plural(reserve.unconsumed, 'reserve stack')} available`;
+  return `${plural(reserve.achievable, 'reserve stack')} available`;
+}
+
+function finishedRow(play: PlayRecord, player: PlayPlayerView, units: number): FinishedPlayerRow {
+  const rate = play.terms.cashRate!;
+  const balance = exactWinLoss(units, player.contribution.cents, rate);
+  const direction = balance.numerator > 0 ? 'gain' : balance.numerator < 0 ? 'loss' : 'even';
+  return {
+    id: player.id,
+    name: player.name,
+    contributionText: player.contribution.text,
+    balanceText: formatSignedExactEur(balance),
+    direction,
+    balanceCaption: direction === 'gain' ? 'Won' : direction === 'loss' ? 'Lost' : 'Break-even',
+    hasCorrectionDraft: countDraftOf(play, player.id) !== undefined,
+  };
+}
+
+export function buildPlayScreen(game: StartedGame, view: PlayView): PlayScreenView {
+  const { play } = game;
+  const playing: PlayingPlayerRow[] = [];
+  const finished: FinishedPlayerRow[] = [];
+  for (const player of view.players) {
+    const result = resultOf(play, player.id);
+    if (result) finished.push(finishedRow(play, player, mixValue(result.mix)));
+    else {
+      playing.push({
+        id: player.id,
+        name: player.name,
+        contributionText: player.contribution.text,
+        hasCountDraft: countDraftOf(play, player.id) !== undefined,
+      });
+    }
+  }
+  return {
+    terms: {
+      blindsText: view.terms.blinds.text,
+      rebuyText: eurInputText(play.terms.buyIn),
+      currency: 'EUR',
+      stackText: formatCount(play.terms.stackValue),
+    },
+    reserveText: reserveLine(view.reserve),
+    playing,
+    finished,
+    totalContributionsText: view.totals.contributions.label,
+  };
+}
+
+export function buildBankReserve(game: StartedGame, view: PlayView): BankReserveScreenView {
+  const { reserve } = view;
+  return {
+    chipsText: view.bank.label,
+    chips: view.bank.mix,
+    valueNote: `${view.bank.valueText} in the bank. Total value alone does not prove a ${formatCount(game.play.terms.stackValue)}-unit stack is possible.`,
+    reserve: {
+      startedTargetText: plural(reserve.startedTarget, 'stack'),
+      consumedText: formatCount(reserve.consumed),
+      unconsumedText: formatCount(reserve.unconsumed),
+      achievableText: reserve.achievableText,
+    },
+  };
+}
+
+export function buildGameDetails(game: StartedGame, view: PlayView): GameDetailsScreenView {
+  const { terms } = game.play;
+  const { details } = view;
+  const reserveText = details.reserve.reduced
+    ? `${plural(terms.reserve.target, 'stack')} (configured ${formatCount(terms.reserve.configured)})`
+    : plural(terms.reserve.target, 'stack');
+  return {
+    mode: game.mode,
+    phase: 'inProgress',
+    createdAt: game.createdAt,
+    buyInText: view.terms.buyIn.text,
+    chipValueText: terms.cashRate ? `${formatExactEur(terms.cashRate)} per chip unit` : 'No chip money value',
+    blindsText: `${view.terms.blinds.text} chip units`,
+    depthText: details.depth.text,
+    coverageText: details.coverageText,
+    preferenceText: details.preferenceText,
+    reserveText,
+    startingStack: { unitsText: formatCount(details.startingStack.value), chips: details.startingStack.mix },
+    chipSet: details.chipSet.denominations.map((d) => ({ value: d.value, color: d.color, count: d.quantity })),
+    players: view.players.map((p) => ({ id: p.id, name: p.name, note: p.entry === 'lateEntry' ? 'Joined late' : null })),
+    payouts: details.payouts
+      ? {
+          name: details.payouts.name,
+          places: details.payouts.places.map((place) => ({
+            id: `place-${place.place}`,
+            placeLabel: place.placeLabel,
+            shareText: place.shareText,
+            amountText: place.amountText,
+          })),
+          note: details.payouts.prizePoolLine,
+        }
+      : null,
+  };
+}
+
+/** Play of an In progress cash game; `null` unless the game is an In progress cash game. */
+export function getPlayScreen(rt: Runtime, game: GameDocument | undefined): PlayScreenView | null {
+  const started = startedGame(game);
+  if (!started || started.mode !== 'cash') return null;
+  const view = getPlayView(rt, started)!;
+  return rt.memo(`play.screen:${started.id}`, [view], () => buildPlayScreen(started, view));
+}
+
+export function getBankReserve(rt: Runtime, game: GameDocument | undefined): BankReserveScreenView | null {
+  const started = startedGame(game);
+  if (!started) return null;
+  const view = getPlayView(rt, started)!;
+  return rt.memo(`play.bank:${started.id}`, [view], () => buildBankReserve(started, view));
+}
+
+export function getGameDetails(rt: Runtime, game: GameDocument | undefined): GameDetailsScreenView | null {
+  const started = startedGame(game);
+  if (!started) return null;
+  const view = getPlayView(rt, started)!;
+  return rt.memo(`play.details:${started.id}`, [view], () => buildGameDetails(started, view));
 }

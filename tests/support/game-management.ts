@@ -113,3 +113,45 @@ export function observe(app: GameManagement, gameId: string) {
     location: app.location.get(),
   };
 }
+
+/**
+ * Writes play records that have no public operation yet (confirmed results, count drafts) straight
+ * into the saved game document, then reopens the application on it. Stand-in until the results
+ * operations exist; use only to set up what other features record.
+ */
+export async function withSavedPlayRecords(
+  harness: TestHarness,
+  app: GameManagement,
+  gameId: string,
+  records: {
+    results?: { participantId: string; counts: number[] }[];
+    countDrafts?: { participantId: string; quantityTexts: string[] }[];
+  },
+): Promise<GameManagement> {
+  await app.persistence.flush();
+  const store = harness.store();
+  const documents = await store.loadAll();
+  const key = [...documents.keys()].find((k) => k.endsWith(gameId));
+  if (!key) throw new Error(`No saved game ${gameId}`);
+  const game = JSON.parse(documents.get(key)!) as {
+    play: {
+      terms: { chipSet: { value: number }[] };
+      results?: unknown[];
+      countDrafts?: unknown[];
+    };
+  };
+  const { play } = game;
+  if (records.results) {
+    play.results = [
+      ...(play.results ?? []),
+      ...records.results.map((r) => ({
+        participantId: r.participantId,
+        mix: play.terms.chipSet.map((d, i) => ({ value: d.value, count: r.counts[i] })),
+        confirmedAt: '2026-11-23T20:00:00.000Z',
+      })),
+    ];
+  }
+  if (records.countDrafts) play.countDrafts = [...(play.countDrafts ?? []), ...records.countDrafts];
+  await store.commit([{ key, text: JSON.stringify(game) }]);
+  return harness.open();
+}
