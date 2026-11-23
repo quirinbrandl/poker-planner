@@ -1,5 +1,5 @@
 import { type ReactNode } from 'react';
-import { StyleSheet, View } from 'react-native';
+import { StyleSheet, useWindowDimensions, View } from 'react-native';
 
 import { Icon } from '../Icon';
 import { Text } from '../Text';
@@ -33,8 +33,12 @@ export function MetricTile({ label, value, subLabel, adjustedFrom, adjusts = 'va
   ]
     .filter(Boolean)
     .join(', ');
+  // The width a tile asks for grows with the text size, so tiles wrap to a new row before a label
+  // would break inside a word.
+  const { fontScale } = useWindowDimensions();
+  const basis = TILE_BASIS * Math.max(1, fontScale || 1);
   return (
-    <View accessible accessibilityLabel={spoken} style={[styles.tile, adjusted && styles.adjusted]}>
+    <View accessible accessibilityLabel={spoken} style={[styles.tile, { flexBasis: basis }, adjusted && styles.adjusted]}>
       <View style={styles.labelRow}>
         {adjusted ? <Icon name="warning" size={13} color={colors.warning} /> : null}
         <Text variant="overline" tone={adjusted ? 'warning' : 'supporting'}>
@@ -84,11 +88,12 @@ export function MetricStrip({ children, accessibilityLabel }: { children: ReactN
 /** Keep ratios like "1 / 2" on one line (long values may still wrap between words). */
 const nonBreaking = (text: string) => text.replace(/ \/ /g, '\u00A0/\u00A0');
 
+const TILE_BASIS = 100;
+
 const styles = StyleSheet.create({
   strip: { flexDirection: 'row', flexWrap: 'wrap', gap: space.sm },
   tile: {
     flexGrow: 1,
-    flexBasis: 100,
     minWidth: 0,
     gap: 3,
     paddingHorizontal: space.md,
