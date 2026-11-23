@@ -5,8 +5,8 @@
  * {@link guardCompletedGames}, and hands the operation areas a runtime whose writes to a Completed
  * game never apply ({@link readOnlyForCompletedGames}).
  *
- * The convention this relies on: a play operation takes the game id as its first argument, and a
- * read's name starts with `get`. Functions that only transform a draft the screen holds (the
+ * The convention this relies on: a play operation takes the game id (or a draft carrying `gameId`)
+ * as its first argument, and a read's name starts with `get`. Functions that only transform a draft the screen holds (the
  * finishing-order draft) are left out of the guard in `play/index.ts`; saving such a draft is
  * guarded by the operation itself and by the read-only runtime. Only Calculate Payments, Reopen,
  * Return to Planning (which rejects Completed games itself) and Delete change a Completed game.
@@ -21,7 +21,13 @@ export function gameCompleted(): Rejected<'gameCompleted'> {
   return rejected('gameCompleted', GAME_COMPLETED_MESSAGE);
 }
 
-function isCompleted(state: AppState, gameId: unknown): boolean {
+/** The game an operation is about: its first argument, or the `gameId` of a draft passed first (`saveOrder`). */
+function gameIdOf(first: unknown): unknown {
+  return typeof first === 'object' && first !== null && 'gameId' in first ? (first as { gameId: unknown }).gameId : first;
+}
+
+function isCompleted(state: AppState, first: unknown): boolean {
+  const gameId = gameIdOf(first);
   return typeof gameId === 'string' && Object.prototype.hasOwnProperty.call(state.games, gameId)
     ? state.games[gameId].phase === 'completed'
     : false;

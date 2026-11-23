@@ -66,6 +66,8 @@ export interface SettledPlayer {
   /** Buy-in plus rebuys, in cents. */
   contributions: Cents;
   balance: Cents;
+  /** Tournaments: the finishing place (1 = winner) the payout was allocated for. */
+  place?: number;
 }
 
 /** A direction for one participant to pay another; not a record that money changed hands. */

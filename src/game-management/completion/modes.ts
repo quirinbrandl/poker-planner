@@ -8,17 +8,19 @@
  * - `balanceDetails`: the place badge and supporting lines of a Balances row.
  * - `historyFacts`: the summary on the History card.
  *
- * Tournament completion (ticket #28) replaces `TOURNAMENT` below; nothing else has to change.
  */
 import { formatEur, formatSignedEur } from '@/domain/money';
+import { placeLabel, prizeAmounts } from '@/domain/payouts';
 import { allocateCashResults } from '@/domain/settlement';
 import type { Cents, GameMode } from '@/domain/types';
 
 import type { CompletionRecord, GameDocument, PlayRecord, SettledPlayer } from '../core/documents';
 import { formatCount } from '../shared/numbers';
-import { mixValue, resultOf } from '../play/ledger';
+import { eliminationOrder, mixValue, resultOf } from '../play/ledger';
 import { contributionsOf } from '../play/results/shared';
 import { buildResultsView } from '../play/results/status';
+import { placeOf, plural, standing } from '../play/tournament/standing';
+import { CALCULATE_BLOCKED_MESSAGE } from '../play/tournament/views';
 import type { CalculatePaymentsConfirmation, HistoryFact } from './types';
 
 /** A started game (In progress or Completed): it has its play record. */
@@ -28,6 +30,8 @@ export type StartedGame = GameDocument & { play: PlayRecord };
 export interface FinalResult {
   participantId: string;
   finalResult: Cents;
+  /** Tournaments: the finishing place the payout belongs to (stored with the settlement). */
+  place?: number;
 }
 
 export type Evaluation =
@@ -95,21 +99,68 @@ const CASH: CompletionMode = {
   },
 };
 
-/** Placeholder until tournament completion (ticket #28): never ready. */
+/**
+ * Tournaments: ready only with a complete finishing order (exactly N − 1 distinct eliminations of
+ * participants and one derived winner). Each participant's final monetary result is the payout of
+ * their place from the whole prize pool (every buy-in, late entry and rebuy): shares floored to
+ * cents, leftover cents from 1st place down, unpaid places zero. Chip counts are never used.
+ */
 const TOURNAMENT: CompletionMode = {
-  evaluate: () => ({ ready: false, reason: 'Tournament Payments aren’t available yet.' }),
-  balanceDetails: (_game, player) => ({
-    placeLabel: null,
-    placeHighlight: false,
-    lines: [
-      player.finalResult > 0 ? `Payout ${formatEur(player.finalResult)}` : 'No payout',
-      `Buy-ins ${formatEur(player.contributions)}`,
-    ],
-  }),
-  historyFacts: (_game, completion) => [
-    { label: 'Prize pool', value: formatEur(completion.players.reduce((sum, p) => sum + p.contributions, 0)) },
-    { value: completion.payments.length === 0 ? 'No payments needed' : paymentsCountText(completion.payments.length) },
-  ],
+  evaluate(game) {
+    const { play } = game;
+    const schedule = play.terms.payoutSchedule;
+    if (!schedule) return { ready: false, reason: 'This tournament has no payout schedule.' };
+    const order = eliminationOrder(play);
+    const roster = new Set(play.roster.map((p) => p.id));
+    if (new Set(order).size !== order.length || order.some((id) => !roster.has(id))) {
+      return { ready: false, reason: 'The finishing order is not valid. Check it in Edit order.' };
+    }
+    const s = standing(play, schedule);
+    if (!s.winner || order.length !== s.size - 1) return { ready: false, reason: CALCULATE_BLOCKED_MESSAGE };
+    if (schedule.shares.length > s.size) return { ready: false, reason: 'There are more paid places than players.' };
+    const amounts = prizeAmounts(s.prizePool, schedule.shares, s.size);
+    const finalResults = play.roster.map((p) => {
+      const place = placeOf(s, p.id)!;
+      return { participantId: p.id, finalResult: amounts[place - 1], place };
+    });
+    return {
+      ready: true,
+      confirmation: {
+        kind: 'calculatePayments',
+        readyLine: `${s.winner.name} wins · all ${plural(order.length, 'elimination')} recorded`,
+        facts: [
+          { label: 'Prize pool', value: formatEur(s.prizePool) },
+          ...schedule.shares.map((_, index) => {
+            const holder = play.roster.find((p) => placeOf(s, p.id) === index + 1)!;
+            return { label: `${placeLabel(index + 1)} · ${holder.name}`, value: formatEur(amounts[index]) };
+          }),
+        ],
+      },
+      finalResults,
+    };
+  },
+
+  balanceDetails(_game, player) {
+    return {
+      placeLabel: player.place !== undefined ? placeLabel(player.place) : null,
+      placeHighlight: player.place === 1,
+      lines: [
+        player.finalResult > 0 ? `Payout ${formatEur(player.finalResult)}` : 'No payout',
+        `Buy-ins ${formatEur(player.contributions)}`,
+      ],
+    };
+  },
+
+  historyFacts(game, completion) {
+    const facts: HistoryFact[] = [
+      { label: 'Prize pool', value: formatEur(completion.players.reduce((sum, p) => sum + p.contributions, 0)) },
+      { value: completion.payments.length === 0 ? 'No payments needed' : paymentsCountText(completion.payments.length) },
+    ];
+    const winner = completion.players.find((p) => p.place === 1);
+    const name = winner && game.play.roster.find((p) => p.id === winner.participantId)?.name;
+    if (name) facts.push({ label: 'Winner', value: name });
+    return facts;
+  },
 };
 
 export const COMPLETION_MODES: Readonly<Record<GameMode, CompletionMode>> = { cash: CASH, tournament: TOURNAMENT };

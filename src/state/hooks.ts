@@ -153,7 +153,7 @@ export function useBankReserve(gameId: string): BankReserveScreenView | null {
   return useRead(() => app.play.getBankReserve(gameId));
 }
 
-/** Locked Game details of an In progress game, both modes; `null` otherwise. */
+/** Locked Game details of a started game (In progress or Completed), both modes; `null` otherwise. */
 export function useGameDetails(gameId: string): GameDetailsScreenView | null {
   const app = useGameManagement();
   return useRead(() => app.play.getGameDetails(gameId));
@@ -171,13 +171,13 @@ export function useTournamentPlay(gameId: string): TournamentPlayView | null {
   return useRead(() => app.play.getTournamentPlay(gameId));
 }
 
-/** Tournament Results (status, finishing order, Calculate state); `null` unless an In progress tournament. */
+/** Tournament Results (status, finishing order, Calculate state; Completed: read-only); `null` unless a started tournament. */
 export function useTournamentResults(gameId: string): TournamentResultsView | null {
   const app = useGameManagement();
   return useRead(() => app.play.getTournamentResults(gameId));
 }
 
-/** One tournament player's page; `null` unless an In progress tournament with that participant. */
+/** One tournament player's page (Completed: read-only); `null` unless a started tournament with that participant. */
 export function useTournamentPlayer(gameId: string, participantId: string): TournamentPlayerView | null {
   const app = useGameManagement();
   return useRead(() => app.play.getTournamentPlayer(gameId, participantId));

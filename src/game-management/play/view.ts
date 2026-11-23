@@ -476,12 +476,14 @@ export interface DetailsPlayer {
   note: string | null;
 }
 
-/** Locked Game details of an In progress game (`play.getGameDetails`), both modes. */
+/** Locked Game details of a started game (`play.getGameDetails`), In progress or Completed, both modes. */
 export interface GameDetailsScreenView {
   mode: GameMode;
-  phase: 'inProgress';
+  phase: 'inProgress' | 'completed';
   /** ISO 8601; the screen formats it ("13 Nov 2026 · 19:30"). */
   createdAt: string;
+  /** ISO 8601 finishing time of a Completed game (when Payments were calculated); `null` while In progress. */
+  finishedAt: string | null;
   /** "EUR 20.00". */
   buyInText: string;
   /** Cash: "EUR 0.10 per chip unit"; tournament: "No chip money value". */
@@ -501,7 +503,7 @@ export interface GameDetailsScreenView {
   /** The configured chip set (quantities as configured, not the current bank). */
   chipSet: readonly DisplayChip[];
   players: readonly DetailsPlayer[];
-  /** Tournament only: the locked schedule with current amounts. */
+  /** Tournament only: the locked schedule with current amounts (Completed: the final amounts). */
   payouts: { name: string; places: readonly DetailsPayoutPlace[]; /** "Prize pool EUR 140.00 · …" */ note: string } | null;
 }
 
@@ -586,10 +588,12 @@ export function buildGameDetails(game: StartedGame, view: PlayView): GameDetails
   const reserveText = details.reserve.reduced
     ? `${plural(terms.reserve.target, 'stack')} (configured ${formatCount(terms.reserve.configured)})`
     : plural(terms.reserve.target, 'stack');
+  const completed = game.phase === 'completed';
   return {
     mode: game.mode,
-    phase: 'inProgress',
+    phase: completed ? 'completed' : 'inProgress',
     createdAt: game.createdAt,
+    finishedAt: completed ? (game.completion?.finishedAt ?? null) : null,
     buyInText: view.terms.buyIn.text,
     chipValueText: terms.cashRate ? `${formatExactEur(terms.cashRate)} per chip unit` : 'No chip money value',
     blindsText: `${view.terms.blinds.text} chip units`,
@@ -630,7 +634,15 @@ export function getBankReserve(rt: Runtime, game: GameDocument | undefined): Ban
   return rt.memo(`play.bank:${started.id}`, [view], () => buildBankReserve(started, view));
 }
 
+/**
+ * Game details of a started game: In progress, or Completed with the facts as they were locked at
+ * Start and the finishing time. `null` in Planning.
+ */
 export function getGameDetails(rt: Runtime, game: GameDocument | undefined): GameDetailsScreenView | null {
+  if (game?.phase === 'completed' && game.play) {
+    const completed = game as StartedGame;
+    return rt.memo(`play.details:${game.id}`, [game], () => buildGameDetails(completed, buildPlayView(completed)));
+  }
   const started = startedGame(game);
   if (!started) return null;
   const view = getPlayView(rt, started)!;
