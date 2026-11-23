@@ -91,6 +91,7 @@ describe('template management', () => {
     expect(live.summary.label).toBe('Incomplete chip set');
     expect(live.rows.r1.value?.message).toBe('Combine quantities in the existing row');
     expect(live.rows.r1.quantity?.code).toBe('quantityMissing');
+    expect([live.rows.r0.chipCount, live.rows.r1.chipCount]).toEqual([10, null]);
     expect(app.templates.list()).toEqual([]);
   });
 });

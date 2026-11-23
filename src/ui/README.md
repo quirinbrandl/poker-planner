@@ -89,7 +89,7 @@ Rules of use:
 
 ## Overlays
 
-**`Dialog`** — modal confirmation. `visible`, `title`, `children` (body; scrolls when long), `confirmLabel` + `onConfirm` (the specific verb), `onCancel` (Cancel button, Android back and backdrop all call it), `cancelLabel`, `destructive` (coral confirm, screen-reader focus starts on Cancel), `confirmLoading` / `confirmLoadingLabel`, `secondaryAction` `{ label, onPress }` for a third choice. Short pairs sit side by side; long verbs and large text stack Cancel above the action.
+**`Dialog`** — modal confirmation. `visible`, `title`, `children` (body; scrolls when long), `confirmLabel` + `onConfirm` (the specific verb), `onCancel` (Cancel button, Android back and backdrop all call it), `cancelLabel`, `destructive` (coral confirm, screen-reader focus starts on Cancel), `confirmLoading` / `confirmLoadingLabel`, `secondaryAction` `{ label, onPress }` for a third choice. `actionOrder="confirmFirst"` stacks the confirm (default choice, initial focus) on top, then the secondary action, then a quiet Cancel ("Where should changes apply?"). Short pairs sit side by side; long verbs and large text stack Cancel above the action.
 `<Dialog visible={open} title="Rebuy for Ben" confirmLabel="Issue rebuy · EUR 20.00" onConfirm={issue} onCancel={close}>…</Dialog>`
 
 **`BottomSheet`** — action sheet. `visible`, `title`, `subtitle`, `actions: { key, label, description, icon, destructive?, onPress }[]`, `onCancel`.
@@ -142,7 +142,12 @@ Colours are `ChipColor | null` from `src/domain/types.ts`; `null` is "No color".
 **`ChipPill`** / **`ChipPillRow`** — symbol + `×N`; spoken "N × value color". `color`, `value`, `count`, `showValue` (adds "(value)" as in the bank strip), `size="compact"`, `delta` ("−5" badge).
 `<ChipPill color="grey" value={1} count={110} showValue />`
 
-**`ChipColorButton`** — tappable chip + "Chip color / Red" in a denomination row. `color`, `value`, `onPress`, specific `accessibilityLabel`.
+**`ChipColorButton`** — tappable chip + "Chip color / Red" in a denomination row. `color`, `value`, `onPress`, specific `accessibilityLabel`. `ref` lets the palette return focus to it.
+
+**`ChipColorPalette`** — the "Chip color" dialog: all twelve choices as labelled radio tiles, staged until **Apply color**; Cancel keeps the old colour. `visible`, `color`, `description`, `onApply(color)`, `onCancel`, `returnFocusRef` (the chip button that opened it).
+`<ChipColorPalette visible={open} color={row.color} description="Value: 5 chip units. Match your physical chips." onApply={apply} onCancel={close} returnFocusRef={chipRef} />`
+
+**`ChipTray`** — compact chip preview of a set (template picker and list): chip symbol, value and colour name per denomination, wrapping. `chips: { key, color, value }[]`, `accessibilityLabel`.
 
 **`ChipCase`** — open chip case. `denominations: { key, color, quantity: number | null }[]`. One channel per started 100 chips, channels never shared, nothing for zero/blank, max 32 channels per denomination with a "•••" mark and a caption, scales down to fit with no horizontal scroll. One labelled image (`accessibilityLabel` overridable). `chipCaseLayout()` is the pure layout.
 `<ChipCase denominations={rows.map((r) => ({ key: r.id, color: r.color, quantity: parsedQuantityOrNull }))} />`

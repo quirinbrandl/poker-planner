@@ -118,7 +118,8 @@ interface PlanningView {
   payoutSchedule: PayoutScheduleView;   // see Payout schedule below
   preview: { blockers: { step, title, problems }[]; setupComplete: boolean };
 }
-interface ChipRowView { id; value: FieldView; quantity: FieldView; color: ChipColor | null; blank: boolean }
+interface ChipRowView { id; value: FieldView; quantity: FieldView; color: ChipColor | null;
+                       chipCount: number | null /* valid quantity, for the chip case */; blank: boolean }
 type ChipSetSummary = { kind: 'empty' | 'incomplete' | 'valid'; label: string; /* valid: */ denominations, chips, chipUnits }
 ```
 
@@ -281,7 +282,7 @@ Save (approved exception), so the editor keeps its own unsaved text in component
 | `templates.list(): TemplateView[]` | `{ id, name, denominations, summary }`, alphabetical. `denominations` (value, quantity, color, in row order) feed the compact chip tray. |
 | `templates.get(id)` | `TemplateView \| null`. |
 | `templates.getEditorDraft(id)` | `{ name, rows: ChipRowInput[] } \| null`: starting point for the editor. |
-| `templates.describeRows(rows)` | Live validation of unsaved editor rows: `{ rows: Record<rowId, { value, quantity }>, setProblem, problems, summary }`. Stores nothing. |
+| `templates.describeRows(rows)` | Live validation of unsaved editor rows: `{ rows: Record<rowId, { value, quantity, chipCount }>, setProblem, problems, summary }` (`chipCount`: the valid quantity for the chip case, else `null`). Stores nothing. |
 | `templates.create({ name, rows })` | `accepted { templateId }` \| `rejected invalidTemplate` with every name/row problem in `reason.problems`. |
 | `templates.update(id, { name, rows })` | `accepted` \| `rejected invalidTemplate \| templateNotFound`. |
 | `templates.rename(id, name)` | as `update`, rows kept. |

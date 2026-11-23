@@ -3,6 +3,7 @@ export * from './theme';
 export { Text, type TextProps, type TextTone } from './Text';
 export { Icon, iconNames, type IconName, type IconProps } from './Icon';
 export { useReduceMotion, usePressFeedback } from './motion';
+export type { ViewRef, TextInputRef, ScrollViewRef } from './refs';
 
 export { Screen, type ScreenProps } from './layout/Screen';
 export { TopBar, type TopBarProps } from './layout/TopBar';
@@ -52,6 +53,8 @@ export { chipPaint, noColorPaint, paintFor, chipColorName, chipColorChoices, typ
 export { ChipSymbol, type ChipSymbolProps } from './chips/ChipSymbol';
 export { ChipPill, ChipPillRow, type ChipPillProps } from './chips/ChipPill';
 export { ChipColorButton, type ChipColorButtonProps } from './chips/ChipColorButton';
+export { ChipColorPalette, type ChipColorPaletteProps } from './chips/ChipColorPalette';
+export { ChipTray, type ChipTrayProps, type ChipTrayItem } from './chips/ChipTray';
 export {
   ChipCase,
   chipCaseLayout,

@@ -47,6 +47,8 @@ export interface ChipRowView {
   value: FieldView;
   quantity: FieldView;
   color: ChipColor | null;
+  /** The quantity as a whole number while it is valid, else `null`: what the chip case draws. */
+  chipCount: number | null;
   /** Both value and quantity are blank: removal needs no confirmation. */
   blank: boolean;
 }
@@ -185,6 +187,7 @@ export function buildPlanningView(state: AppState, game: GameDocument): Planning
             attempted('chipSet'),
           ),
           color: row.color,
+          chipCount: problems.chipCount,
           blank: isBlankRow(row),
         };
       }),
