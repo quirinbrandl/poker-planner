@@ -335,7 +335,7 @@ interface PlayView {
            money: { kind: 'cash'; rate: ExactCents; rateText } | { kind: 'tournament'; text: 'No chip money value' };
            coverage: { payments, text: '4 payments of each blind' }; preference; preferenceText: 'Fewer chips' };
   players: { id; name; savedPlayerId; joinOrder; entry: 'initial' | 'lateEntry';
-             contribution: { stacks, rebuys, cents, text: 'EUR 40.00 contribution · 1 rebuy' };
+             contribution: { stacks, rebuys, cents, text: 'EUR 40.00 · 1 rebuy' };
              handedOut: ChipsView; firstStack: ChipsView }[];  // ChipsView = { chips, value, mix: ChipCountView[] }
   totals: { contributions: MoneyView & { label: 'EUR 120.00 total contributions' }; buyIns; rebuys; stacks;
             inPlay: ChipsView; prizePool: MoneyView | null /* tournaments */ };
@@ -534,7 +534,12 @@ exactly the screen's data in `src/features/{play,entry,details}/types.ts` minus 
 adds (context line, back label, formatted dates). Play rows read the shared records: a count draft
 gives **Resume** / "Count draft"; a confirmed result moves the player to Finished playing with the
 exact signed provisional balance (`+EUR 5.00`, Won / Lost / Break-even) and no Rebuy; a count
-draft beside a result is a "Correction draft".
+draft beside a result is a "Correction draft". The Play row's contribution reads "EUR 40.00 · 1
+rebuy" and the reserve line "2 reserve stacks" ("1 of 2 reserve stacks" when weakened). Bank &
+reserve gives the bank's total (`valueText`, "1,480 chip units") and the reserve as
+`leftText` ("2 of 3 stacks", with `left` / `target` for the bar) plus `achievableNowText`
+("Only 1 can be formed now"), set only when corrections weakened the reserve or it could not be
+worked out.
 
 ```tsx
 const result = app.play.proposeRebuy(gameId, participantId);
