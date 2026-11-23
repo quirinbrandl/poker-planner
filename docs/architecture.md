@@ -57,9 +57,11 @@ Route files stay thin (`export { default } from '@/features/...'`).
 | Route | Screen |
 | --- | --- |
 | `/` | Games |
+| `/new-game` | New game: choosing the mode creates the plan |
 | `/history` | History |
-| `/players` | Saved players |
+| `/players` | Saved players (`?from=planning` when opened from the Players step) |
 | `/templates`, `/templates/[templateId]` | Chip set templates, template editor |
+| `/templates/choose?gameId=` | Template picker for a game's Chip set step |
 | `/game/[gameId]/planning/{mode,players,chip-set,settings,payouts,preview}` | Planning wizard steps |
 | `/game/[gameId]/{play,results,details,payments}` | In progress and Completed workspaces |
 | `/game/[gameId]/player/[participantId]` | Player page |
@@ -68,7 +70,7 @@ Route files stay thin (`export { default } from '@/features/...'`).
 | `/game/[gameId]/fix` | One-step-at-a-time fix for a blocked correction |
 | `/game/[gameId]/add-player` | Late entry |
 | `/game/[gameId]/order` | Tournament finishing order editor |
-| `/dev/gallery` | Design-system gallery (development only) |
+| `/dev/gallery`, `/dev/<screen>?state=` | Design-system gallery and fixture states of single screens (development only) |
 
 ## UI
 
