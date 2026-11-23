@@ -28,6 +28,7 @@ const icons = {
   more: [c(5, 12, 1.3, true), c(12, 12, 1.3, true), c(19, 12, 1.3, true)],
   plus: [p('M12 5v14M5 12h14')],
   minus: [p('M5 12h14')],
+  removeCircle: [c(12, 12, 9), p('M8 12h8')],
   close: [p('M6 6l12 12M18 6 6 18')],
   check: [p('m5 12.5 4.5 4.5L19 7.5')],
   edit: [p('M4 20h4L19 9l-4-4L4 16v4Z'), p('m13.5 6.5 4 4')],

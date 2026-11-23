@@ -4,6 +4,7 @@ import { useState } from 'react';
 import {
   Button,
   Card,
+  CheckboxRow,
   FooterActions,
   IconButton,
   RadioGroup,
@@ -29,6 +30,7 @@ const tabs = [
 ] as const;
 
 export default function ControlsGallery() {
+  const [picked, setPicked] = useState(true);
   const [buyIn, setBuyIn] = useState('20');
   const [depth, setDepth] = useState('');
   const [name, setName] = useState('alice');
@@ -160,6 +162,12 @@ export default function ControlsGallery() {
           onPress={() => undefined}
         />
       </RadioGroup>
+
+      <SectionHeading title="Checkbox rows" />
+      <Stack gap="sm">
+        <CheckboxRow label="Chris" checked={picked} onPress={() => setPicked(!picked)} />
+        <CheckboxRow label="Maya" description="Already in this game" checked={false} unavailable onPress={() => undefined} />
+      </Stack>
 
       <SectionHeading title="Workspace tabs" />
       <SegmentedTabs tabs={tabs} selectedKey={tab} onChange={setTab} />

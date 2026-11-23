@@ -33,7 +33,7 @@ Rules of use:
 **`Text`** — the only text primitive. `variant` (a `type` key, default `body`), `tone` (`main`, `supporting`, `primary`, `onPrimary`, `error`, `warning`, `confirmed`, `even`), `tabular`, `strong`, `strike`, `align`. Heading variants get the header role.
 `<Text variant="supporting">EUR 20.00 contribution · 1 rebuy</Text>`
 
-**`Icon`** — 24-grid stroke icons: `back`, `forward`, `chevronLeft/Right/Up/Down`, `arrowUp/Down`, `external`, `more`, `plus`, `minus`, `close`, `check`, `edit`, `trash`, `warning`, `error`, `info`, `clock`, `players`, `user`, `userPlus`, `templates`, `chip`, `play`, `lock`, `undo`, `reopen`, `wallet`, `shield`, `reserve`, `list`, `calculator`, `exit`, `home`, `count`. Decorative unless `accessibilityLabel` is set. Props `name`, `size` (22), `color`.
+**`Icon`** — 24-grid stroke icons: `back`, `forward`, `chevronLeft/Right/Up/Down`, `arrowUp/Down`, `external`, `more`, `plus`, `minus`, `removeCircle`, `close`, `check`, `edit`, `trash`, `warning`, `error`, `info`, `clock`, `players`, `user`, `userPlus`, `templates`, `chip`, `play`, `lock`, `undo`, `reopen`, `wallet`, `shield`, `reserve`, `list`, `calculator`, `exit`, `home`, `count`. Decorative unless `accessibilityLabel` is set. Props `name`, `size` (22), `color`.
 `<Icon name="clock" />`
 
 ## Layout
@@ -81,6 +81,9 @@ Rules of use:
 **`RadioRow`** / **`RadioGroup`** — whole-row single choice with visible indicator, border and tint; exposes checked state. `label`, `description`, `selected`, `onPress`, `unavailable`, `children` (extra content such as a chip preview). `RadioGroup` gives the set its visible `label`.
 `<RadioGroup label="Distribution preference"><RadioRow label="Fewer chips" selected={p === 'fewer'} onPress={…} />…</RadioGroup>`
 
+**`CheckboxRow`** — whole-row multiple choice (the saved-player picker): visible box with tick, border and tint; exposes checked state. `label`, `description` (e.g. the reason it is unavailable), `checked`, `onPress`, `unavailable` (focusable, reports disabled, never toggles), `ref`.
+`<CheckboxRow label="Chris" checked={selected.has(id)} onPress={toggle} />`
+
 **`SegmentedTabs`** — workspace navigation. `tabs` `{ key, label }[]`, `selectedKey`, `onChange`. Tab roles with selected state; wraps at large text.
 `<SegmentedTabs tabs={[{ key: 'play', label: 'Play' }, …]} selectedKey="play" onChange={go} />`
 
@@ -94,6 +97,8 @@ Rules of use:
 
 **`BottomSheet`** — action sheet. `visible`, `title`, `subtitle`, `actions: { key, label, description, icon, destructive?, onPress }[]`, `onCancel`.
 `<BottomSheet visible={open} title="Game actions" subtitle="In progress · Cash game · 23 Nov, 19:30" actions={…} onCancel={close} />`
+
+**`focusView(ref)`** — moves screen-reader focus to a view, e.g. back to the invoking row control after a cancelled confirmation.
 
 **`ToastProvider`** / **`useToast()`** — one toast slot (already mounted in the root layout). `show(message, { tone?: 'confirmed' | 'error' })`, `hide()`. Announced to screen readers; disappears after `TOAST_DURATION_MS`.
 `const toast = useToast(); toast.show('Result confirmed');`
