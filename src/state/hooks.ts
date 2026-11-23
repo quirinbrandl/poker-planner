@@ -1,13 +1,17 @@
 import { useSyncExternalStore } from 'react';
 
 import type {
+  AddPlayerScreenView,
+  BankReserveScreenView,
   CashPlayerView,
   CashResultsView,
   CountEditorView,
   GameCard,
+  GameDetailsScreenView,
   PersistenceStatus,
   PlanningView,
   PlayerPickerEntry,
+  PlayScreenView,
   PlayView,
   PreviewStepView,
   SavedPlayerView,
@@ -75,6 +79,30 @@ export function useCountEditor(gameId: string, participantId: string, showErrors
 export function useCashPlayer(gameId: string, participantId: string): CashPlayerView | null {
   const app = useGameManagement();
   return useRead(() => app.play.getCashPlayer(gameId, participantId));
+}
+
+/** Play of an In progress cash game (terms, reserve line, Playing / Finished rows); `null` otherwise. */
+export function usePlayScreen(gameId: string): PlayScreenView | null {
+  const app = useGameManagement();
+  return useRead(() => app.play.getPlayScreen(gameId));
+}
+
+/** Bank & reserve of an In progress game; `null` otherwise. */
+export function useBankReserve(gameId: string): BankReserveScreenView | null {
+  const app = useGameManagement();
+  return useRead(() => app.play.getBankReserve(gameId));
+}
+
+/** Locked Game details of an In progress game, both modes; `null` otherwise. */
+export function useGameDetails(gameId: string): GameDetailsScreenView | null {
+  const app = useGameManagement();
+  return useRead(() => app.play.getGameDetails(gameId));
+}
+
+/** Add player (late entry): entry terms and the saved players to choose from; `null` unless In progress. */
+export function useAddPlayer(gameId: string): AddPlayerScreenView | null {
+  const app = useGameManagement();
+  return useRead(() => app.play.getAddPlayer(gameId));
 }
 
 /** The saved-player picker for a game. */
