@@ -19,6 +19,11 @@ export function planningStepHref(gameId: string, step: StepId): Href {
   return `/game/${gameId}/planning/${STEP_SEGMENT[step]}` as Href;
 }
 
+/** The In progress workspace of one game (Play). */
+export function playHref(gameId: string): Href {
+  return `/game/${gameId}/play` as Href;
+}
+
 /** Where a recorded working location lives in the route tree. */
 export function locationHref(location: WorkingLocation): Href {
   switch (location.kind) {
