@@ -1,16 +1,17 @@
 import { useLocalSearchParams } from 'expo-router';
-import { type RefObject, useRef } from 'react';
-import { Keyboard } from 'react-native';
+import { type RefObject, useRef, useState } from 'react';
+import { AccessibilityInfo, Keyboard, StyleSheet, View } from 'react-native';
 
 import { playerCountLabel } from '@/features/shared/format';
 import type { FieldView, PlanningView, Problem, SettingTextField } from '@/game-management';
 import { useGameManagement, usePlanningView } from '@/state';
 import {
+  Badge,
   Button,
   Card,
   focusView,
-  RadioGroup,
-  RadioRow,
+  IconButton,
+  SegmentedChoice,
   space,
   TextField,
   type TextFieldProps,
@@ -20,6 +21,14 @@ import {
 
 import { PlanningStepFrame } from './PlanningStepFrame';
 import { useFieldError } from './useFieldError';
+
+const PREFERENCES = [
+  { key: 'fewer', label: 'Fewer chips' },
+  { key: 'more', label: 'More chips' },
+] as const;
+
+const COVERAGE_INFO = 'Payments of each blind without needing change.';
+const RESERVE_INFO = 'For rebuys and late arrivals.';
 
 /** The settings text fields in screen order. */
 const ORDER: readonly SettingTextField[] = ['buyIn', 'depth', 'coverage', 'reserve'];
@@ -56,25 +65,44 @@ function SettingField({ gameId, name, field, continueAttempted, inputRef, onNext
   );
 }
 
-function reserveHelper(plan: PlanningView): string {
-  const reserve = plan.settings.reserve;
-  const status =
-    reserve.mode === 'automatic'
-      ? `Automatic for ${playerCountLabel(plan.players.participants.length)}.`
-      : 'Custom amount.';
-  return `For rebuys and late arrivals. ${status}`;
+/** The reserve's status, spoken with the field (the "Auto" tag shows it). */
+function reserveStatus(plan: PlanningView): string {
+  return plan.settings.reserve.mode === 'automatic'
+    ? `Automatic for ${playerCountLabel(plan.players.participants.length)}.`
+    : 'Custom amount.';
+}
+
+/** An ⓘ beside a field label that shows the field's one-line explanation on demand. */
+function InfoToggle({ name, text, open, onToggle }: { name: string; text: string; open: boolean; onToggle: () => void }) {
+  return (
+    <View style={styles.info}>
+      <IconButton
+        icon="info"
+        variant="plain"
+        tone={open ? 'primary' : 'default'}
+        accessibilityLabel={`About ${name}`}
+        accessibilityHint={open ? 'Hides the explanation' : 'Shows the explanation'}
+        onPress={() => {
+          if (!open) AccessibilityInfo.announceForAccessibility(text);
+          onToggle();
+        }}
+      />
+    </View>
+  );
 }
 
 /**
  * Game settings: all five shared controls in one scrollable step. Buy-in and starting stack,
- * distribution preference, then blind-payment coverage and the chip reserve with its
- * automatic / custom status and “Use automatic (N)”. Focusing the reserve changes nothing; only
- * typing makes it custom.
+ * distribution preference, then blind-payment coverage and the chip reserve with its "Auto" tag
+ * or “Use automatic (N)”; each explains itself behind an ⓘ. Focusing the reserve changes nothing;
+ * only typing makes it custom.
  */
 export default function SettingsStepScreen() {
   const { gameId } = useLocalSearchParams<{ gameId: string }>();
   const app = useGameManagement();
   const plan = usePlanningView(gameId);
+  const [coverageInfo, setCoverageInfo] = useState(false);
+  const [reserveInfo, setReserveInfo] = useState(false);
   const buyInRef = useRef<TextInputRef>(null);
   const depthRef = useRef<TextInputRef>(null);
   const coverageRef = useRef<TextInputRef>(null);
@@ -130,22 +158,15 @@ export default function SettingsStepScreen() {
               unit="BB"
               unitSpoken="big blinds"
               keyboard="whole"
-              helper={`Recommended: ${plan.settings.recommendedDepthBb} BB.`}
             />
           </Card>
 
-          <RadioGroup label="Distribution preference">
-            <RadioRow
-              label="Fewer chips"
-              selected={plan.settings.preference === 'fewer'}
-              onPress={() => void app.planning.setDistributionPreference(gameId, 'fewer')}
-            />
-            <RadioRow
-              label="More chips"
-              selected={plan.settings.preference === 'more'}
-              onPress={() => void app.planning.setDistributionPreference(gameId, 'more')}
-            />
-          </RadioGroup>
+          <SegmentedChoice
+            label="Distribution preference"
+            options={PREFERENCES}
+            selectedKey={plan.settings.preference}
+            onChange={(key) => void app.planning.setDistributionPreference(gameId, key as 'fewer' | 'more')}
+          />
 
           <Card gap={space.xl}>
             <SettingField
@@ -159,7 +180,10 @@ export default function SettingsStepScreen() {
               icon="shield"
               unit="payments"
               keyboard="whole"
-              helper="Payments of each blind without needing change."
+              labelAccessory={
+                <InfoToggle name="blind-payment coverage" text={COVERAGE_INFO} open={coverageInfo} onToggle={() => setCoverageInfo(!coverageInfo)} />
+              }
+              helper={coverageInfo ? COVERAGE_INFO : undefined}
             />
             <SettingField
               gameId={gameId}
@@ -172,7 +196,14 @@ export default function SettingsStepScreen() {
               icon="reserve"
               unit="stacks"
               keyboard="whole"
-              helper={reserveHelper(plan)}
+              labelAccessory={
+                <>
+                  <InfoToggle name="the chip reserve" text={RESERVE_INFO} open={reserveInfo} onToggle={() => setReserveInfo(!reserveInfo)} />
+                  {plan.settings.reserve.mode === 'automatic' ? <Badge label="Auto" size="small" /> : null}
+                </>
+              }
+              helper={reserveInfo ? RESERVE_INFO : undefined}
+              spokenHint={reserveStatus(plan)}
               footer={
                 plan.settings.reserve.mode === 'custom' ? (
                   <Button
@@ -192,3 +223,8 @@ export default function SettingsStepScreen() {
     </PlanningStepFrame>
   );
 }
+
+const styles = StyleSheet.create({
+  // The ⓘ keeps its 48 × 48 target without making the label row taller.
+  info: { marginVertical: -space.md, marginLeft: -space.sm, marginRight: -space.md },
+});

@@ -59,6 +59,10 @@ export interface TextFieldProps {
    * caller (under a whole compact row instead of a narrow column). Default false.
    */
   errorTextHidden?: boolean;
+  /** Content at the end of the label row: an info `IconButton`, an "Auto" `Badge`. */
+  labelAccessory?: ReactNode;
+  /** Spoken after the helper but not shown, e.g. the reserve's "Automatic for 6 players." beside an "Auto" tag. */
+  spokenHint?: string;
   /** Content beside the input box (e.g. stepper − and + buttons). */
   before?: ReactNode;
   after?: ReactNode;
@@ -103,6 +107,8 @@ export function TextField({
   labelHidden,
   spokenLabel: spokenLabelProp,
   errorTextHidden,
+  labelAccessory,
+  spokenHint,
   inputWidth,
   before,
   after,
@@ -127,7 +133,7 @@ export function TextField({
   const compact = size === 'compact';
   const named = spokenLabelProp ?? label;
   const spokenLabel = unit ? `${named}, ${unitSpoken ?? unit}` : named;
-  const hint = [error ? `Error: ${error}` : null, helper ?? null].filter(Boolean).join('. ') || undefined;
+  const hint = [error ? `Error: ${error}` : null, helper ?? null, spokenHint ?? null].filter(Boolean).join(' ') || undefined;
   const borderColor = error ? colors.error : focused ? colors.primary : colors.controlBorder;
   const borderWidth = error || focused ? 2 : 1;
 
@@ -139,6 +145,7 @@ export function TextField({
           <Text variant="label" nativeID={labelId} align={centerLabel ? 'center' : undefined}>
             {label}
           </Text>
+          {labelAccessory}
         </View>
       )}
       <View style={styles.inputRow}>

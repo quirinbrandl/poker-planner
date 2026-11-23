@@ -81,17 +81,24 @@ it('keeps the reserve automatic on focus, makes it custom on typing, and restore
   const reserve = await screen.findByLabelText('Chip reserve, stacks');
   expect(reserve.props.value).toBe('3');
 
+  const hint = () => screen.getByLabelText('Chip reserve, stacks').props.accessibilityHint;
   await fireEvent(reserve, 'focus');
   await fireEvent(reserve, 'blur');
-  expect(screen.getByText('For rebuys and late arrivals. Automatic for 6 players.', HIDDEN)).toBeTruthy();
+  expect(hint()).toBe('Automatic for 6 players.');
+  expect(screen.getByText('Auto')).toBeTruthy();
   expect(screen.queryByRole('button', { name: 'Use automatic (3)' })).toBeNull();
 
   await fireEvent.changeText(reserve, '3');
-  expect(await screen.findByText('For rebuys and late arrivals. Custom amount.', HIDDEN)).toBeTruthy();
+  await waitFor(() => expect(hint()).toBe('Custom amount.'));
+  expect(screen.queryByText('Auto')).toBeNull();
 
   await fireEvent.press(screen.getByRole('button', { name: 'Use automatic (3)' }));
-  expect(await screen.findByText('For rebuys and late arrivals. Automatic for 6 players.', HIDDEN)).toBeTruthy();
+  await waitFor(() => expect(hint()).toBe('Automatic for 6 players.'));
+  expect(screen.getByText('Auto')).toBeTruthy();
   expect(screen.getByLabelText('Chip reserve, stacks').props.value).toBe('3');
+
+  await fireEvent.press(screen.getByRole('button', { name: 'About the chip reserve' }));
+  expect(screen.getByText('For rebuys and late arrivals.', HIDDEN)).toBeTruthy();
 });
 
 it('deletes a game only after confirmation; Cancel changes nothing', async () => {
