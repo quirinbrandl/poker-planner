@@ -96,7 +96,7 @@ export function TournamentResults({
             key={row.playerId}
             title={row.name}
             subtitle={row.isWinner ? 'Winner' : row.contributionText}
-            leading={<PlaceBadge label={row.placeLabel} highlight={row.paid} />}
+            leading={<PlaceBadge label={row.placeLabel} highlight={row.paid} filled={row.isWinner} />}
             trailing={
               <Text variant={row.paid ? 'title' : 'body'} tone={row.paid ? 'main' : 'supporting'} tabular>
                 {row.payoutText}
