@@ -1,0 +1,819 @@
+<!doctype html>
+<html lang="en">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="icon" href="data:,">
+<title>Tournament play · Review v1</title>
+<style>
+  * { box-sizing: border-box; }
+  :root { color-scheme: dark; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; background: #0b1117; color: #f1f4f5; --accent: #c9b5ff; --on-accent: #2b1e45; --tint: #322b45; --warn: #f2d08a; --ok: #b8dfbd; --err: #ffb3aa; }
+  body { margin: 0; padding: 24px 16px 110px; }
+  button, input, select { font: inherit; }
+  button, label.choice { -webkit-tap-highlight-color: transparent; }
+  button { min-height: 48px; min-width: 48px; padding: 10px 14px; border: 1px solid #7c90a0; border-radius: 14px; background: #1e2a34; color: #f1f4f5; line-height: 1.35; cursor: pointer; }
+  button:active { filter: brightness(.88); }
+  button[aria-disabled="true"], button:disabled { color: #b3c0ca; background: #26313b; border-color: #4f5f6c; border-style: dashed; cursor: default; }
+  :focus-visible { outline: 3px solid var(--accent); outline-offset: 3px; }
+  select { min-height: 48px; max-width: 100%; border: 1px solid #7c90a0; border-radius: 12px; background: #111920; color: #f1f4f5; padding: 12px; }
+  label { display: grid; gap: 6px; }
+  h1, h2, h3, p { margin-top: 0; }
+  p { line-height: 1.5; }
+  a { color: var(--accent); }
+  .workshop { max-width: 1000px; margin: auto; }
+  .workshop > header { max-width: 800px; margin: 0 auto 24px; }
+  .workshop h1 { font-size: 28px; letter-spacing: -.04em; margin-bottom: 8px; }
+  .revision { display: inline-block; padding: 6px 12px; border: 1px solid var(--accent); border-radius: 12px; color: var(--accent); font-size: 14px; margin-bottom: 12px; }
+  .intro { color: #b3c0ca; font-size: 14px; }
+  .layout { display: grid; grid-template-columns: minmax(0,430px) minmax(0,1fr); gap: 28px; align-items: start; }
+  #app, dialog { --scale: 1; font-size: calc(16px * var(--scale)); line-height: 1.5; overflow-wrap: anywhere; }
+  #app { min-width: 0; min-height: 800px; background: #111920; border: 1px solid #364653; border-radius: 26px; box-shadow: 0 20px 70px #0004; overflow: clip; }
+  .page { padding: 20px 18px 28px; }
+  #app h2 { font-size: 2.35em; letter-spacing: -.045em; line-height: 1.08; margin-bottom: 12px; }
+  #app h3 { font-size: 1.1em; letter-spacing: -.02em; margin-bottom: 8px; }
+  .topline { display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 8px; margin-bottom: 10px; }
+  .row-heading { display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 6px 10px; }
+  #app .row-heading h3 { margin: 0; }
+  .context, .small { color: #b3c0ca; font-size: .78em; }
+  .context { margin-bottom: 8px; }
+  .quiet { background: transparent; border-color: transparent; }
+  .primary { background: var(--accent); color: var(--on-accent); border-color: var(--accent); border-radius: 100px; font-weight: 700; }
+  .primary[aria-disabled="true"] { background: #26313b; color: #b3c0ca; border-color: #7c90a0; border-style: dashed; font-weight: 500; }
+  .danger { background: #3d2427; color: var(--err); border-color: var(--err); border-radius: 100px; font-weight: 700; }
+  .full { width: 100%; }
+  .badge { display: inline-flex; align-items: center; gap: 5px; padding: 3px 9px; border: 1px solid #7c90a0; border-radius: 100px; font-size: .71em; margin: 0 4px 6px 0; }
+  .badge .ico { width: 1em; height: 1em; }
+  .badge.ok { background: #20372b; color: var(--ok); border-color: var(--ok); }
+  .badge.info { background: var(--tint); color: var(--accent); border-color: var(--accent); }
+  .badge.warn { background: #383020; color: var(--warn); border-color: var(--warn); }
+  .card { background: #1e2a34; border: 1px solid #364653; border-radius: 22px; padding: 16px; margin: 14px 0; min-width: 0; }
+  .nav { display: grid; grid-template-columns: 1fr 1fr 1.4fr; gap: 4px; margin: 12px 0 20px; padding: 4px; border: 1px solid #364653; border-radius: 17px; }
+  .nav button { padding: 9px 5px; background: transparent; border-color: transparent; font-size: .78em; }
+  .nav [aria-current="page"] { background: var(--tint); color: var(--accent); border-color: var(--accent); }
+  .actions { display: flex; flex-wrap: wrap; gap: 8px; }
+  .actions .primary, .actions .danger { flex: 1; }
+  .dock { margin: 24px -18px -28px; padding: 16px 18px 18px; border-top: 1px solid #364653; background: #1e2a34; }
+  .dock p { font-size: .78em; color: #b3c0ca; margin: 8px 0 0; text-align: center; }
+  .ico { width: 1.2em; height: 1.2em; flex-shrink: 0; fill: none; stroke: currentColor; stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round; vertical-align: middle; }
+  .with-icon { display: inline-flex; align-items: center; justify-content: center; gap: 8px; }
+  .icon-button { display: inline-grid; place-items: center; padding: 10px; }
+  .toast { margin: 0 0 14px; padding: 9px 14px; border-radius: 100px; background: #20372b; color: var(--ok); font-size: .85em; font-weight: 650; width: max-content; max-width: 100%; }
+  .sr-only { position: absolute; width: 1px; height: 1px; padding: 0; overflow: hidden; clip-path: inset(50%); white-space: nowrap; }
+  [hidden] { display: none !important; }
+  .chip-symbol { width: 28px; height: 28px; flex-shrink: 0; display: block; }
+  .pills { display: flex; flex-wrap: wrap; gap: 8px; margin: 8px 0; }
+  .bank-pill { display: inline-flex; align-items: center; gap: 8px; padding: 5px 12px 5px 5px; border-radius: 100px; background: #111920; border: 1px solid #364653; font-size: .85em; font-variant-numeric: tabular-nums; }
+  .initial { width: 40px; height: 40px; flex-shrink: 0; border-radius: 50%; display: grid; place-items: center; font-size: .8em; font-weight: 700; background: var(--tint); color: var(--accent); }
+  .initial.ghost { background: transparent; border: 1.5px dashed #7c90a0; color: #b3c0ca; }
+  .place { display: inline-grid; place-items: center; min-width: 44px; min-height: 34px; padding: 0 .5em; white-space: nowrap; border-radius: 100px; background: #111920; border: 1px solid #637084; font-size: .78em; font-weight: 750; font-variant-numeric: tabular-nums; flex-shrink: 0; }
+  .place.paid { border-color: var(--accent); color: var(--accent); }
+  .place.p1 { background: var(--accent); color: var(--on-accent); border-color: var(--accent); }
+  .amt { text-align: right; font-weight: 750; font-variant-numeric: tabular-nums; white-space: nowrap; }
+  .amt small { display: block; font-weight: 500; color: #b3c0ca; font-size: .72em; }
+  .none { color: #b3c0ca; font-weight: 500; }
+  .pos { color: var(--ok); } .neg { color: var(--err); }
+  /* Terms (approved Play panel) */
+  .game-terms { display: grid; grid-template-columns: repeat(3,minmax(0,1fr)); border: 1px solid #637084; border-radius: 22px; background: linear-gradient(135deg,#29313f,#1a2530); margin: 4px 0 12px; padding: 14px 0; }
+  .term { padding: 0 12px; border-left: 1px solid #46515f; min-width: 0; }
+  .term:first-child { border: 0; }
+  .term > span { display: block; font-size: .72em; color: #c4ced6; margin-bottom: 4px; }
+  .term strong { display: block; font-size: 1.3em; line-height: 1.1; letter-spacing: -.04em; font-variant-numeric: tabular-nums; }
+  .term small { display: block; color: #b3c0ca; font-size: .67em; margin-top: 4px; }
+  .links { display: flex; flex-wrap: wrap; gap: 8px; margin: 0 0 18px; }
+  .links button { flex: 1 1 auto; text-align: left; font-size: .82em; border-color: #364653; border-radius: 16px; display: inline-flex; align-items: center; justify-content: space-between; gap: 8px; }
+  .links b { font-variant-numeric: tabular-nums; }
+  /* Player rows */
+  .rows { list-style: none; margin: 0 0 6px; padding: 0; }
+  .prow { display: flex; align-items: center; gap: 10px; padding: 8px 0; border-bottom: 1px solid #2e3c48; flex-wrap: wrap; }
+  .pname { flex: 1; min-width: 7em; display: grid; justify-items: start; text-align: left; background: transparent; border-color: transparent; padding: 6px 4px; }
+  .pname strong { font-size: 1.02em; }
+  .pname .small { display: block; }
+  .row-actions { display: flex; gap: 6px; flex-shrink: 0; }
+  .pill-btn { border-radius: 100px; padding: 8px 14px; font-size: .86em; }
+  .pill-btn.rebuy { background: var(--tint); border-color: #8f7cc4; color: #e7deff; }
+  .pill-btn.out { border-color: #7c90a0; }
+  .entry-line { display: flex; align-items: center; gap: 6px; color: #b3c0ca; font-size: .78em; margin: 6px 0 2px; }
+  .next { margin: 8px 0 18px; }
+  .winner-card { display: grid; grid-template-columns: auto minmax(0,1fr) auto; gap: 12px; align-items: center; padding: 16px; margin: 8px 0 6px; border: 1px solid #85749e; border-radius: 22px; background: radial-gradient(130% 100% at 100% 0,#3a304a,#1e2a34 80%); }
+  .winner-card button { background: none; border: 0; text-align: left; padding: 0; display: grid; }
+  .winner-card strong.nm { font-size: 1.5em; letter-spacing: -.03em; }
+  .next-line { display: flex; gap: 8px; align-items: flex-start; color: #b3c0ca; font-size: .85em; margin: 8px 0 20px; }
+  .next-line .ico { color: var(--ok); }
+  /* B · standings ladder */
+  .podium { border: 1px solid #85749e; border-radius: 24px; background: radial-gradient(130% 100% at 100% 0,#3a304a,#19272b 90%); padding: 16px; margin: 0 0 16px; }
+  .podium-head { display: flex; align-items: baseline; justify-content: space-between; flex-wrap: wrap; gap: 2px 10px; margin-bottom: 8px; }
+  .podium-head > span { font-size: .72em; text-transform: uppercase; letter-spacing: .07em; color: #d9cff2; width: 100%; }
+  .podium-head strong { font-size: 2.1em; letter-spacing: -.05em; line-height: 1.05; font-variant-numeric: tabular-nums; }
+  .podium-head small { color: #c4ced6; font-size: .78em; }
+  .prize-rungs { list-style: none; margin: 0; padding: 0; display: grid; gap: 8px; }
+  .prize-rung { padding: 10px 12px 12px; border-radius: 18px; background: #16212acc; border: 1px solid #46515f; }
+  .prize-rung.open { border-style: dashed; }
+  .pr-top { display: grid; grid-template-columns: auto minmax(0,1fr) auto; gap: 10px; align-items: center; }
+  .pr-top .who { display: flex; align-items: center; gap: 10px; min-width: 0; background: none; border: 0; padding: 0; text-align: left; min-height: 44px; }
+  .pr-top .who.open { color: #b3c0ca; font-size: .9em; }
+  .pr-top .who .initial { width: 34px; height: 34px; }
+  .pr-top .amt { font-size: 1.15em; }
+  .rung-bar { height: 8px; border-radius: 100px; background: #0d151c; overflow: hidden; margin-top: 8px; }
+  .rung-bar span { display: block; height: 100%; border-radius: 100px; background: linear-gradient(90deg, #8f78d8, var(--accent)); }
+  .prize-rung.open .rung-bar span { opacity: .45; }
+  .still-card { border: 1px solid #364653; border-radius: 22px; background: #1a252f; padding: 14px 14px 6px; margin: 0 0 16px; }
+  .still-card .rows .prow:last-child { border-bottom: 0; }
+  .ladder-out { list-style: none; margin: 0; padding: 0 0 0 20px; border-left: 2px solid #364653; margin-left: 20px; }
+  .ladder-out li { position: relative; display: flex; align-items: center; gap: 10px; padding: 4px 0; }
+  .ladder-out li::before { content: ""; position: absolute; left: -27px; top: 50%; width: 12px; height: 12px; margin-top: -6px; border-radius: 50%; background: #111920; border: 2px solid #637084; }
+  .ladder-out .pname { min-width: 0; }
+  /* C · field tiles */
+  .field-hero { border: 1px solid #85749e; border-radius: 24px; background: radial-gradient(130% 100% at 0 0,#3a304a,#19272b 90%); padding: 16px; margin: 0 0 16px; }
+  .fh-top { display: flex; justify-content: space-between; align-items: flex-end; flex-wrap: wrap; gap: 8px 14px; }
+  .fh-top .lbl { display: block; font-size: .72em; text-transform: uppercase; letter-spacing: .07em; color: #d9cff2; }
+  .fh-top strong.big { font-size: 2em; letter-spacing: -.05em; line-height: 1.05; font-variant-numeric: tabular-nums; }
+  .fh-paid { display: grid; gap: 2px; text-align: right; font-size: .82em; font-variant-numeric: tabular-nums; }
+  .fh-paid b { color: var(--accent); margin-right: 6px; }
+  .meter { display: flex; flex-wrap: wrap; gap: 6px; margin: 14px 0 8px; }
+  .meter span { width: 34px; height: 34px; border-radius: 50%; display: grid; place-items: center; font-size: .72em; font-weight: 750; background: var(--accent); color: var(--on-accent); }
+  .meter span.out { background: transparent; color: #7c90a0; border: 1.5px dashed #46515f; }
+  .field-hero p { margin: 0; }
+  .tiles { list-style: none; padding: 0; margin: 10px 0 18px; display: grid; grid-template-columns: repeat(2, minmax(0,1fr)); gap: 10px; }
+  .tile { border: 1px solid #364653; border-radius: 20px; background: #1e2a34; padding: 10px; display: grid; gap: 8px; min-width: 0; }
+  .tile-main { display: grid; grid-template-columns: auto minmax(0,1fr); gap: 2px 10px; align-items: center; text-align: left; background: none; border: 0; padding: 2px; }
+  .tile-main .initial { grid-row: span 2; }
+  .tile-main .small { grid-column: 2; }
+  .tile .row-actions { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; }
+  .tile .pill-btn { padding: 8px 6px; }
+  .tile.add { place-items: center; border-style: dashed; padding: 0; }
+  .tile.add button { width: 100%; height: 100%; min-height: 110px; border: 0; background: transparent; border-radius: 20px; display: grid; place-items: center; gap: 4px; color: var(--accent); }
+  .tile.add button[aria-disabled="true"] { color: #b3c0ca; }
+  .tile.add small { color: #b3c0ca; font-size: .75em; }
+  .bust-rail { list-style: none; margin: 8px 0 0; padding: 0; display: flex; flex-wrap: wrap; gap: 8px; }
+  .bust { display: inline-flex; align-items: center; gap: 8px; border-radius: 100px; padding: 5px 14px 5px 5px; }
+  .bust small { color: #b3c0ca; font-size: .78em; }
+  /* Results */
+  .status-card { text-align: center; padding: 20px 16px; border: 1px solid #46515f; border-radius: 24px; background: #1e2a34; margin: 0 0 18px; }
+  .status-card.ok { border-color: #5f8c69; background: linear-gradient(180deg,#20372b,#1e2a34); }
+  .ring { width: 56px; height: 56px; margin: 0 auto 10px; border-radius: 50%; display: grid; place-items: center; border: 2px solid var(--accent); color: var(--accent); background: var(--tint); font-weight: 800; font-variant-numeric: tabular-nums; }
+  .status-card.ok .ring { border-color: var(--ok); color: var(--ok); background: #20372b; }
+  #app .status-card h3 { font-size: 1.55em; letter-spacing: -.035em; margin-bottom: 4px; }
+  .status-card p { margin: 0; color: #c4ced6; font-size: .88em; }
+  .progress { height: 8px; border-radius: 100px; background: #111920; overflow: hidden; margin: 14px 0 0; }
+  .progress span { display: block; height: 100%; background: var(--accent); border-radius: 100px; }
+  .order-list { list-style: none; margin: 8px 0 0; padding: 0; }
+  .order-list li { display: flex; align-items: center; gap: 10px; padding: 6px 0; border-bottom: 1px solid #2e3c48; }
+  .order-list .pname { min-width: 0; }
+  .open-group { color: #c4ced6; font-size: .88em; }
+  .open-group .who { flex: 1; padding: 8px 0; }
+  .calc { margin-top: 22px; }
+  .calc .reason { text-align: center; color: #b3c0ca; font-size: .8em; margin: 8px 0 0; }
+  .reopened-line { text-align: center; color: var(--warn); font-size: .82em; margin: 10px 0 0; }
+  .ro-line { display: flex; gap: 10px; align-items: flex-start; color: #b3c0ca; font-size: .85em; margin: 20px 0 0; }
+  /* Edit order */
+  .still-line { display: flex; align-items: center; gap: 10px; padding: 12px 14px; border: 1px dashed #637084; border-radius: 18px; color: #c4ced6; font-size: .88em; margin: 4px 0 10px; }
+  .edit-list { list-style: none; margin: 0; padding: 0; display: grid; gap: 8px; }
+  .erow { display: grid; grid-template-columns: auto minmax(0,1fr) auto; gap: 10px; align-items: center; padding: 8px 8px 8px 12px; border: 1px solid #364653; border-radius: 18px; background: #1e2a34; }
+  .erow.changed { border-color: #8f7cc4; background: linear-gradient(90deg,#2b2640,#1e2a34); }
+  .erow .who { min-width: 0; }
+  .erow .who strong { display: block; }
+  .erow .who .small { display: block; }
+  .erow-actions { display: flex; gap: 2px; }
+  .erow-actions button { padding: 8px; border-color: #46515f; }
+  .tag { display: inline-block; font-size: .7em; font-weight: 700; padding: 1px 8px; border-radius: 100px; border: 1px solid var(--accent); color: var(--accent); background: var(--tint); margin-left: 6px; vertical-align: middle; }
+  .add-missed { margin-top: 12px; }
+  /* Forgotten rebuy (simplified stand-in for picker B) */
+  .qty-row { display: grid; grid-template-columns: auto minmax(0,1fr) 48px 3.2em 48px; gap: 8px; align-items: center; padding: 6px 0; border-bottom: 1px solid #2e3c48; }
+  .qty-row .chip-symbol { width: 38px; height: 38px; }
+  .qty-row output { text-align: center; font-weight: 750; font-variant-numeric: tabular-nums; font-size: 1.1em; }
+  .goal { margin: 16px 0 4px; }
+  .goal-bar { height: 10px; border-radius: 100px; background: #111920; overflow: hidden; }
+  .goal-bar span { display: block; height: 100%; background: var(--accent); }
+  .goal.done .goal-bar span { background: var(--ok); }
+  .goal p { margin: 6px 0 0; font-size: .85em; font-weight: 650; }
+  .goal.done p { color: var(--ok); }
+  .goal.over p { color: var(--err); }
+  /* Player page */
+  .result-card { display: grid; grid-template-columns: auto minmax(0,1fr); gap: 14px; align-items: center; padding: 16px; border-radius: 22px; border: 1px solid #46515f; background: #1e2a34; margin: 4px 0 14px; }
+  .result-card .place { min-width: 64px; min-height: 64px; font-size: 1.1em; border-radius: 50%; }
+  .result-card .amt { text-align: left; font-size: 1.6em; letter-spacing: -.04em; }
+  .facts { margin: 4px 0 6px; }
+  .metric { display: flex; justify-content: space-between; flex-wrap: wrap; gap: 4px 12px; padding: 9px 0; border-bottom: 1px solid #46515f; }
+  .metric > span { color: #b3c0ca; }
+  .metric > strong { font-variant-numeric: tabular-nums; text-align: right; }
+  .facts .metric:last-child { border-bottom: 0; }
+  .metric s { color: #b3c0ca; font-weight: 500; }
+  .rec { padding: 12px 0; border-bottom: 1px solid #2e3c48; }
+  .rec-head { display: flex; justify-content: space-between; gap: 8px; align-items: baseline; flex-wrap: wrap; }
+  .rec-head .small { font-variant-numeric: tabular-nums; }
+  .rec .actions button { min-height: 44px; padding: 8px 14px; border-radius: 100px; font-size: .85em; }
+  /* Entry page */
+  .choice { display: flex; align-items: center; gap: 12px; min-height: 54px; padding: 10px 14px; margin-bottom: 8px; border: 1px solid #7c90a0; background: #1e2a34; border-radius: 18px; cursor: pointer; }
+  .choice:has(:checked) { border-color: var(--accent); box-shadow: inset 0 0 0 1px var(--accent); background: var(--tint); }
+  .choice:has(:disabled) { opacity: .62; cursor: default; border-style: dashed; }
+  .choice input { width: 20px; height: 20px; margin: 0; flex-shrink: 0; accent-color: var(--accent); }
+  .choice > span:last-child { flex: 1; min-width: 0; }
+  .choice small { display: block; color: #b3c0ca; font-size: .76em; }
+  fieldset { border: 0; min-width: 0; margin: 12px 0; padding: 0; }
+  legend { font-size: .9em; font-weight: 650; margin-bottom: 8px; padding: 0; }
+  /* Payments (approved layout A) */
+  .pay-sum { display: flex; align-items: baseline; flex-wrap: wrap; gap: 4px 12px; margin: 4px 0 10px; }
+  .pay-sum strong { font-size: 2em; letter-spacing: -.05em; }
+  .pay-card { display: grid; grid-template-columns: minmax(0,4.5em) minmax(0,1fr) minmax(0,4.5em); gap: 6px; align-items: center; padding: 14px 12px; border: 1px solid #46515f; border-radius: 22px; background: #1e2a34; margin-bottom: 10px; }
+  .pay-card .party { display: grid; justify-items: center; gap: 4px; font-weight: 700; font-size: .92em; text-align: center; }
+  .pay-card .initial { background: #111920; color: #f1f4f5; border: 1px solid #7c90a0; }
+  .pay-mid { text-align: center; }
+  .pay-mid strong { font-size: 1.3em; letter-spacing: -.03em; font-variant-numeric: tabular-nums; }
+  .arrow { height: 2px; background: var(--accent); margin: 6px 8px 4px; position: relative; }
+  .arrow::after { content: ""; position: absolute; right: -2px; top: -5px; border: 6px solid transparent; border-left: 9px solid var(--accent); border-right: 0; }
+  .pay-mid small { color: #b3c0ca; font-size: .75em; }
+  .bal { display: grid; grid-template-columns: minmax(0,1fr) auto; gap: 8px; align-items: center; width: 100%; text-align: left; background: transparent; border: 0; border-bottom: 1px solid #2e3c48; border-radius: 0; padding: 12px 4px; }
+  .bal .small { display: block; }
+  .bal .nm { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; font-weight: 700; }
+  .bal .amt { font-size: 1.25em; letter-spacing: -.03em; }
+  /* Dialogs */
+  dialog { border: 1px solid #7c90a0; border-radius: 24px; padding: 20px; background: #15212b; color: #f1f4f5; width: min(400px,calc(100vw - 28px)); max-height: calc(100dvh - 32px); overflow-y: auto; }
+  dialog::backdrop { background: #000b; }
+  dialog h2 { font-size: 1.5em; line-height: 1.15; letter-spacing: -.03em; margin-bottom: 10px; }
+  dialog .actions { display: grid; grid-template-columns: auto minmax(0,1fr); margin-top: 16px; }
+  dialog.sheet { margin: auto auto 12px; }
+  dialog p { margin-bottom: 10px; }
+  .dlg-line { display: flex; flex-wrap: wrap; align-items: center; gap: 4px 10px; font-size: .85em; color: #c4ced6; margin: 10px 0 0; }
+  .link-btn { min-height: 44px; padding: 6px 2px; background: none; border: 0; color: var(--accent); text-decoration: underline; text-underline-offset: 3px; font-size: 1em; }
+  .towers-stage { display: grid; grid-template-columns: repeat(4, minmax(0,1fr)); gap: 6px; align-items: end; padding: 10px 4px 4px; border-radius: 18px; background: radial-gradient(120% 90% at 50% 0%, #293847 0%, #141e27 70%); border: 1px solid #3f5263; margin: 6px 0 10px; }
+  .tower-col { display: grid; justify-items: center; text-align: center; gap: 2px; min-width: 0; }
+  .tower-svg { display: block; width: 100%; max-width: 64px; height: auto; overflow: visible; filter: drop-shadow(0 6px 10px #0008); }
+  .tower-count { font-weight: 800; font-variant-numeric: tabular-nums; }
+  .tower-denom { font-size: .7em; color: #b3c0ca; }
+  .menu-item { display: grid; grid-template-columns: 24px minmax(0,1fr); gap: 4px 12px; align-items: center; text-align: left; padding: 12px 14px; border-radius: 18px; width: 100%; margin-bottom: 8px; }
+  .menu-item small { grid-column: 2; color: #b3c0ca; font-size: .8em; }
+  .menu-item.danger { background: #1e2a34; border-color: #6b4447; font-weight: 500; }
+  .menu-item.danger strong, .menu-item.danger .ico { color: var(--err); }
+  .same-order { list-style: none; padding: 0; margin: 6px 0; display: grid; gap: 6px; }
+  .same-order li { display: grid; grid-template-columns: auto minmax(0,1fr) auto; gap: 10px; align-items: center; padding: 6px 6px 6px 10px; border: 1px solid #46515f; border-radius: 16px; }
+  .warn-line { color: var(--warn); font-size: .85em; }
+  /* Games / History */
+  .brand { font-size: .72em; font-weight: 750; letter-spacing: .12em; color: #b3c0ca; margin-bottom: 14px; }
+  .game-card { display: block; width: 100%; text-align: left; background: #1e2a34; border: 1px solid #364653; border-radius: 22px; padding: 16px 18px; margin: 0 0 12px; }
+  .game-card.active { border-color: #85749e; background: radial-gradient(130% 100% at 100% 0,#3a304a,#1e2a34 80%); }
+  .game-card strong { display: block; font-size: 1.1em; line-height: 1.3; margin: 4px 0 6px; }
+  .game-card .small { display: block; }
+  .game-card .go { display: block; margin-top: 4px; font-size: .8em; color: var(--accent); }
+  .game-card hr { border: 0; border-top: 1px solid #364653; margin: 10px 0; }
+  .sec { display: flex; justify-content: space-between; align-items: center; gap: 8px; margin: 24px 0 10px; }
+  #app .sec h3 { margin: 0; }
+  .stub { color: #b3c0ca; border-style: dashed; text-align: center; font-size: .85em; }
+  /* Review chrome */
+  .review { background: #111920; border: 1px solid #364653; border-radius: 20px; padding: 0 16px 16px; min-width: 0; font-size: 14px; color: #b3c0ca; }
+  summary { cursor: pointer; min-height: 48px; padding: 14px 0; color: #f1f4f5; font-weight: 650; }
+  .review-controls { display: grid; gap: 12px; }
+  .review button { text-align: left; }
+  .walks { display: grid; gap: 6px; }
+  .walks button { min-height: 40px; padding: 8px 12px; font-size: 13px; }
+  .switcher { position: fixed; z-index: 8; bottom: 16px; left: 50%; transform: translateX(-50%); display: flex; align-items: center; gap: 4px; max-width: calc(100vw - 20px); padding: 5px; background: #ede4ff; color: #2b1e45; border: 1px solid #c9b5ff; border-radius: 100px; box-shadow: 0 8px 28px #0008; }
+  .switcher button { background: #2b1e45; color: #fff; border: 0; border-radius: 100px; padding: 8px; }
+  .switcher span { font-size: 13px; min-width: 0; padding: 0 8px; text-align: center; }
+  /* Large text */
+  [data-large="true"] .game-terms, [data-large="true"] .nav { grid-template-columns: 1fr; }
+  [data-large="true"] .term { border-left: 0; border-top: 1px solid #46515f; padding: 8px 16px; }
+  [data-large="true"] .term:first-child { border-top: 0; }
+  [data-large="true"] .row-actions { width: 100%; }
+  [data-large="true"] .row-actions button { flex: 1; }
+  [data-large="true"] .tiles { grid-template-columns: 1fr; }
+  [data-large="true"] .pr-top { grid-template-columns: auto minmax(0,1fr); }
+  [data-large="true"] .pr-top .amt { grid-column: 2; text-align: left; }
+  [data-large="true"] .pay-card { grid-template-columns: 1fr; justify-items: center; }
+  [data-large="true"] .winner-card { grid-template-columns: auto minmax(0,1fr); }
+  [data-large="true"] .winner-card .amt { grid-column: 2; text-align: left; }
+  [data-large="true"] .erow { grid-template-columns: auto minmax(0,1fr); }
+  [data-large="true"] .erow-actions { grid-column: 1 / -1; justify-content: flex-end; }
+  [data-large="true"] .qty-row { grid-template-columns: auto minmax(0,1fr) 48px; }
+  [data-large="true"] .qty-row output { grid-column: 2; }
+  [data-large="true"] dialog .actions, dialog[data-large="true"] .actions { grid-template-columns: 1fr; }
+  [data-large="true"] .bal { grid-template-columns: 1fr; }
+  [data-large="true"] .amt { white-space: normal; }
+  [data-large="true"] .result-card { grid-template-columns: 1fr; }
+  [data-large="true"] .pr-top .amt { grid-column: 1 / -1; }
+  [data-large="true"] .bal .amt { text-align: left; }
+  /* Capture mode: phone surface only */
+  body.shot { padding: 0; background: #111920; }
+  body.shot .workshop > header, body.shot .review, body.shot .switcher { display: none; }
+  body.shot .layout { display: block; }
+  body.shot #app { border: 0; border-radius: 0; box-shadow: none; min-height: 100vh; }
+  @media (max-width:760px) { body { padding: 16px 8px 110px; } .layout { grid-template-columns: minmax(0,430px); justify-content: center; } .workshop > header { max-width: 430px; } .review { order: -1; } }
+  @media (max-width:350px) { .page { padding: 18px 12px 24px; } .dock { margin: 24px -12px -24px; } dialog .actions { grid-template-columns: 1fr; } .tiles { grid-template-columns: 1fr; } .pay-card { grid-template-columns: 1fr; justify-items: center; } }
+  @media (prefers-reduced-motion:reduce) { *, *::before, *::after { transition: none !important; animation: none !important; } }
+</style>
+<main class="workshop">
+  <header><div class="revision">Review v1 · Tournament play, corrections &amp; Payments</div><h1>Who’s out, who wins, who pays.</h1><p class="intro">Three Play layouts on the same records: <b>A · Rows</b> (the cash-game list), <b>B · Standings</b> (paid places on top, filled as players finish), <b>C · Field</b> (player tiles and an out rail). Results, order editing, popups and Payments are shared. In-memory only; reload resets everything.</p></header>
+  <div class="layout">
+    <section id="app" aria-label="Phone prototype"></section>
+    <aside class="review"><details id="tools" open><summary>Prototype controls &amp; scenarios</summary><div class="review-controls">
+      <label>Play layout<select id="variant"><option value="A">A · Rows</option><option value="B">B · Standings (recommended)</option><option value="C">C · Field</option></select></label>
+      <label>App text<select id="scale"><option value="1">100%</option><option value="1.5">150%</option><option value="2">200%</option></select></label>
+      <button data-tool="restart">Simulate app restart (records stay, popups close)</button>
+      <div class="walks" id="walks"></div>
+    </div></details></aside>
+  </div>
+</main>
+<div class="switcher" role="group" aria-label="Play layout"><button type="button" data-tool="prev" aria-label="Previous layout">←</button><span id="switch-label"></span><button type="button" data-tool="next" aria-label="Next layout">→</button></div>
+<dialog id="modal" aria-labelledby="modal-title"></dialog>
+<script>
+// THROWAWAY UI for "Design tournament play, corrections, and Payments". All state is in memory.
+// Nothing here is production code, the production solver, or production money arithmetic.
+const params = new URLSearchParams(location.search);
+const VARIANTS = { A:'Rows', B:'Standings', C:'Field' };
+let variant = VARIANTS[params.get('variant')] ? params.get('variant') : 'B';
+let scale = ['1','1.5','2'].includes(params.get('scale')) ? params.get('scale') : '1';
+if (params.get('shot')) document.body.classList.add('shot');
+const app = document.querySelector('#app'), modal = document.querySelector('#modal');
+
+const ROSTER = ['Alice','Bob','Clara','David','Emma','Felix'];
+const SAVED = ['Greta','Hugo'];
+const DENOMS = [
+  { value:1, color:'Grey', fill:'#a9b0b8', edge:'#7d858e', ink:'#2a3138' },
+  { value:5, color:'Red', fill:'#d35959', edge:'#a63d3d', ink:'#fff4e8' },
+  { value:25, color:'Blue', fill:'#4c84c6', edge:'#33639c', ink:'#f4f7ff' },
+  { value:100, color:'Green', fill:'#3f9a72', edge:'#2b7454', ink:'#f4fff8' },
+];
+const MIX = [15,2,3,1], STACK = 200, BUYIN = 2000, SHARES = [7000,3000], PRESET = 'Top 2';
+
+const sum = a => a.reduce((x,y) => x+y, 0);
+const esc = t => String(t).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const plural = (n,one,many=one+'s') => `${n} ${n===1?one:many}`;
+const ord = n => n + (n%100>=11&&n%100<=13 ? 'th' : ['th','st','nd','rd'][n%10] || 'th');
+const eur = c => `EUR ${(Math.floor(Math.abs(c)/100)).toLocaleString('en')}.${String(Math.abs(c)%100).padStart(2,'0')}`;
+const num = c => eur(c).replace('EUR ','');
+const signed = c => c > 0 ? `+${eur(c)}` : c < 0 ? `−${eur(c)}` : eur(0);
+const icons = {
+  back: '<path d="m15 18-6-6 6-6"/>',
+  more: '<circle cx="5" cy="12" r="1.3"/><circle cx="12" cy="12" r="1.3"/><circle cx="19" cy="12" r="1.3"/>',
+  next: '<path d="m9 18 6-6-6-6"/>',
+  plus: '<path d="M12 5v14M5 12h14"/>',
+  out: '<path d="M14 4h4a2 2 0 0 1 2 2v12a2 2 0 0 1-2 2h-4"/><path d="M9 8l-4 4 4 4"/><path d="M5 12h10"/>',
+  up: '<path d="m6 15 6-6 6 6"/>',
+  down: '<path d="m6 9 6 6 6-6"/>',
+  undo: '<path d="M9 14 4 9l5-5"/><path d="M4 9h10.5a5.5 5.5 0 0 1 0 11H11"/>',
+  edit: '<path d="M4 20h4L19 9l-4-4L4 16v4Z"/><path d="m13.5 6.5 4 4"/>',
+  lock: '<rect x="5" y="11" width="14" height="10" rx="2"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/>',
+  check: '<path d="m5 12.5 4.5 4.5L19 7.5"/>',
+  link: '<path d="M7 17 17 7M9 7h8v8"/>',
+  calc: '<rect x="5" y="3" width="14" height="18" rx="2"/><path d="M8 7h8M8 12h2M14 12h2M8 16h2M14 16h2"/>',
+  reset: '<path d="M3 12a9 9 0 1 0 3-6.7L3 8"/><path d="M3 3v5h5"/>',
+  trash: '<path d="M4 7h16"/><path d="M10 11v6M14 11v6"/><path d="M6 7l1 13h10l1-13"/><path d="M9 7V4h6v3"/>',
+  clock: '<circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/>',
+  layers: '<path d="M12 3 3 8l9 5 9-5-9-5Z"/><path d="m3 12.5 9 5 9-5"/>',
+  alert: '<path d="M12 4 2.5 20h19L12 4Z"/><path d="M12 10v4M12 17.2v.1"/>',
+  minus: '<path d="M5 12h14"/>',
+};
+const ico = name => `<svg class="ico" viewBox="0 0 24 24" aria-hidden="true">${icons[name]}</svg>`;
+function b(label, action, cls='', extra='', icon='') {
+  const content = icon ? `${ico(icon)}<span>${label}</span>` : label;
+  return `<button type="button" data-action="${action}" class="${cls}${icon?' with-icon':''}" ${extra}>${content}</button>`;
+}
+const ib = (label, action, icon, extra='') => `<button type="button" data-action="${action}" class="quiet icon-button" aria-label="${esc(label)}" title="${esc(label)}" ${extra}>${ico(icon)}</button>`;
+
+// ----- Records (fixture) -----
+let s, view;
+function fresh() {
+  return { phase:'In progress', created:'23 Nov, 19:30', finished:null, reopened:false, deleted:false,
+    players: ROSTER.map(n => ({ name:n, recs:[{ kind:'Buy-in', mix:MIX.slice() }] })),
+    order:[], reserveTarget:3, reserveUsed:0, toast:'' };
+}
+const P = n => s.players.find(p => p.name === n);
+const N = () => s.players.length;
+const contrib = p => p.recs.length * BUYIN;
+const pool = (g=s) => sum(g.players.map(contrib));
+const rebuyCount = () => sum(s.players.map(p => p.recs.length - 1));
+const remaining = (order=s.order) => s.players.filter(p => !order.includes(p.name)).map(p => p.name);
+const winnerOf = (order=s.order) => { const r = remaining(order); return r.length === 1 ? r[0] : null; };
+const placeOf = (n, order=s.order) => { const i = order.indexOf(n); return i >= 0 ? N() - i : winnerOf(order) === n ? 1 : null; };
+const holderOf = (place, order=s.order) => place === 1 ? winnerOf(order) : (order[N() - place] || null);
+const bestFirst = (order=s.order) => order.slice().reverse();
+function prizes(p0) {
+  const out = SHARES.map(v => Math.floor(p0 * v / 10000));
+  for (let left = p0 - sum(out), i = 0; left > 0; left--, i = (i+1) % out.length) out[i]++;
+  return out;
+}
+const payoutAt = (place, p0=pool()) => place && place <= SHARES.length ? prizes(p0)[place-1] : 0;
+const entryOpen = () => s.order.length === 0 && s.phase === 'In progress';
+const reserveLeft = () => Math.max(0, s.reserveTarget - s.reserveUsed);
+function nextOut() {
+  const r = remaining().length, pay = payoutAt(r);
+  return `Next out finishes ${ord(r)} · ${pay ? eur(pay) : 'no payout'}`;
+}
+function addRebuy(n, tag='') { P(n).recs.push({ kind:'Rebuy', mix:MIX.slice(), tag }); }
+function balances() { return s.players.map(p => { const place = placeOf(p.name), pay = payoutAt(place); return { name:p.name, place, payout:pay, contrib:contrib(p), bal:pay - contrib(p) }; }); }
+function settle(bals) { // fixture greedy, not the production exact solver
+  const d = bals.filter(x => x.bal < 0).map(x => ({ n:x.name, v:-x.bal })), c = bals.filter(x => x.bal > 0).map(x => ({ n:x.name, v:x.bal })), out = [];
+  while (d.some(x => x.v) && c.some(x => x.v)) {
+    const a = d.filter(x=>x.v).sort((x,y)=>y.v-x.v)[0], z = c.filter(x=>x.v).sort((x,y)=>y.v-x.v)[0], v = Math.min(a.v, z.v);
+    out.push({ from:a.n, to:z.n, v }); a.v -= v; z.v -= v;
+  }
+  const idx = n => ROSTER.concat(SAVED).indexOf(n);
+  return out.sort((x,y) => idx(x.from) - idx(y.from) || idx(x.to) - idx(y.to));
+}
+
+// ----- Shared pieces -----
+function chip(d) {
+  return `<svg class="chip-symbol" viewBox="0 0 72 72" aria-hidden="true"><circle cx="36" cy="36" r="34" fill="${d.fill}" stroke="#aab6c0" stroke-width="1.5"/><circle cx="36" cy="36" r="29" fill="none" stroke="${d.ink}" stroke-opacity=".85" stroke-width="6" stroke-dasharray="8 15"/><circle cx="36" cy="36" r="22" fill="${d.fill}" stroke="${d.ink}" stroke-opacity=".65"/><text x="36" y="37" text-anchor="middle" dominant-baseline="middle" fill="${d.ink}" font-size="${d.value>99?14:18}" font-weight="700">${d.value}</text></svg>`;
+}
+const pills = mix => `<div class="pills">${DENOMS.map((d,i) => `<span class="bank-pill" role="img" aria-label="${mix[i]} × ${d.value} ${d.color}">${chip(d)}<strong>×${mix[i]}</strong></span>`).join('')}</div>`;
+function tower(d, count) {
+  const drawn = Math.max(1, Math.min(16, count)), step = 5.4, rx = 33, ry = 11.5, h = 5.6, base = 150;
+  let discs = '';
+  for (let i = 0; i < drawn; i++) {
+    const cy = base - i*step;
+    discs += `<path d="M ${50-rx} ${cy} A ${rx} ${ry} 0 0 0 ${50+rx} ${cy} L ${50+rx} ${cy+h} A ${rx} ${ry} 0 0 1 ${50-rx} ${cy+h} Z" fill="${d.edge}" stroke="#080d12" stroke-width=".7"/><path d="M 28 ${cy+2.2} v ${h-.8} M 50 ${cy+ry-.3} v ${h-.8} M 72 ${cy+2.2} v ${h-.8}" stroke="${d.ink}" stroke-opacity=".72" stroke-width="3.6"/><ellipse cx="50" cy="${cy}" rx="${rx}" ry="${ry}" fill="${d.fill}" stroke="#ffffff44" stroke-width=".7"/>`;
+    if (i === drawn-1) discs += `<ellipse cx="50" cy="${cy}" rx="27" ry="9.2" fill="none" stroke="${d.ink}" stroke-opacity=".82" stroke-width="3.2" stroke-dasharray="6 9"/><ellipse cx="50" cy="${cy}" rx="20" ry="6.8" fill="${d.fill}" stroke="${d.ink}" stroke-opacity=".55" stroke-width=".9"/><text x="50" y="${cy+.8}" text-anchor="middle" dominant-baseline="middle" fill="${d.ink}" font-size="${d.value>99?9.5:12}" font-weight="800">${d.value}</text>`;
+  }
+  return `<svg class="tower-svg" viewBox="0 0 100 170" aria-hidden="true"><ellipse cx="50" cy="158" rx="38" ry="12" fill="#04080c" opacity=".75"/>${discs}</svg>`;
+}
+const towers = mix => `<div class="towers-stage" role="list" aria-label="Stack to hand out">${DENOMS.map((d,i) => `<div class="tower-col" role="listitem" aria-label="${mix[i]} × ${d.value} ${d.color}">${tower(d, mix[i])}<span class="tower-count">×${mix[i]}</span><span class="tower-denom">${d.value} · ${d.color}</span></div>`).join('')}</div>`;
+const placeBadge = (place, extra='') => `<span class="place ${place===1?'p1':place<=SHARES.length?'paid':''}" ${extra}>${ord(place)}</span>`;
+const payText = place => { const v = payoutAt(place); return v ? `<span class="amt">${eur(v)}</span>` : `<span class="amt none">No payout</span>`; };
+const contribLine = p => `${eur(contrib(p))}${p.recs.length > 1 ? ` · ${plural(p.recs.length-1,'rebuy')}` : ''}`;
+const fact = (k, v) => `<div class="metric"><span>${k}</span><strong>${v}</strong></div>`;
+const toastHtml = () => s.toast ? `<p class="toast" role="status">✓ ${esc(s.toast)}</p>` : '';
+
+function head(title, backTo) {
+  const done = s.phase === 'Completed';
+  const back = backTo ? b(backTo.label, backTo.action, 'quiet', backTo.extra || '', 'back') : b(view.fromHistory ? 'History' : 'Games', view.fromHistory ? 'history' : 'games', 'quiet', '', 'back');
+  const tabs = done ? [['payments','Payments'],['results','Results'],['details','Game details']] : [['play','Play'],['results','Results'],['details','Game details']];
+  const nav = backTo ? '' : `<nav class="nav" aria-label="Game workspace">${tabs.map(([p,l]) => b(l,'tab','',`data-page="${p}" ${view.page===p?'aria-current="page"':''}`)).join('')}</nav>`;
+  return `<div class="topline">${back}${ib('Game actions','menu','more')}</div><p class="context">Tournament · ${s.created}${done ? ` · finished ${s.finished}` : ''}</p>${done ? '<span class="badge ok">Completed</span>' : '<span class="badge info">In progress</span>'}<h2 tabindex="-1">${title}</h2>${nav}${toastHtml()}`;
+}
+const terms = () => `<section class="game-terms" aria-label="Locked game terms"><div class="term"><span>Blinds</span><strong>1 / 2</strong><small>chip units</small></div><div class="term"><span>Rebuy</span><strong>${num(BUYIN)}</strong><small>EUR</small></div><div class="term"><span>Stack</span><strong>${STACK}</strong><small>chip units</small></div></section>`;
+const reserveLink = () => b(`<span>${plural(reserveLeft(),'reserve stack')} available</span>${ico('link')}`,'bank','', 'aria-label="Bank and reserve details"');
+function addPlayerBtn() {
+  return entryOpen() ? b('Add player','add-player','quiet','','plus') : b('Add player','entry-closed','quiet','aria-disabled="true" aria-describedby="entry-why"','lock');
+}
+const entryLine = () => entryOpen() ? '' : `<p class="entry-line" id="entry-why">Late entry closed: someone is out.</p>`;
+function activeRow(n) {
+  const p = P(n);
+  return `<li class="prow"><button type="button" class="pname" data-action="player" data-name="${n}"><strong>${n}</strong><span class="small">${contribLine(p)}</span></button>
+    <div class="row-actions"><button type="button" class="pill-btn rebuy" data-action="rebuy" data-name="${n}" aria-label="Rebuy for ${n}">+ Rebuy</button><button type="button" class="pill-btn out with-icon" data-action="out" data-name="${n}" aria-label="${n} is out…">${ico('out')}<span>Out</span></button></div></li>`;
+}
+function outRow(n) {
+  const place = placeOf(n);
+  return `<li class="prow">${placeBadge(place)}<button type="button" class="pname" data-action="player" data-name="${n}"><strong>${n}</strong><span class="small">${contribLine(P(n))}</span></button>${payText(place)}</li>`;
+}
+function winnerCard() {
+  const w = winnerOf();
+  return `<section class="winner-card" aria-label="Winner">${placeBadge(1)}<button type="button" data-action="player" data-name="${w}"><span class="small">Winner · last player left</span><strong class="nm">${w}</strong></button><span class="amt">${eur(payoutAt(1))}<small>Payout</small></span></section>
+    <p class="next-line">${ico('check')}<span>Everyone else is out. Next: Results → Calculate Payments.</span></p>`;
+}
+
+// ----- Play: three layouts -----
+function playA() {
+  const r = remaining(), w = winnerOf(), am = prizes(pool());
+  return `${terms()}<div class="links">${b(`<span>Prize pool <b>${eur(pool())}</b> · ${SHARES.map((_,i)=>`${ord(i+1)} ${num(am[i])}`).join(' · ')}</span>${ico('link')}`,'tab','',`data-page="details" aria-label="Prize pool ${eur(pool())}, open Game details"`)}${reserveLink()}</div>
+    ${w ? winnerCard() : `<section aria-labelledby="still-h"><div class="row-heading"><h3 id="still-h">Still playing · ${r.length}</h3>${addPlayerBtn()}</div>${entryLine()}<ul class="rows">${r.map(activeRow).join('')}</ul><p class="small next">${nextOut()}</p></section>`}
+    ${s.order.length ? `<section aria-labelledby="out-h"><h3 id="out-h">Out · ${s.order.length}</h3><ul class="rows">${bestFirst().map(outRow).join('')}</ul></section>` : ''}`;
+}
+function playB() {
+  const r = remaining(), w = winnerOf(), p0 = pool(), am = prizes(p0);
+  const rungs = SHARES.map((v,i) => {
+    const place = i+1, who = holderOf(place);
+    const holder = who ? `<button type="button" class="who" data-action="player" data-name="${who}"><span class="initial">${who[0]}</span><span><strong>${who}</strong>${place===1?'<span class="small" style="display:block">Winner</span>':''}</span></button>` : `<span class="who open"><span class="initial ghost" aria-hidden="true">?</span><span>Open</span></span>`;
+    return `<li class="prize-rung ${who?'filled':'open'}"><div class="pr-top">${placeBadge(place)}${holder}<strong class="amt">${eur(am[i])}</strong></div><div class="rung-bar" aria-hidden="true"><span style="width:${v/100}%"></span></div></li>`;
+  }).join('');
+  const unpaidOut = bestFirst().filter(n => placeOf(n) > SHARES.length);
+  return `${terms()}<section class="podium" aria-label="Prize pool and paid places"><div class="podium-head"><span>Prize pool</span><strong>${eur(p0)}</strong><small>${plural(N(),'buy-in')}${rebuyCount()?` + ${plural(rebuyCount(),'rebuy')}`:''}</small></div><ol class="prize-rungs">${rungs}</ol></section>
+    ${w ? `<p class="next-line">${ico('check')}<span>${w} is the last player left and wins. Next: Results → Calculate Payments.</span></p>` : `<section class="still-card" aria-labelledby="still-h"><div class="row-heading"><h3 id="still-h">Still in · ${r.length}</h3>${addPlayerBtn()}</div><p class="small" style="margin:4px 0 0">Playing for 1st–${ord(r.length)} · ${nextOut().replace('Next out finishes','next out')}</p>${entryLine()}<ul class="rows">${r.map(activeRow).join('')}</ul></section>`}
+    ${unpaidOut.length ? `<section aria-labelledby="out-h"><h3 id="out-h">Out</h3><ol class="ladder-out">${unpaidOut.map(n => `<li>${placeBadge(placeOf(n))}<button type="button" class="pname" data-action="player" data-name="${n}"><strong>${n}</strong><span class="small">${contribLine(P(n))}</span></button><span class="amt none">No payout</span></li>`).join('')}</ol></section>` : ''}
+    <div class="links" style="margin-top:16px">${reserveLink()}</div>`;
+}
+function playC() {
+  const r = remaining(), w = winnerOf(), p0 = pool(), am = prizes(p0);
+  const tile = n => `<li class="tile"><button type="button" class="tile-main" data-action="player" data-name="${n}"><span class="initial">${n[0]}</span><strong>${n}</strong><span class="small">${contribLine(P(n))}</span></button><div class="row-actions"><button type="button" class="pill-btn rebuy" data-action="rebuy" data-name="${n}" aria-label="Rebuy for ${n}">+ Rebuy</button><button type="button" class="pill-btn out with-icon" data-action="out" data-name="${n}" aria-label="${n} is out…">${ico('out')}<span>Out</span></button></div></li>`;
+  const addTile = entryOpen() ? `<li class="tile add"><button type="button" data-action="add-player">${ico('plus')}<span>Add player</span></button></li>`
+    : `<li class="tile add"><button type="button" data-action="entry-closed" aria-disabled="true" aria-describedby="entry-why">${ico('lock')}<span>Add player</span><small id="entry-why">Closed: someone is out</small></button></li>`;
+  return `${terms()}<section class="field-hero" aria-label="Prize pool and field"><div class="fh-top"><div><span class="lbl">Prize pool</span><strong class="big">${eur(p0)}</strong></div><div class="fh-paid">${SHARES.map((_,i)=>`<span><b>${ord(i+1)}</b>${eur(am[i])}</span>`).join('')}</div></div>
+      <div class="meter" role="img" aria-label="${r.length} of ${N()} still in">${s.players.map(p => `<span class="${r.includes(p.name)?'':'out'}">${p.name[0]}</span>`).join('')}</div><p class="small">${w ? `${w} wins · everyone else is out` : `${r.length} of ${N()} still in · ${nextOut().replace('Next out finishes','next out')}`}</p></section>
+    ${w ? winnerCard() : `<div class="row-heading"><h3>Still in · ${r.length}</h3></div><ul class="tiles">${r.map(tile).join('')}${addTile}</ul>`}
+    ${s.order.length ? `<h3>Out · ${s.order.length}</h3><ol class="bust-rail">${bestFirst().map(n => { const pl = placeOf(n), v = payoutAt(pl); return `<li><button type="button" class="bust" data-action="player" data-name="${n}">${placeBadge(pl)}<strong>${n}</strong>${v?`<small>${eur(v)}</small>`:''}</button></li>`; }).join('')}</ol>` : ''}
+    <div class="links" style="margin-top:16px">${reserveLink()}</div>`;
+}
+const playPage = () => `<div class="page">${head('Play')}${({A:playA,B:playB,C:playC})[variant]()}</div>`;
+
+// ----- Results (shared) -----
+function statusCard() {
+  const r = remaining(), w = winnerOf(), total = N() - 1, done = s.order.length;
+  if (w) return `<section class="status-card ok" id="status" tabindex="-1" aria-label="Finishing order status"><div class="ring">${ico('check')}</div><h3>${w} wins</h3><p>All ${total} eliminations recorded · ${plural(N(),'player')}</p></section>`;
+  return `<section class="status-card" id="status" tabindex="-1" aria-label="Finishing order status"><div class="ring">${done}/${total}</div><h3>${r.length} still playing</h3><p>${r.join(', ')}</p><div class="progress" role="img" aria-label="${done} of ${total} eliminations recorded"><span style="width:${done/total*100}%"></span></div></section>`;
+}
+function orderList(readonly) {
+  const r = remaining(), w = winnerOf(), am = prizes(pool());
+  const open = w ? `<li>${placeBadge(1)}<button type="button" class="pname" data-action="player" data-name="${w}"><strong>${w}</strong><span class="small">Winner</span></button>${payText(1)}</li>`
+    : `<li class="open-group"><span class="place">1st–${ord(r.length)}</span><span class="who">Still playing${SHARES.length <= r.length ? ` · ${SHARES.map((_,i)=>`${ord(i+1)} ${num(am[i])}`).join(' · ')} open` : ''}</span></li>`;
+  return `<ol class="order-list" aria-label="Finishing order">${open}${bestFirst().map(n => { const pl = placeOf(n); return `<li>${placeBadge(pl)}<button type="button" class="pname" data-action="player" data-name="${n}"><strong>${n}</strong><span class="small">${contribLine(P(n))}</span></button>${payText(pl)}</li>`; }).join('')}</ol>`;
+}
+function resultsPage() {
+  const done = s.phase === 'Completed', ready = !!winnerOf();
+  const calc = done ? `<p class="ro-line">${ico('lock')}<span>Read-only. To change something, reopen the game from ⋯.</span></p>`
+    : `<div class="calc">${ready ? b('Calculate Payments…','calc','primary full','','calc') : b('Calculate Payments…','calc-blocked','primary full','aria-disabled="true" aria-describedby="calc-why"','calc')}${ready ? '' : `<p class="reason" id="calc-why">Record eliminations until one player is left.</p>`}${s.reopened ? `<p class="reopened-line">Reopened · calculate Payments again when you’re done.</p>` : ''}</div>`;
+  return `<div class="page">${head('Results')}${statusCard()}<div class="row-heading"><h3>Finishing order</h3>${done || !s.order.length ? '' : b('Edit order','edit-order','quiet','','edit')}</div>${orderList(done)}${calc}</div>`;
+}
+
+// ----- Edit order (draft until saved) -----
+function startEdit() { view = { page:'order', draft:s.order.slice(), added:[], from:view.page }; }
+function editPage() {
+  const d = view.draft, r = remaining(d), w = winnerOf(d), changed = d.join() !== s.order.join();
+  const rows = bestFirst(d).map((n, i, arr) => {
+    const pl = placeOf(n, d), was = placeOf(n), moved = was !== pl || view.added.includes(n);
+    const note = view.added.includes(n) ? '<span class="tag">missed</span>' : moved && was ? `<span class="small">was ${ord(was)}</span>` : '';
+    return `<li class="erow ${moved?'changed':''}">${placeBadge(pl)}<div class="who"><strong>${n}${view.added.includes(n)?note:''}</strong>${!view.added.includes(n) && note ? note : `<span class="small">${payoutAt(pl) ? eur(payoutAt(pl)) : 'No payout'}</span>`}</div>
+      <div class="erow-actions">${ib(`Move ${n} up to ${ord(pl-1)}`,'mv-up','up',`data-name="${n}" ${i===0?'disabled':''}`)}${ib(`Move ${n} down to ${ord(pl+1)}`,'mv-down','down',`data-name="${n}" ${i===arr.length-1?'disabled':''}`)}${ib(`Undo ${n}'s elimination`,'draft-undo','undo',`data-name="${n}"`)}</div></li>`;
+  }).join('');
+  const top = w ? `<div class="still-line">${placeBadge(1)}<span><b>${w}</b> wins (last player left)</span></div>` : `<div class="still-line"><span class="place">1st–${ord(r.length)}</span><span>Still playing: ${r.join(', ')}</span></div>`;
+  return `<div class="page">${head('Finishing order', { label:'Results', action:'cancel-edit' })}${changed ? '<span class="badge warn">Changes not saved yet</span>' : ''}<p class="small">Best place at the top. Arrows move a player one place.</p>
+    ${top}<ol class="edit-list" aria-label="Eliminations, best place first">${rows || '<li class="small">No eliminations.</li>'}</ol>
+    ${r.length > 1 ? b('Add a missed elimination…','missed','add-missed full','','plus') : ''}
+    <footer class="dock"><div class="actions">${b('Cancel','cancel-edit')}${changed ? b('Save order…','save-order','primary','','check') : b('Save order…','noop','primary','aria-disabled="true" aria-describedby="save-why"','check')}</div>${changed ? '' : '<p id="save-why">Nothing changed yet.</p>'}</footer></div>`;
+}
+function orderChanges(next) {
+  const prev = s.order, rows = [];
+  const pl = (n, o) => o.includes(n) ? N() - o.indexOf(n) : null;
+  const money = place => payoutAt(place) ? eur(payoutAt(place)) : 'no payout';
+  s.players.forEach(p => {
+    const a = pl(p.name, prev), z = pl(p.name, next);
+    if (a === z) return;
+    const label = !a ? `Out · ${ord(z)} · ${money(z)}` : !z ? `Back in (was ${ord(a)})` : `${ord(a)} → ${ord(z)}${payoutAt(a) !== payoutAt(z) ? ` · ${money(z)}` : ''}`;
+    rows.push(fact(p.name, label));
+  });
+  const w0 = winnerOf(prev), w1 = winnerOf(next);
+  if (w0 && w0 !== w1) rows.push(fact('Winner', `<s>${w0}</s>${w1 ? ` → ${w1}` : ' · none yet'}`));
+  else if (w1 && w0 !== w1) rows.push(fact('Winner', `${w1} · ${eur(payoutAt(1))}`));
+  if (!prev.length && next.length) rows.push(fact('Late entry', 'Closes'));
+  if (prev.length && !next.length) rows.push(fact('Late entry', 'Opens again'));
+  return rows.join('');
+}
+
+// ----- Player page -----
+function playerPage() {
+  const n = view.name, p = P(n), place = placeOf(n), w = winnerOf(), done = s.phase === 'Completed', active = !place;
+  const pay = payoutAt(place), bal = pay - contrib(p);
+  const summary = place ? `<section class="result-card">${placeBadge(place)}<div><span class="small">${place===1 ? 'Winner · last player left' : `Out · ${ord(place)} place`}</span><div class="amt ${bal>0?'pos':bal<0?'neg':''}">${signed(bal)}</div><span class="small">${bal>0?'Won':bal<0?'Lost':'Break-even'}</span></div></section>
+      <div class="facts">${fact('Payout', pay ? eur(pay) : 'No payout')}${fact('All contributions', eur(contrib(p)))}</div>` : `<p class="small">Still playing.</p>`;
+  const acts = !done && active ? `<div class="actions" style="margin:10px 0 6px">${b('Out…','out','',`data-name="${n}"`,'out')}${b('+ Rebuy','rebuy','primary',`data-name="${n}"`)}</div>` : '';
+  const recs = p.recs.map((r,i) => `<div class="rec"><div class="rec-head"><strong>${i ? `Rebuy ${i}` : 'Buy-in'}${r.tag?`<span class="tag">${r.tag}</span>`:''}</strong><span class="small">${eur(BUYIN)}</span></div>${pills(r.mix)}${i && !done ? `<div class="actions">${b('Correct mix','noop')}${b('Undo','noop')}</div>` : ''}</div>`).join('');
+  const extra = done ? `<p class="ro-line">${ico('lock')}<span>Read-only. To change something, reopen the game from ⋯.</span></p>`
+    : `${b('Add forgotten rebuy','forgotten','quiet full','','plus')}${place && place !== 1 ? `<div style="margin-top:8px">${b('Back in the game…','back-in','full',`data-name="${n}"`,'undo')}</div>` : ''}`;
+  const backTo = view.from === 'results' ? 'Results' : view.from === 'payments' ? 'Payments' : 'Play';
+  return `<div class="page">${head(n, { label:backTo, action:'tab', extra:`data-page="${view.from || 'play'}"` })}${summary}${acts}<h3 style="margin-top:20px">Buy-ins · ${eur(contrib(p))}</h3>${recs}${extra}</div>`;
+}
+
+// ----- Late entry -----
+function entryPage() {
+  const pick = view.pick;
+  const rows = SAVED.concat(['Alice','Bob']).map(n => { const inGame = !!P(n); return `<label class="choice"><input type="radio" name="entrant" value="${n}" ${inGame?'disabled':''} ${pick===n?'checked':''}><span class="initial" aria-hidden="true">${n[0]}</span><span><strong>${n}</strong>${inGame?'<small>Already in this game</small>':''}</span></label>`; }).join('');
+  return `<div class="page">${head('Add a player', { label:'Play', action:'tab', extra:'data-page="play"' })}<p class="small">Joins with the same buy-in and starting stack. Paid places stay at ${SHARES.length}.</p><fieldset><legend>Saved players</legend>${rows}</fieldset>${b('New player','noop','quiet','','plus')}
+    <footer class="dock"><div class="actions">${b('Cancel','tab','','data-page="play"')}${b('Review entry','review-entry','primary', pick ? '' : 'aria-disabled="true"','next')}</div></footer></div>`;
+}
+
+// ----- Forgotten rebuy (simplified stand-in for the approved picker B) -----
+function forgottenPage() {
+  const n = view.name, mix = view.mix, units = sum(mix.map((q,i) => q * DENOMS[i].value)), place = placeOf(n);
+  const cls = units === STACK ? 'done' : units > STACK ? 'over' : '';
+  const msg = units === STACK ? `Exactly ${STACK} ✓` : units > STACK ? `${units - STACK} over` : `${STACK - units} to go`;
+  return `<div class="page">${head(`${n} · Forgotten rebuy`, { label:'Back', action:'player', extra:`data-name="${n}"` })}<p>Enter the chips ${n} actually got. They must add up to ${STACK}.</p>${place ? `<p class="small">${n} stays out · ${ord(place)}.</p>` : ''}
+    <p class="small">Simplified here; production uses the approved one-denomination-at-a-time picker.</p>
+    ${DENOMS.map((d,i) => `<div class="qty-row">${chip(d)}<span>${d.value} · ${d.color}</span>${ib(`Fewer ${d.value} chips`,'qty','minus',`data-i="${i}" data-d="-1"`)}<output aria-label="${mix[i]} × ${d.value}">${mix[i]}</output>${ib(`More ${d.value} chips`,'qty','plus',`data-i="${i}" data-d="1"`)}</div>`).join('')}
+    <div class="goal ${cls}"><div class="goal-bar"><span style="width:${Math.min(100, units/STACK*100)}%"></span></div><p>${msg}</p></div>
+    <footer class="dock"><div class="actions">${b('Cancel','player','',`data-name="${n}"`)}${b('Review rebuy','review-forgotten','primary', units===STACK ? '' : 'aria-disabled="true"','next')}</div></footer></div>`;
+}
+
+// ----- Details, Payments, lists -----
+function detailsPage() {
+  const am = prizes(pool()), done = s.phase === 'Completed';
+  return `<div class="page">${head('Game details')}<section class="card" aria-label="Payouts"><div class="row-heading"><h3>Payouts · ${PRESET}</h3><span class="badge" style="margin:0">${ico('lock')} Locked</span></div>
+      <ol class="order-list">${SHARES.map((v,i) => `<li>${placeBadge(i+1)}<span style="flex:1">${v/100}%</span><strong class="amt">${eur(am[i])}</strong></li>`).join('')}</ol></section>
+    <p class="small" style="margin-top:-4px">Prize pool ${eur(pool())} · ${plural(N(),'buy-in')}${rebuyCount()?` + ${plural(rebuyCount(),'rebuy')}`:''}. Rebuys raise every prize; the percentages stay.</p>
+    <div class="card"><h3>Starting stack · ${STACK} chip units</h3>${pills(MIX)}<div class="facts">${fact('Blinds','1 / 2 chip units · 100 BB')}${fact('Buy-in',`${eur(BUYIN)} · rebuys the same`)}${fact('Reserve', plural(s.reserveTarget,'stack'))}</div></div>
+    <p class="ro-line">${ico('lock')}<span>${done ? 'Read-only. To change something, reopen the game from ⋯.' : 'Setup is locked. To change it, use ⋯ → Return to Planning.'}</span></p></div>`;
+}
+function paymentsPage() {
+  const bals = balances(), pays = settle(bals);
+  const cards = pays.length ? pays.map(x => `<div class="pay-card" role="img" aria-label="${x.from} pays ${x.to} ${eur(x.v)}"><span class="party"><span class="initial">${x.from[0]}</span>${x.from}</span><div class="pay-mid"><strong>${eur(x.v)}</strong><div class="arrow"></div><small>pays</small></div><span class="party"><span class="initial">${x.to[0]}</span>${x.to}</span></div>`).join('')
+    : `<section class="status-card ok"><h3>✓ No payments needed</h3><p>Everyone broke even.</p></section>`;
+  return `<div class="page">${head('Payments')}<p class="small">Who pays whom. The app doesn’t track payments.</p><div class="pay-sum"><strong>${plural(pays.length,'payment')}</strong><span class="small">${eur(sum(pays.map(x=>x.v)))} in total</span></div>${cards}
+    <h3 style="margin-top:22px">Balances</h3>${bals.map(x => `<button type="button" class="bal" data-action="player" data-name="${x.name}"><span><span class="nm">${x.name} ${placeBadge(x.place)}</span><span class="small">${x.payout ? `Payout ${eur(x.payout)}` : 'No payout'}</span><span class="small">Buy-ins ${eur(x.contrib)}</span></span><span class="amt ${x.bal>0?'pos':x.bal<0?'neg':''}">${signed(x.bal)}<small>${x.bal>0?'Gets':x.bal<0?'Pays':'Even'}</small></span></button>`).join('')}</div>`;
+}
+function gamesPage() {
+  const card = s.deleted ? '' : s.phase === 'In progress' ? `<div class="sec"><h3>In progress</h3></div><button type="button" class="game-card active" data-action="open"><span class="badge info">In progress · Tournament</span><strong>${s.players.map(p=>p.name).join(', ')}</strong><span class="small">${s.created}</span><span class="go">${s.reopened ? 'Reopened · calculate Payments again →' : 'Open Play →'}</span></button>` : '';
+  return `<div class="page"><p class="brand">POKER PLANNER</p><h2 tabindex="-1">Games</h2>${toastHtml()}${b('New game','noop','primary full','','plus')}${card}
+    <div class="sec"><h3>More</h3></div>${b(`<span>History</span><small class="small">${s.phase==='Completed'&&!s.deleted?'1 game':'Empty'}</small>`,'history','full','style="display:flex;justify-content:space-between"','clock')}</div>`;
+}
+function historyPage() {
+  const has = s.phase === 'Completed' && !s.deleted, w = winnerOf();
+  const card = has ? `<button type="button" class="game-card" data-action="open-history"><span class="badge">Tournament</span><strong>${s.players.map(p=>p.name).join(', ')}</strong><span class="small">23 Nov 2026 · 19:30–${s.finished}</span><hr><span class="small">Prize pool ${eur(pool())} · ${plural(settle(balances()).length,'payment')} · Winner ${w}</span></button>`
+    : `<section class="status-card"><div class="ring">${ico('clock')}</div><h3>No finished games yet</h3><p>A game shows up here once you calculate its Payments.</p></section>${b('Back to Games','games','full')}`;
+  return `<div class="page">${b('Games','games','quiet','','back')}<h2 tabindex="-1">History</h2>${toastHtml()}${card}</div>`;
+}
+const planningPage = () => `<div class="page">${b('Games','games','quiet','','back')}<p class="context">Tournament · ${s.created}</p><span class="badge">Planning</span><h2 tabindex="-1">Distribution preview</h2>${toastHtml()}<div class="card stub">The approved Distribution preview with Payouts · ${PRESET}, editable again. See the tournament-setup prototype.</div></div>`;
+
+// ----- Dialogs -----
+function openDialog(html, cls='') {
+  modal.className = cls; modal.innerHTML = html; modal.style.setProperty('--scale', scale); modal.dataset.large = scale > 1;
+  if (!modal.open) modal.showModal();
+  (modal.querySelector('[autofocus]') || modal.querySelector('button'))?.focus();
+}
+function closeDialog() { if (modal.open) modal.close(); }
+function dialogFor(kind, data={}) {
+  const n = data.name;
+  if (kind === 'out') {
+    const r = remaining(), place = r.length, pay = payoutAt(place), last = r.length === 2 ? r.find(x => x !== n) : null;
+    return openDialog(`<h2 id="modal-title">${n} is out?</h2><p>${n} finishes <b>${ord(place)}</b>.${last ? ` ${last} is the last player left and wins.` : ''}</p>
+      <div class="facts">${fact('Finishing place', ord(place))}${fact('Payout', pay ? eur(pay) : 'No payout')}${last ? fact('Winner', `${last} · ${eur(payoutAt(1))}`) : ''}${s.order.length ? '' : fact('Late entry','Closes')}</div>
+      <p class="dlg-line">Buying back in? ${b('Rebuy instead','rebuy-instead','link-btn',`data-name="${n}"`)}</p>
+      ${r.length > 2 ? `<p class="dlg-line" style="margin-top:0">${b('Several out in the same hand…','same-hand','link-btn',`data-name="${n}"`)}</p>` : ''}
+      <div class="actions">${b('Cancel','close')}${b(`${n} is out`,'confirm-out','primary',`data-name="${n}"`,'out')}</div>`);
+  }
+  if (kind === 'same') {
+    const r = remaining(), picked = view.same, k = picked.length, top = r.length - k + 1;
+    return openDialog(`<h2 id="modal-title">Out in the same hand</h2><p class="small">Tick everyone who’s out. Places can’t be shared, so put them in order.</p>
+      <fieldset><legend>Who’s out?</legend>${r.map(x => `<label class="choice"><input type="checkbox" data-action="same-toggle" value="${x}" ${picked.includes(x)?'checked':''} ${!picked.includes(x) && k >= r.length-1 ? 'disabled' : ''}><span class="initial" aria-hidden="true">${x[0]}</span><span><strong>${x}</strong></span></label>`).join('')}</fieldset>
+      ${k > 1 ? `<h3 style="font-size:1em;margin:6px 0">Finishing places</h3><ol class="same-order">${picked.map((x,i) => `<li>${placeBadge(top+i)}<strong>${x}</strong><span>${ib(`Move ${x} up`,'same-up','up',`data-i="${i}" ${i===0?'disabled':''}`)}${ib(`Move ${x} down`,'same-down','down',`data-i="${i}" ${i===k-1?'disabled':''}`)}</span></li>`).join('')}</ol><p class="small">Usually whoever started the hand with more chips finishes higher.</p>` : '<p class="small">Tick at least two players.</p>'}
+      <div class="actions">${b('Cancel','close')}${k > 1 ? b(`Record ${k} eliminations`,'confirm-same','primary','','out') : b('Record eliminations','noop','primary','aria-disabled="true"','out')}</div>`);
+  }
+  if (kind === 'rebuy') {
+    const p = P(n);
+    return openDialog(`<h2 id="modal-title">Rebuy for ${n}</h2><p class="small" style="margin:0">Stack to hand out · ${STACK} chip units</p>${towers(MIX)}
+      <div class="facts">${fact('Reserve after rebuy', plural(Math.max(0,reserveLeft()-1),'stack'))}${fact('Additional contribution', eur(BUYIN))}${fact('New total contribution', eur(contrib(p)+BUYIN))}${fact('Prize pool', `${eur(pool())} → ${eur(pool()+BUYIN)}`)}</div>
+      <div class="actions">${b('Cancel','close')}${b(`Issue rebuy · ${num(BUYIN)}`,'confirm-rebuy','primary',`data-name="${n}"`)}</div>`);
+  }
+  if (kind === 'entry-closed') return openDialog(`<h2 id="modal-title">Can’t add a player now</h2><p>Late entry closes once anyone is out (${plural(s.order.length,'elimination')} recorded). It opens again only if every elimination is undone.</p><div class="actions" style="grid-template-columns:1fr">${b('OK','close','primary')}</div>`);
+  if (kind === 'add') {
+    return openDialog(`<h2 id="modal-title">Add ${n}</h2><p class="small" style="margin:0">Stack to hand out · ${STACK} chip units</p>${towers(MIX)}
+      <div class="facts">${fact('Reserve after entry', plural(Math.max(0,reserveLeft()-1),'stack'))}${fact('Initial contribution', eur(BUYIN))}${fact('Prize pool', `${eur(pool())} → ${eur(pool()+BUYIN)}`)}</div>
+      <div class="actions">${b('Cancel','close')}${b('Add player & issue stack','confirm-add','primary',`data-name="${n}"`)}</div>`);
+  }
+  if (kind === 'missed') {
+    const d = view.draft, r = remaining(d), pick = view.missWho || r[0], at = view.missAt ?? d.length;
+    const slots = Array.from({ length: d.length + 1 }, (_, k) => {
+      const before = d[k], after = d[k-1], place = N() - k;
+      const where = !d.length ? 'first one out' : k === 0 ? `out before ${before}` : k === d.length ? `out after ${after} (most recent)` : `between ${after} and ${before}`;
+      return `<label class="choice"><input type="radio" name="miss-at" value="${k}" ${at===k?'checked':''}>${placeBadge(place)}<span>${where}</span></label>`;
+    }).reverse().join('');
+    return openDialog(`<h2 id="modal-title">Add a missed elimination</h2><fieldset><legend>Who was out?</legend>${r.map(x => `<label class="choice"><input type="radio" name="miss-who" value="${x}" ${pick===x?'checked':''}><span class="initial" aria-hidden="true">${x[0]}</span><span><strong>${x}</strong></span></label>`).join('')}</fieldset>
+      <fieldset><legend>When?</legend>${slots}</fieldset><p class="small">Everyone out after them moves up one place.</p>
+      <div class="actions">${b('Cancel','close')}${b('Add to order','confirm-missed','primary','','plus')}</div>`);
+  }
+  if (kind === 'discard') return openDialog(`<h2 id="modal-title">Discard order changes?</h2><p>The saved order stays as it was.</p><div class="actions">${b('Keep editing','close','','autofocus')}${b('Discard','confirm-discard','danger')}</div>`);
+  if (kind === 'save') {
+    return openDialog(`<h2 id="modal-title">Save the new order?</h2><div class="facts">${orderChanges(view.draft)}</div><p class="small">Payouts follow the new places.</p><div class="actions">${b('Cancel','close')}${b('Save order','confirm-save','primary','','check')}</div>`);
+  }
+  if (kind === 'back-in') {
+    const next = s.order.filter(x => x !== n);
+    return openDialog(`<h2 id="modal-title">${n} back in the game?</h2><p>Removes ${n}’s elimination. To buy back in, give ${n} a rebuy afterwards.</p><div class="facts">${orderChanges(next)}${fact('Buy-ins', `${eur(contrib(P(n)))} · unchanged`)}</div><div class="actions">${b('Cancel','close')}${b('Back in the game','confirm-back-in','primary',`data-name="${n}"`)}</div>`);
+  }
+  if (kind === 'forgotten') {
+    const p = P(n), place = placeOf(n), a = prizes(pool()), z = prizes(pool()+BUYIN);
+    return openDialog(`<h2 id="modal-title">Add ${n}’s forgotten rebuy?</h2>${pills(view.mix)}<div class="facts">${fact(`${n}’s buy-ins`, `${eur(contrib(p))} → ${eur(contrib(p)+BUYIN)}`)}${fact('Prize pool', `${eur(pool())} → ${eur(pool()+BUYIN)}`)}${fact('Payouts', `${a.map(num).join(' / ')} → ${z.map(num).join(' / ')}`)}${place ? fact(n, `Stays out · ${ord(place)}`) : ''}</div>
+      ${view.weak ? `<p class="warn-line">⚠ Leaves chips for only 1 of 2 reserve stacks (was 2).</p>` : ''}
+      <div class="actions">${view.weak ? b('Decline','close') + b('Accept & add','confirm-forgotten','primary') : b('Cancel','close') + b('Add rebuy','confirm-forgotten','primary')}</div>`);
+  }
+  if (kind === 'calc') {
+    const w = winnerOf(), am = prizes(pool());
+    return openDialog(`<h2 id="modal-title">Calculate Payments?</h2><p>✓ ${w} wins · all ${N()-1} eliminations recorded</p><div class="facts">${fact('Prize pool', eur(pool()))}${SHARES.map((_,i) => fact(`${ord(i+1)} · ${holderOf(i+1)}`, eur(am[i]))).join('')}</div><p>This finishes the game. Results become read-only; you can reopen it later.</p><div class="actions">${b('Cancel','close')}${b('Calculate Payments','confirm-calc','primary','','calc')}</div>`);
+  }
+  if (kind === 'calc-blocked') return openDialog(`<h2 id="modal-title">Can’t calculate Payments yet</h2><p>${plural(remaining().length,'player')} still playing. Record eliminations until one player is left.</p><div class="actions" style="grid-template-columns:1fr">${b('OK','close-status','primary')}</div>`);
+  if (kind === 'menu') {
+    const done = s.phase === 'Completed';
+    return openDialog(`<h2 id="modal-title">Game actions</h2><p class="small">${s.phase} · Tournament · ${s.created}</p>
+      ${done ? b(`<strong>Reopen game…</strong><small>Change places or buy-ins, then calculate again.</small>`,'reopen','menu-item','','undo') : b(`<strong>Return to Planning…</strong><small>Clear play and hand out new stacks.</small>`,'reset','menu-item danger','','reset')}
+      ${b(`<strong>Delete game…</strong><small>Removes this game for good.</small>`,'delete','menu-item danger','','trash')}${b('Cancel','close','full')}`, 'sheet');
+  }
+  if (kind === 'reopen') return openDialog(`<h2 id="modal-title">Reopen this game?</h2><p>Places and buy-ins stay. These Payments stop being final. Calculate them again when you’re done.</p><div class="actions">${b('Cancel','close')}${b('Reopen game','confirm-reopen','primary')}</div>`);
+  if (kind === 'reset') {
+    const clears = [s.order.length && plural(s.order.length,'elimination'), rebuyCount() && plural(rebuyCount(),'rebuy'), 'all handed-out stacks'].filter(Boolean).join(' · ');
+    return openDialog(`<h2 id="modal-title">Return to Planning?</h2><p><b>Clears:</b> ${clears}</p><p><b>Keeps:</b> ${plural(N(),'player')} · buy-ins · settings · payout schedule</p><p>Collect all chips. You’ll hand out new stacks after Start.</p><div class="actions">${b('Cancel','close','','autofocus')}${b('Return to Planning','confirm-reset','danger')}</div>`);
+  }
+  if (kind === 'delete') return openDialog(`<h2 id="modal-title">Delete this game?</h2><p><span class="badge">${s.phase} · Tournament</span><br><b>${s.players.map(p=>p.name).join(', ')}</b><br><span class="small">23 Nov 2026 · 19:30</span></p><p>Everything recorded in this game is deleted. This can’t be undone.</p><p class="small">Saved players and chip set templates stay.</p><div class="actions">${b('Cancel','close','','autofocus')}${b('Delete game','confirm-delete','danger')}</div>`);
+  if (kind === 'bank') return openDialog(`<h2 id="modal-title">Bank &amp; reserve</h2><p class="small">The approved cash-game Bank &amp; reserve details, unchanged. Eliminations return no chips to the bank.</p><div class="facts">${fact('Reserve target', plural(s.reserveTarget,'stack'))}${fact('Used', plural(s.reserveUsed,'stack'))}${fact('Still reserved', plural(reserveLeft(),'stack'))}</div><div class="actions" style="grid-template-columns:1fr">${b('Close','close','primary')}</div>`);
+}
+
+// ----- Render -----
+function render() {
+  app.style.setProperty('--scale', scale); app.dataset.large = scale > 1;
+  const pages = { play:playPage, results:resultsPage, details:detailsPage, player:playerPage, order:editPage, entry:entryPage, forgotten:forgottenPage, payments:paymentsPage, games:gamesPage, history:historyPage, planning:planningPage };
+  app.innerHTML = pages[view.page]();
+  document.querySelector('#switch-label').textContent = `Play layout ${variant} · ${VARIANTS[variant]}`;
+  document.querySelector('#variant').value = variant; document.querySelector('#scale').value = scale;
+}
+function go(page, extra={}) { s.toast = extra.toast || ''; view = { ...view, page, ...extra }; delete view.toast; render(); window.scrollTo(0,0); app.querySelector('h2')?.focus({ preventScroll:true }); }
+
+app.addEventListener('click', handle); modal.addEventListener('click', handle);
+modal.addEventListener('change', e => {
+  const t = e.target;
+  if (t.dataset.action === 'same-toggle') { view.same = t.checked ? view.same.concat(t.value) : view.same.filter(x => x !== t.value); dialogFor('same'); }
+  if (t.name === 'miss-who') { view.missWho = t.value; }
+  if (t.name === 'miss-at') { view.missAt = Number(t.value); }
+});
+app.addEventListener('change', e => { if (e.target.name === 'entrant') { view.pick = e.target.value; render(); } });
+function handle(e) {
+  const el = e.target.closest('[data-action]'); if (!el || el.disabled) return;
+  const a = el.dataset.action, n = el.dataset.name;
+  if (el.getAttribute('aria-disabled') === 'true' && !['entry-closed','calc-blocked'].includes(a)) return;
+  ({
+    noop() {},
+    close() { closeDialog(); },
+    tab() { closeDialog(); go(el.dataset.page, { from:null }); },
+    games() { go('games', { fromHistory:false }); },
+    history() { go('history'); },
+    open() { go(s.phase === 'Completed' ? 'payments' : 'play', { fromHistory:false }); },
+    'open-history'() { go('payments', { fromHistory:true }); },
+    player() { closeDialog(); go('player', { name:n, from: ['player','forgotten'].includes(view.page) ? view.from : view.page }); },
+    menu() { dialogFor('menu'); },
+    bank() { dialogFor('bank'); },
+    rebuy() { dialogFor('rebuy', { name:n }); },
+    'rebuy-instead'() { dialogFor('rebuy', { name:n }); },
+    'confirm-rebuy'() { addRebuy(n); s.reserveUsed++; closeDialog(); go(view.page, { toast:`Rebuy issued for ${n}` }); },
+    out() { dialogFor('out', { name:n }); },
+    'confirm-out'() { s.order.push(n); closeDialog(); const w = winnerOf(); go(view.page === 'player' ? 'player' : view.page, { toast: w ? `${n} out · ${ord(placeOf(n))} · ${w} wins` : `${n} out · ${ord(placeOf(n))}` }); },
+    'same-hand'() { view.same = [n]; dialogFor('same'); },
+    'same-up'() { const i = +el.dataset.i; [view.same[i-1], view.same[i]] = [view.same[i], view.same[i-1]]; dialogFor('same'); },
+    'same-down'() { const i = +el.dataset.i; [view.same[i+1], view.same[i]] = [view.same[i], view.same[i+1]]; dialogFor('same'); },
+    'confirm-same'() { const picked = view.same.slice(); picked.slice().reverse().forEach(x => s.order.push(x)); closeDialog(); go(view.page, { toast: picked.map(x => `${x} ${ord(placeOf(x))}`).join(' · ') + (winnerOf() ? ` · ${winnerOf()} wins` : '') }); },
+    'add-player'() { go('entry', { pick:null }); },
+    'entry-closed'() { dialogFor('entry-closed'); },
+    'review-entry'() { dialogFor('add', { name:view.pick }); },
+    'confirm-add'() { s.players.push({ name:n, recs:[{ kind:'Buy-in', mix:MIX.slice() }] }); s.reserveUsed++; closeDialog(); go('play', { toast:`${n} joined` }); },
+    'edit-order'() { startEdit(); render(); },
+    'cancel-edit'() { if (view.draft.join() !== s.order.join()) return dialogFor('discard'); go('results'); },
+    'confirm-discard'() { closeDialog(); go('results'); },
+    'mv-up'() { const d = view.draft, i = d.indexOf(n); [d[i], d[i+1]] = [d[i+1], d[i]]; render(); },
+    'mv-down'() { const d = view.draft, i = d.indexOf(n); [d[i], d[i-1]] = [d[i-1], d[i]]; render(); },
+    'draft-undo'() { view.draft = view.draft.filter(x => x !== n); view.added = view.added.filter(x => x !== n); render(); },
+    missed() { view.missWho = null; view.missAt = null; dialogFor('missed'); },
+    'confirm-missed'() { const r = remaining(view.draft), who = view.missWho || r[0], at = view.missAt ?? view.draft.length; view.draft.splice(at, 0, who); view.added.push(who); closeDialog(); render(); },
+    'save-order'() { dialogFor('save'); },
+    'confirm-save'() { s.order = view.draft.slice(); closeDialog(); go('results', { toast:'Order saved' }); },
+    'back-in'() { dialogFor('back-in', { name:n }); },
+    'confirm-back-in'() { s.order = s.order.filter(x => x !== n); closeDialog(); go('player', { name:n, toast:`${n} is back in the game` }); },
+    forgotten() { go('forgotten', { mix:MIX.slice() }); },
+    qty() { const i = +el.dataset.i; view.mix[i] = Math.max(0, view.mix[i] + Number(el.dataset.d)); render(); },
+    'review-forgotten'() { dialogFor('forgotten', { name:view.name }); },
+    'confirm-forgotten'() { addRebuy(view.name, 'added later'); closeDialog(); go('player', { toast:'Forgotten rebuy added' }); },
+    calc() { dialogFor('calc'); },
+    'calc-blocked'() { dialogFor('calc-blocked'); },
+    'close-status'() { closeDialog(); document.querySelector('#status')?.focus(); },
+    'confirm-calc'() { s.phase = 'Completed'; s.finished = '23:41'; s.reopened = false; closeDialog(); go('payments', { toast:'Game finished' }); },
+    reopen() { dialogFor('reopen'); },
+    'confirm-reopen'() { s.phase = 'In progress'; s.reopened = true; closeDialog(); go('results', { toast:'Game reopened', fromHistory:false }); },
+    reset() { dialogFor('reset'); },
+    'confirm-reset'() { closeDialog(); go('planning', { toast:'Back in Planning' }); },
+    delete() { dialogFor('delete'); },
+    'confirm-delete'() { const wasDone = s.phase === 'Completed'; s.deleted = true; closeDialog(); go(wasDone ? 'history' : 'games', { toast:'Game deleted' }); },
+  })[a]?.();
+}
+
+// ----- Scenarios -----
+const SCENARIOS = {
+  open:      { label:'1 · No one out · late entry open', page:'play', setup(){ addRebuy('Bob'); s.reserveUsed = 1; } },
+  midway:    { label:'2 · Two out · late entry closed', page:'play', setup(){ addRebuy('Bob'); s.reserveUsed = 1; s.order = ['Felix','David']; } },
+  bubble:    { label:'3 · Three left · next out gets nothing', page:'play', setup(){ addRebuy('Bob'); s.reserveUsed = 1; s.order = ['Felix','David','Emma']; } },
+  heads:     { label:'4 · Two left · next out decides it', page:'play', setup(){ addRebuy('Bob'); s.reserveUsed = 1; s.order = ['Felix','David','Emma','Bob']; } },
+  winner:    { label:'5 · Winner derived (not finished)', page:'play', setup(){ addRebuy('Bob'); s.reserveUsed = 1; s.order = ['Felix','David','Emma','Bob','Clara']; } },
+  withdrawn: { label:'6 · Clara back in → winner withdrawn', page:'results', setup(){ addRebuy('Bob'); s.reserveUsed = 1; s.order = ['Felix','David','Emma','Bob']; s.toast = 'Clara is back in the game'; } },
+  reopenedEntry: { label:'7 · All undone → late entry open again', page:'play', setup(){ addRebuy('Bob'); s.reserveUsed = 1; s.toast = 'Order saved'; } },
+  resultsMid:{ label:'8 · Results · order incomplete', page:'results', setup(){ addRebuy('Bob'); s.reserveUsed = 1; s.order = ['Felix','David']; } },
+  undoAll:   { label:'9b · Edit order · every elimination undone', page:'results', setup(){ addRebuy('Bob'); s.reserveUsed = 1; s.order = ['Felix','David']; startEdit(); view.draft = []; } },
+  edit:      { label:'9 · Edit order · missed elimination added', page:'results', setup(){ addRebuy('Bob'); s.reserveUsed = 1; s.order = ['Felix','David']; startEdit(); view.draft = ['Felix','Emma','David']; view.added = ['Emma']; } },
+  backin:    { label:'10 · Player page · eliminated (Back in / forgotten rebuy)', page:'player', setup(){ addRebuy('Bob'); s.reserveUsed = 1; s.order = ['Felix','David','Emma']; view.name = 'David'; view.from = 'play'; } },
+  forgotten: { label:'11 · Forgotten rebuy for an eliminated player', page:'forgotten', setup(){ addRebuy('Bob'); s.reserveUsed = 1; s.order = ['Felix','David']; view.name = 'Felix'; view.from = 'play'; view.mix = MIX.slice(); } },
+  completed: { label:'12 · Completed · Payments', page:'payments', setup(){ addRebuy('Bob'); s.reserveUsed = 1; s.order = ['Felix','David','Emma','Bob','Clara']; s.phase = 'Completed'; s.finished = '23:41'; s.toast = 'Game finished'; } },
+  completedResults: { label:'13 · Completed · Results (read-only)', page:'results', setup(){ addRebuy('Bob'); s.reserveUsed = 1; s.order = ['Felix','David','Emma','Bob','Clara']; s.phase = 'Completed'; s.finished = '23:41'; } },
+  reopened:  { label:'14 · Reopened · Results', page:'results', setup(){ addRebuy('Bob'); s.reserveUsed = 1; s.order = ['Felix','David','Emma','Bob','Clara']; s.reopened = true; s.toast = 'Game reopened'; } },
+  history:   { label:'15 · History card', page:'history', setup(){ addRebuy('Bob'); s.reserveUsed = 1; s.order = ['Felix','David','Emma','Bob','Clara']; s.phase = 'Completed'; s.finished = '23:41'; } },
+};
+let scenario = SCENARIOS[params.get('walk')] ? params.get('walk') : 'midway';
+function load(key) {
+  scenario = key; s = fresh(); view = { page:SCENARIOS[key].page, from:'play' }; SCENARIOS[key].setup(); if (view.page === 'results' && view.draft) view.page = 'order';
+  closeDialog(); render();
+}
+document.querySelector('#walks').innerHTML = Object.entries(SCENARIOS).map(([k,v]) => `<button type="button" data-walk="${k}">${v.label}</button>`).join('');
+document.querySelector('.review').addEventListener('click', e => { const w = e.target.closest('[data-walk]'); if (w) load(w.dataset.walk); });
+document.querySelector('#variant').addEventListener('change', e => { variant = e.target.value; render(); });
+document.querySelector('#scale').addEventListener('change', e => { scale = e.target.value; render(); });
+document.addEventListener('click', e => {
+  const t = e.target.closest('[data-tool]'); if (!t) return;
+  const keys = Object.keys(VARIANTS);
+  if (t.dataset.tool === 'prev') variant = keys[(keys.indexOf(variant) + 2) % 3];
+  if (t.dataset.tool === 'next') variant = keys[(keys.indexOf(variant) + 1) % 3];
+  if (t.dataset.tool === 'restart') { closeDialog(); s.toast = ''; }
+  render();
+});
+document.addEventListener('keydown', e => { if (modal.open || e.target.matches('input,select')) return; if (e.key === 'ArrowRight' || e.key === 'ArrowLeft') document.querySelector(`[data-tool="${e.key === 'ArrowRight' ? 'next' : 'prev'}"]`).click(); });
+
+load(scenario);
+if (params.get('checks')) { const sc = document.createElement('script'); sc.src = 'checks.js'; document.body.append(sc); }
+if (params.get('name')) view.name = params.get('name');
+if (params.get('page')) { view.page = params.get('page'); render(); }
+// Capture helper: open=<dialog>[:<name>]
+const openParam = params.get('open');
+if (openParam) {
+  const [kind, name] = openParam.split(':');
+  if (kind === 'same') { view.same = name ? name.split(',') : ['Bob','Clara']; dialogFor('same'); }
+  else if (kind === 'missed') { if (!view.draft) { startEdit(); render(); } view.missWho = 'Emma'; view.missAt = 1; dialogFor('missed'); }
+  else if (kind === 'save') { dialogFor('save'); }
+  else if (kind === 'forgotten') { view.weak = name === 'weak'; dialogFor('forgotten', { name:view.name }); }
+  else if (kind === 'add') { view.page = 'entry'; view.pick = 'Greta'; render(); dialogFor('add', { name:'Greta' }); }
+  else dialogFor(kind, { name });
+}
+</script>
