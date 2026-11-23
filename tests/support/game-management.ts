@@ -2,6 +2,7 @@ import { mkdtemp, rm } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import path from 'node:path';
 
+import type { ChipColor } from '@/domain/types';
 import { createGameManagement, type GameManagement } from '@/game-management';
 import { createFileStore } from '@/game-management/storage/file-store';
 
@@ -81,6 +82,8 @@ export interface PlanSetup {
   /** Typed into the reserve field (custom); omitted: automatic. */
   reserve?: string;
   preference?: 'fewer' | 'more';
+  /** Colours of the chip rows, in the order of `chips` (omitted: No color). */
+  colors?: (ChipColor | null)[];
 }
 
 /**
@@ -89,7 +92,10 @@ export interface PlanSetup {
  */
 export async function plannedGame(app: GameManagement, mode: 'cash' | 'tournament', setup: PlanSetup) {
   const gameId = await gameWithPlayers(app, mode, setup.players);
-  await addChipRows(app, gameId, setup.chips);
+  const rowIds = await addChipRows(app, gameId, setup.chips);
+  for (const [index, color] of (setup.colors ?? []).entries()) {
+    if (color) expectStatus(await app.planning.setChipColor(gameId, rowIds[index], color), 'accepted');
+  }
   await app.planning.setSettingText(gameId, 'buyIn', setup.buyIn ?? '20');
   if (setup.depth !== undefined) await app.planning.setSettingText(gameId, 'depth', setup.depth);
   if (setup.coverage !== undefined) await app.planning.setSettingText(gameId, 'coverage', setup.coverage);

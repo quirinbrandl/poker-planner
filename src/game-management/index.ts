@@ -105,6 +105,40 @@ export type {
   ReturnToPlanningResult,
 } from './play/return-to-planning';
 
+// Cash-game final chip counts, results and accounting status
+export type {
+  BlockedChip,
+  BlockedMixData,
+  BuyInRecord,
+  CashPlayerView,
+  CashResultsView,
+  ChipFace,
+  CountEditorView,
+  CountTotals,
+  EditorProblem,
+  MixChip,
+  PlayerResult,
+  QuantityEntry,
+  QuantityState,
+  ResultConfirmationData,
+  ResultsPlayerRow,
+  ResultsStatus,
+  ReturnToPlayData,
+  SignedMoney,
+  UndoRebuyData,
+} from './play/results/types';
+export type {
+  ConfirmResultCode,
+  ConfirmResultResult,
+  CountBlocked,
+  CountEditCode,
+  CountEditResult,
+  CountNeedsCorrection,
+  ReviewCountResult,
+  ReviewedCount,
+} from './play/results/count';
+export type { ResultAccessCode } from './play/results/shared';
+
 // Reusable records
 export type {
   CreateSavedPlayerResult,

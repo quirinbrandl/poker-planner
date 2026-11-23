@@ -1,6 +1,9 @@
 import { useSyncExternalStore } from 'react';
 
 import type {
+  CashPlayerView,
+  CashResultsView,
+  CountEditorView,
   GameCard,
   PersistenceStatus,
   PlanningView,
@@ -51,6 +54,27 @@ export function useDistributionPreview(gameId: string): PreviewStepView | null {
 export function usePlayView(gameId: string): PlayView | null {
   const app = useGameManagement();
   return useRead(() => app.play.getView(gameId));
+}
+
+/** Cash-game Results: accounting status and player rows; `null` unless an In progress cash game. */
+export function useCashResults(gameId: string): CashResultsView | null {
+  const app = useGameManagement();
+  return useRead(() => app.play.getResults(gameId));
+}
+
+/**
+ * The final chip count editor of one participant; `null` unless an In progress cash game where the
+ * participant has no result yet. `showErrors` after a failed review.
+ */
+export function useCountEditor(gameId: string, participantId: string, showErrors = false): CountEditorView | null {
+  const app = useGameManagement();
+  return useRead(() => app.play.getCountEditor(gameId, participantId, { showErrors }));
+}
+
+/** One participant's cash player page; `null` unless an In progress cash game with that participant. */
+export function useCashPlayer(gameId: string, participantId: string): CashPlayerView | null {
+  const app = useGameManagement();
+  return useRead(() => app.play.getCashPlayer(gameId, participantId));
 }
 
 /** The saved-player picker for a game. */
