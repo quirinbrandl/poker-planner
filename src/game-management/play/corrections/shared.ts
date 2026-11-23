@@ -86,9 +86,10 @@ function deltaChips(play: PlayRecord, chips: readonly { index: number; count: nu
   });
 }
 
-/** "5 White chips and 1 Red chip". */
+/** "5 White chips", "5 White chips and 1 Red chip", "5 White, 2 Red and 1 Black chips"-style lists. */
 export function chipsList(play: PlayRecord, chips: readonly { index: number; count: number }[]): string {
-  return chips.map(({ index, count }) => chipsName(play, play.terms.chipSet[index].value, count)).join(' and ');
+  const names = chips.map(({ index, count }) => chipsName(play, play.terms.chipSet[index].value, count));
+  return names.length <= 2 ? names.join(' and ') : `${names.slice(0, -1).join(', ')} and ${names[names.length - 1]}`;
 }
 
 /** A historical mix the bank cannot have supplied: "Not enough chips for this mix". */
