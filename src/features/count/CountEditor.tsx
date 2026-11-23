@@ -38,9 +38,9 @@ export interface CountEditorProps {
   data: CountEditorData;
   /** Raw text of one denomination changed (typing, −1 / +1). Save it as the draft. */
   onChangeQuantity: (denominationValue: number, text: string) => void;
-  /** "Set remaining quantities to zero": fill blanks only, never change entered text. */
+  /** "Rest is 0": fill blanks only, never change entered text. */
   onSetRemainingToZero: () => void;
-  /** Back / "Leave count for now": keep the draft and leave. Nothing is returned. */
+  /** Back: keep the draft and leave. Nothing is returned. */
   onLeave: () => void;
   /** Game actions (⋯). */
   onMore?: () => void;
@@ -117,7 +117,6 @@ export function CountEditor({
         topBar={<TopBar backLabel="Back" onBack={onLeave} onMore={onMore} />}
         footer={
           <FooterActions>
-            <Button label="Leave count for now" onPress={onLeave} />
             <Button
               label={correction ? 'Review correction' : 'Review result'}
               trailingIcon="forward"
@@ -128,23 +127,10 @@ export function CountEditor({
           </FooterActions>
         }
       >
-        <ScreenHeader
-          context={data.context}
-          badges={
-            <BadgeRow>
-              <Badge label="In progress" tone="primary" />
-            </BadgeRow>
-          }
-          title={`${data.playerName} · Final chips`}
-        >
+        <ScreenHeader title={`${data.playerName} · Final chips`}>
           <BadgeRow>
-            <Badge label={`${correction ? 'Correction draft' : 'Count draft'} · unconfirmed`} tone="warning" />
+            <Badge label={correction ? 'Correction draft' : 'Draft'} tone="warning" />
           </BadgeRow>
-          <Text variant="supporting" tone="supporting">
-            {correction
-              ? 'Blank is not zero. The confirmed result stays until you replace it.'
-              : 'Blank is not zero. No chips are returned until you confirm the result.'}
-          </Text>
         </ScreenHeader>
 
         {data.problem ? <InlineNotice tone="error" title={data.problem.title}>{data.problem.message}</InlineNotice> : null}
@@ -158,9 +144,10 @@ export function CountEditor({
         />
 
         <Button
-          label="Set remaining quantities to zero"
+          label="Rest is 0"
           variant="tertiary"
           fullWidth
+          accessibilityLabel="Set remaining quantities to zero"
           unavailable={!hasBlank}
           onPress={onSetRemainingToZero}
         />
@@ -184,39 +171,51 @@ export function CountEditor({
   );
 }
 
-/** The live units / money summary under the editor. Announced politely as it changes. */
+/**
+ * The live summary under the editor: chip units and their EUR value; once every quantity is
+ * entered, the contributions and the win / loss. Announced politely as it changes.
+ */
 export function CountSummary({ totals }: { totals: CountTotals }) {
   return (
     <Card gap={space.xs} accessibilityRole="summary">
       <View
         accessible
         accessibilityLiveRegion="polite"
-        accessibilityLabel={`${totals.unitsText} chip units${totals.complete ? '' : ', partial'}`}
+        accessibilityLabel={`${totals.unitsText} chip units${totals.complete ? '' : ' so far'}, ${totals.chipValueText}`}
         style={styles.total}
       >
-        <Text variant="amountLarge" tabular>
-          {totals.unitsText}
+        <View style={styles.units}>
+          <Text variant="amountLarge" tabular>
+            {totals.unitsText}
+          </Text>
+          <Text variant="supporting" tone="supporting">{`chip units${totals.complete ? '' : ' so far'}`}</Text>
+        </View>
+        <Text variant="bodyStrong" tabular>
+          {totals.chipValueText}
         </Text>
-        <Text variant="supporting" tone="supporting">{`chip units${totals.complete ? '' : ' · partial'}`}</Text>
       </View>
-      <FactRow label={totals.complete ? 'Chip value' : 'Partial chip value'} value={totals.chipValueText} />
-      <FactRow label="All contributions" value={totals.contributionsText} divider={totals.winLoss !== null} />
       {totals.winLoss ? (
-        <FactRow
-          label="Win / loss"
-          value={totals.winLoss.amountText}
-          tone={totals.winLoss.direction === 'gain' ? 'confirmed' : totals.winLoss.direction === 'loss' ? 'error' : 'even'}
-          divider={false}
-        />
-      ) : (
-        <Text variant="supporting" tone="supporting">
-          Enter every quantity, even if 0, to see the win / loss.
-        </Text>
-      )}
+        <>
+          <FactRow label="All contributions" value={totals.contributionsText} />
+          <FactRow
+            label="Win / loss"
+            value={totals.winLoss.amountText}
+            tone={totals.winLoss.direction === 'gain' ? 'confirmed' : totals.winLoss.direction === 'loss' ? 'error' : 'even'}
+            divider={false}
+          />
+        </>
+      ) : null}
     </Card>
   );
 }
 
 const styles = StyleSheet.create({
-  total: { flexDirection: 'row', flexWrap: 'wrap', alignItems: 'baseline', gap: space.sm },
+  total: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    alignItems: 'baseline',
+    justifyContent: 'space-between',
+    columnGap: space.md,
+  },
+  units: { flexDirection: 'row', flexWrap: 'wrap', alignItems: 'baseline', gap: space.sm },
 });

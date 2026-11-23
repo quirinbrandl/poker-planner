@@ -21,6 +21,8 @@ export interface StepperFieldProps {
   error?: string;
   inputRef?: Ref<TextInputRef>;
   testID?: string;
+  /** The label is spoken but not shown, where the surrounding card already names the quantity. */
+  labelHidden?: boolean;
 }
 
 /** − / quantity / + whole-number field: the count editor's large quantity entry. */
@@ -38,6 +40,7 @@ export function StepperField({
   error,
   inputRef,
   testID,
+  labelHidden,
 }: StepperFieldProps) {
   return (
     <TextField
@@ -47,6 +50,7 @@ export function StepperField({
       keyboard="whole"
       size="large"
       centerLabel
+      labelHidden={labelHidden}
       unit={unit}
       helper={helper}
       error={error}

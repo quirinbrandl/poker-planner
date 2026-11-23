@@ -78,7 +78,7 @@ Rules of use:
 **`SearchField`** — search box with a magnifier and a "Search" placeholder inside, no visible label. `value`, `onChangeText`, required `accessibilityLabel` ("Search saved names"), `placeholder`.
 `<SearchField value={q} onChangeText={setQ} accessibilityLabel="Search saved names" />`
 
-**`StepperField`** — − / large quantity / +. Same text props as `TextField`; `onDecrement` / `onIncrement` are yours (no number rules inside), `decrementLabel` / `incrementLabel`, `decrementUnavailable`.
+**`StepperField`** — − / large quantity / +. Same text props as `TextField` (including `labelHidden`); `onDecrement` / `onIncrement` are yours (no number rules inside), `decrementLabel` / `incrementLabel`, `decrementUnavailable`.
 `<StepperField label="Quantity (chips)" value={raw} onChangeText={setRaw} onDecrement={dec} onIncrement={inc} />`
 
 **`RadioRow`** / **`RadioGroup`** — whole-row single choice with visible indicator, border and tint; exposes checked state. `label`, `description`, `selected`, `onPress`, `unavailable`, `children` (extra content such as a chip preview). `RadioGroup` gives the set its visible `label` (`hideLabel` keeps it for screen readers only, when the title already names the choice).

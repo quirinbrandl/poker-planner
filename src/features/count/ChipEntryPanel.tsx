@@ -4,6 +4,7 @@ import { Pressable, StyleSheet, View } from 'react-native';
 import {
   Button,
   Card,
+  IconButton,
   ChipSymbol,
   chipColorName,
   colors,
@@ -17,7 +18,7 @@ import {
   usePressFeedback,
 } from '@/ui';
 
-import { chipUnitsName, denominationName, quantityCaption, quantitySpoken, steppedQuantityText } from './quantityText';
+import { denominationName, quantityCaption, quantitySpoken, steppedQuantityText } from './quantityText';
 import type { QuantityEntry } from './types';
 
 export interface ChipEntryPanelProps {
@@ -32,15 +33,14 @@ export interface ChipEntryPanelProps {
 }
 
 /**
- * Count editor B's chip entry, shared by the final count and the rebuy-mix editors: one large
- * denomination with −1 / quantity / +1, Previous / Next, and the chip-image picker with captions
- * (12x, 0x, Check entry) and a check on the selected chip. Blank stays blank: the caption reads 0x
- * but screen readers hear "quantity not entered".
+ * Count editor B's chip entry, shared by the final count and the rebuy-mix editors: one large chip
+ * with its value and colour name, −1 / quantity / +1, Previous (icon) / Next, and the chip-image
+ * picker with captions (×12, ×0, a dimmed "–" for a blank, Check entry) and a check on the selected
+ * chip. Blank stays blank: it never reads as zero.
  */
 export function ChipEntryPanel({ entries, selectedIndex, onSelectIndex, onChangeQuantity, quantityRef }: ChipEntryPanelProps) {
   const index = Math.min(Math.max(selectedIndex, 0), entries.length - 1);
   const entry = entries[index];
-  const entered = entries.filter((item) => item.state !== 'notEntered').length;
   const last = index === entries.length - 1;
   if (!entry) return null;
 
@@ -51,22 +51,20 @@ export function ChipEntryPanel({ entries, selectedIndex, onSelectIndex, onChange
 
   return (
     <View style={styles.panel}>
-      <View style={styles.between}>
-        <Text variant="supporting" tone="supporting">{`Denomination ${index + 1} of ${entries.length}`}</Text>
-        <Text variant="supporting" tone="supporting">{`${entered} ${entered === 1 ? 'quantity' : 'quantities'} entered`}</Text>
-      </View>
-
       <Card variant="highlight" padding={space.xl} gap={space.sm} style={styles.focus}>
-        <ChipSymbol color={entry.color} value={entry.value} size={96} />
-        <Text variant="cardTitle" align="center">
-          {chipUnitsName(entry.value)}
-        </Text>
+        <ChipSymbol
+          color={entry.color}
+          value={entry.value}
+          size={116}
+          accessibilityLabel={`${denominationName(entry)} (${index + 1} of ${entries.length})`}
+        />
         <Text variant="supporting" tone="supporting" align="center">
           {chipColorName(entry.color)}
         </Text>
         <View style={styles.stepper}>
           <StepperField
             label="Quantity (chips)"
+            labelHidden
             value={entry.quantityText}
             onChangeText={(text) => onChangeQuantity(entry.value, text)}
             onDecrement={() => step(-1)}
@@ -81,19 +79,17 @@ export function ChipEntryPanel({ entries, selectedIndex, onSelectIndex, onChange
       </Card>
 
       <View style={styles.navigation}>
+        <IconButton
+          icon="back"
+          accessibilityLabel="Previous denomination"
+          unavailable={index === 0}
+          onPress={() => onSelectIndex(index - 1)}
+        />
         <View style={styles.navItem}>
           <Button
-            label="Previous"
-            icon="back"
-            fullWidth
-            unavailable={index === 0}
-            onPress={() => onSelectIndex(index - 1)}
-          />
-        </View>
-        <View style={styles.navItem}>
-          <Button
-            label={last ? 'Back to first' : 'Next denomination'}
+            label={last ? 'Back to first' : 'Next'}
             trailingIcon={last ? undefined : 'forward'}
+            accessibilityLabel={last ? 'Back to first denomination' : 'Next denomination'}
             fullWidth
             onPress={() => onSelectIndex(last ? 0 : index + 1)}
           />
@@ -125,7 +121,12 @@ function PickerChip({ entry, selected, onPress }: { entry: QuantityEntry; select
       style={({ pressed }) => [styles.tile, selected && styles.tileSelected, feedback(pressed)]}
     >
       <ChipSymbol color={entry.color} value={entry.value} size={36} />
-      <Text variant="label" tone={entry.state === 'invalid' ? 'error' : 'main'} tabular align="center">
+      <Text
+        variant="label"
+        tone={entry.state === 'invalid' ? 'error' : entry.state === 'notEntered' ? 'supporting' : 'main'}
+        tabular
+        align="center"
+      >
         {quantityCaption(entry)}
       </Text>
       {selected ? (
@@ -139,11 +140,10 @@ function PickerChip({ entry, selected, onPress }: { entry: QuantityEntry; select
 
 const styles = StyleSheet.create({
   panel: { gap: space.md },
-  between: { flexDirection: 'row', flexWrap: 'wrap', justifyContent: 'space-between', gap: space.sm },
   focus: { alignItems: 'center' },
   stepper: { alignSelf: 'stretch', marginTop: space.xs },
-  navigation: { flexDirection: 'row', flexWrap: 'wrap', gap: space.sm },
-  navItem: { flexGrow: 1, flexBasis: 130 },
+  navigation: { flexDirection: 'row', alignItems: 'center', gap: space.sm },
+  navItem: { flexGrow: 1, flexShrink: 1 },
   picker: { flexDirection: 'row', flexWrap: 'wrap', gap: 6 },
   tile: {
     flexGrow: 1,

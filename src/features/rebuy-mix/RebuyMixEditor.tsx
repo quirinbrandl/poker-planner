@@ -5,8 +5,6 @@ import { BlockedMixDialog } from '@/features/count/BlockedMixDialog';
 import { ChipEntryPanel } from '@/features/count/ChipEntryPanel';
 import type { BlockedMixData, ConfirmOutcome } from '@/features/count/types';
 import {
-  Badge,
-  BadgeRow,
   Button,
   Card,
   FooterActions,
@@ -34,7 +32,7 @@ export interface RebuyMixEditorProps {
   onChangeQuantity: (denominationValue: number, text: string) => void;
   /** "Set remaining quantities to zero": fill blanks only. */
   onSetRemainingToZero: () => void;
-  /** Back / Cancel: leave without saving a rebuy. */
+  /** Back: leave without saving a rebuy. */
   onLeave: () => void;
   onMore?: () => void;
   /** "Review rebuy →". Changes nothing. */
@@ -113,26 +111,11 @@ export function RebuyMixEditor({
         topBar={<TopBar backLabel="Back" onBack={onLeave} onMore={onMore} />}
         footer={
           <FooterActions>
-            <Button label="Cancel" onPress={onLeave} />
             <Button label="Review rebuy" trailingIcon="forward" variant="primary" loading={reviewing} onPress={() => void review()} />
           </FooterActions>
         }
       >
-        <ScreenHeader
-          context={data.context}
-          badges={
-            <BadgeRow>
-              <Badge label="In progress" tone="primary" />
-            </BadgeRow>
-          }
-          title={title}
-        >
-          <Text variant="supporting" tone="supporting">
-            {`Enter the chips ${data.playerName} actually got. They must add up to ${data.stackUnitsText}.${
-              data.resultStays ? ` ${data.playerName}’s result stays.` : ''
-            }`}
-          </Text>
-        </ScreenHeader>
+        <ScreenHeader title={title} />
 
         {data.problem ? <InlineNotice tone="error" title={data.problem.title}>{data.problem.message}</InlineNotice> : null}
 
@@ -145,9 +128,10 @@ export function RebuyMixEditor({
         />
 
         <Button
-          label="Set remaining quantities to zero"
+          label="Rest is 0"
           variant="tertiary"
           fullWidth
+          accessibilityLabel="Set remaining quantities to zero"
           unavailable={!hasBlank}
           onPress={onSetRemainingToZero}
         />
