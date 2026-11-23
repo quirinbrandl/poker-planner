@@ -95,7 +95,7 @@ Rules of use:
 
 ## Overlays
 
-**`Dialog`** — modal confirmation. `visible`, `title`, `children` (body; scrolls when long), `confirmLabel` + `onConfirm` (the specific verb), `onCancel` (Cancel button, Android back and backdrop all call it), `cancelLabel`, `destructive` (coral confirm, screen-reader focus starts on Cancel), `confirmLoading` / `confirmLoadingLabel`, `secondaryAction` `{ label, onPress }` for a third choice. `actionOrder="confirmFirst"` stacks the confirm (default choice, initial focus) on top, then the secondary action, then a quiet Cancel ("Where should changes apply?"). Short pairs sit side by side; long verbs and large text stack Cancel above the action.
+**`Dialog`** — modal confirmation. `visible`, `title`, `children` (body; scrolls when long), `confirmLabel` + `onConfirm` (the specific verb), `onCancel` (Cancel button, Android back and backdrop all call it), `cancelLabel`, `destructive` (coral confirm, screen-reader focus starts on Cancel), `confirmLoading` / `confirmLoadingLabel`, `confirmUnavailable` (shown but not yet possible, e.g. Record eliminations before two are ticked), `secondaryAction` `{ label, onPress }` for a third choice. `actionOrder="confirmFirst"` stacks the confirm (default choice, initial focus) on top, then the secondary action, then a quiet Cancel ("Where should changes apply?"). Short pairs sit side by side; long verbs and large text stack Cancel above the action.
 `<Dialog visible={open} title="Rebuy for Ben" confirmLabel="Issue rebuy · EUR 20.00" onConfirm={issue} onCancel={close}>…</Dialog>`
 
 **`BottomSheet`** — action sheet. `visible`, `title`, `subtitle`, `actions: { key, label, description, icon, destructive?, onPress }[]`, `onCancel`.
