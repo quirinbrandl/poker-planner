@@ -72,7 +72,7 @@ describe('Start', () => {
       preferenceText: 'Fewer chips',
     });
     expect(view.players.map((p) => [p.name, p.joinOrder, p.entry, p.contribution.text])).toEqual(
-      NAMES.slice(0, 6).map((name, i) => [name, i + 1, 'initial', 'EUR 20.00 contribution']),
+      NAMES.slice(0, 6).map((name, i) => [name, i + 1, 'initial', 'EUR 20.00']),
     );
     for (const player of view.players) {
       expect(counts(player.handedOut.mix)).toEqual([15, 2, 3, 1]);

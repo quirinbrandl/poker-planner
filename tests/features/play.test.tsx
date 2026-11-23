@@ -38,7 +38,7 @@ it('shows the terms, the reserve line, both groups and the total', async () => {
   expect(screen.getByText('Playing · 5')).toBeTruthy();
   expect(screen.getByText('Finished playing · 1')).toBeTruthy();
   expect(screen.getByText('EUR 140.00 total contributions · Stakes, not money collected.')).toBeTruthy();
-  await fireEvent.press(button('2 reserve stacks available. Bank and reserve'));
+  await fireEvent.press(button('2 reserve stacks. Bank and reserve'));
   expect(onViewBank).toHaveBeenCalledTimes(1);
   await fireEvent.press(button('Add player'));
   expect(onAddPlayer).toHaveBeenCalledTimes(1);

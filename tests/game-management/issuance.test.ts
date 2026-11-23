@@ -135,16 +135,16 @@ describe('fully qualifying rebuys', () => {
       const view = app.play.getView(gameId)!;
       expect(counts(view.bank.mix)).toEqual(bankBefore.map((c, i) => c - acceptance.mix[i]));
       const row = view.players.find((p) => p.id === bob)!;
-      expect(row.contribution).toEqual({ stacks: 2, rebuys: 1, cents: 4000, text: 'EUR 40.00 contribution · 1 rebuy' });
+      expect(row.contribution).toEqual({ stacks: 2, rebuys: 1, cents: 4000, text: 'EUR 40.00 · 1 rebuy' });
       expect(counts(row.handedOut.mix)).toEqual([30, 4, 6, 2]);
       expect(view.totals).toMatchObject({ buyIns: 6, rebuys: 1, stacks: 7, contributions: { cents: 14000 } });
       expect(view.reserve).toMatchObject({ startedTarget: 3, consumed: 1, unconsumed: 2, achievable: 2, weakened: false });
       // Earlier mixes are untouched.
       for (const other of view.players.filter((p) => p.id !== bob)) expect(counts(other.handedOut.mix)).toEqual([15, 2, 3, 1]);
       expect(app.play.getPlayScreen(gameId)!.playing.find((p) => p.id === bob)!.contributionText).toBe(
-        'EUR 40.00 contribution · 1 rebuy',
+        'EUR 40.00 · 1 rebuy',
       );
-      expect(app.play.getPlayScreen(gameId)!.reserveText).toBe('2 reserve stacks available');
+      expect(app.play.getPlayScreen(gameId)!.reserveText).toBe('2 reserve stacks');
     };
     check();
     app = await harness.restart(app);
@@ -180,6 +180,10 @@ describe('fully qualifying rebuys', () => {
     const { reserve } = app.play.getView(gameId)!;
     expect(reserve).toMatchObject({ startedTarget: 3, consumed: 4, unconsumed: 0 });
     expect(app.play.getBankReserve(gameId)!.reserve).toEqual({
+      leftText: '0 of 3 stacks',
+      left: 0,
+      target: 3,
+      achievableNowText: null,
       startedTargetText: '3 stacks',
       consumedText: '4',
       unconsumedText: '0',
@@ -305,7 +309,7 @@ describe('who can rebuy', () => {
       {
         id: alice,
         name: 'Alice',
-        contributionText: 'EUR 20.00 contribution',
+        contributionText: 'EUR 20.00',
         balanceText: '+EUR 5.00',
         direction: 'gain',
         balanceCaption: 'Won',
@@ -376,7 +380,7 @@ describe('late entry', () => {
       ...NAMES.map((name, i) => [name, i + 1, 'initial']),
       ['Gina', 7, 'lateEntry'],
     ]);
-    expect(view.players[6]).toMatchObject({ id: joined.participantId, contribution: { cents: 2000, rebuys: 0, text: 'EUR 20.00 contribution' } });
+    expect(view.players[6]).toMatchObject({ id: joined.participantId, contribution: { cents: 2000, rebuys: 0, text: 'EUR 20.00' } });
     expect(counts(view.bank.mix)).toEqual(bankBefore.map((c, i) => c - proposal.acceptance.mix[i]));
     expect(view.totals).toMatchObject({ buyIns: 7, rebuys: 0, contributions: { cents: 14000 } });
     expect(view.reserve).toMatchObject({ consumed: 1, unconsumed: 2 });
@@ -425,7 +429,7 @@ describe('late entry', () => {
     const screen = app.play.getPlayScreen(gameId)!;
     expect(screen.finished).toEqual(finishedBefore);
     expect(screen.finished[0]).toMatchObject({ balanceText: '−EUR 0.50', direction: 'loss', balanceCaption: 'Lost' });
-    expect(screen.playing.at(-1)).toMatchObject({ name: 'Gina', contributionText: 'EUR 20.00 contribution', hasCountDraft: false });
+    expect(screen.playing.at(-1)).toMatchObject({ name: 'Gina', contributionText: 'EUR 20.00', hasCountDraft: false });
   });
 
   it('blocks reduced and zero coverage and a missing exact stack, admitting nobody', async () => {
@@ -494,8 +498,17 @@ describe('screen reads', () => {
         { value: 25, color: null, count: 82 },
         { value: 100, color: null, count: 44 },
       ],
-      valueNote: '7,250 chip units in the bank. Total value alone does not prove a 200-unit stack is possible.',
-      reserve: { startedTargetText: '3 stacks', consumedText: '0', unconsumedText: '3', achievableText: '3 of 3' },
+      valueText: '7,250 chip units',
+      reserve: {
+        leftText: '3 of 3 stacks',
+        left: 3,
+        target: 3,
+        achievableNowText: null,
+        startedTargetText: '3 stacks',
+        consumedText: '0',
+        unconsumedText: '3',
+        achievableText: '3 of 3',
+      },
     });
     expect(app.play.getPlayScreen(gameId)!.terms).toEqual({ blindsText: '1 / 2', rebuyText: '20.00', currency: 'EUR', stackText: '200' });
     expect(app.play.getGameDetails(gameId)).toMatchObject({
