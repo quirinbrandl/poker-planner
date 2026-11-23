@@ -24,7 +24,7 @@ function rows(players: readonly Player[], buyIn: Cents = BUY_IN): ResultsPlayerR
     return {
       id: `p${index + 1}`,
       name: player.name,
-      contributionText: `${eur(contributions)} contribution${rebuys ? ` · ${rebuys} ${rebuys === 1 ? 'rebuy' : 'rebuys'}` : ''}`,
+      contributionText: `${eur(contributions)}${rebuys ? ` · ${rebuys} ${rebuys === 1 ? 'rebuy' : 'rebuys'}` : ''}`,
       state: counted ? 'result' : player.draft ? 'countDraft' : 'uncounted',
       correctionDraft: Boolean(player.correctionDraft),
       result: counted ? winLoss(player.units!, contributions, buyIn) : null,

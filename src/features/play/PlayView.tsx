@@ -2,6 +2,7 @@ import { useEffect, useRef } from 'react';
 import { StyleSheet, View } from 'react-native';
 
 import { WorkspaceFrame, type WorkspaceTab } from '@/features/game/WorkspaceFrame';
+import { spokenContribution } from '@/features/shared/format';
 import {
   Badge,
   Button,
@@ -49,7 +50,7 @@ export interface PlayViewProps {
 }
 
 /**
- * Play (In progress cash game): the locked terms, the reserve line, Playing with Rebuy and Result
+ * Play (In progress cash game): the locked terms, the reserve line, Playing with Rebuy and Count
  * shortcuts, Finished playing with each signed provisional balance, and the rebuy popup.
  */
 export function PlayView({
@@ -126,9 +127,17 @@ export function PlayView({
           action={{ label: 'Add player', icon: 'plus', onPress: onAddPlayer }}
         />
         {data.playing.length === 0 ? (
-          <Text tone="supporting" style={styles.empty}>
-            Everyone is counted. Next: Results → Calculate Payments.
-          </Text>
+          <View style={styles.allCounted}>
+            <InlineNotice tone="confirmed">Everyone is counted</InlineNotice>
+            <Button
+              label="Results"
+              variant="primary"
+              trailingIcon="forward"
+              fullWidth
+              accessibilityLabel="Go to Results"
+              onPress={() => onSelectTab('results')}
+            />
+          </View>
         ) : (
           data.playing.map((player) => (
             <PlayingRow
@@ -145,20 +154,18 @@ export function PlayView({
         )}
       </View>
 
-      <View>
-        <SectionHeading title={`Finished playing · ${data.finished.length}`} />
-        {data.finished.length === 0 ? (
-          <Text tone="supporting" style={styles.empty}>
-            No confirmed results yet.
-          </Text>
-        ) : (
-          data.finished.map((player) => (
+      {data.finished.length > 0 ? (
+        <View>
+          <SectionHeading title={`Finished playing · ${data.finished.length}`} />
+          {data.finished.map((player) => (
             <FinishedRow key={player.id} player={player} onOpen={() => onOpenPlayer(player.id)} />
-          ))
-        )}
-      </View>
+          ))}
+        </View>
+      ) : null}
 
-      <Text variant="supporting">{`${data.totalContributionsText} · Stakes, not money collected.`}</Text>
+      <Text variant="supporting" tabular>
+        {data.totalContributionsText}
+      </Text>
 
       <RebuyDialog
         rebuy={rebuy}
@@ -190,7 +197,9 @@ function PlayingRow({
       title={player.name}
       subtitle={player.contributionText}
       tags={draft ? <Badge label="Count draft" tone="warning" size="small" /> : undefined}
-      accessibilityLabel={[player.name, player.contributionText, draft ? 'Count draft' : null].filter(Boolean).join(', ')}
+      accessibilityLabel={[player.name, spokenContribution(player.contributionText), draft ? 'Count draft' : null]
+        .filter(Boolean)
+        .join(', ')}
       onPress={onOpen}
       actions={
         <>
@@ -204,10 +213,10 @@ function PlayingRow({
             onPress={onRebuy}
           />
           <Button
-            label={draft ? 'Resume' : 'Result'}
+            label={draft ? 'Resume' : 'Count'}
             icon="count"
             size="compact"
-            accessibilityLabel={draft ? `Resume count for ${player.name}` : `Result for ${player.name}`}
+            accessibilityLabel={draft ? `Resume count for ${player.name}` : `Count for ${player.name}`}
             onPress={onResult}
           />
         </>
@@ -226,7 +235,7 @@ function FinishedRow({ player, onOpen }: { player: FinishedPlayerRow; onOpen: ()
       trailing={<SignedAmount amount={player.balanceText} direction={player.direction} caption={player.balanceCaption} />}
       accessibilityLabel={[
         player.name,
-        player.contributionText,
+        spokenContribution(player.contributionText),
         `${player.balanceCaption} ${player.balanceText.replace('−', 'minus ')}`,
         draft ? 'Correction draft' : null,
       ]
@@ -238,5 +247,5 @@ function FinishedRow({ player, onOpen }: { player: FinishedPlayerRow; onOpen: ()
 }
 
 const styles = StyleSheet.create({
-  empty: { paddingVertical: space.md },
+  allCounted: { gap: space.md, paddingVertical: space.md },
 });

@@ -62,8 +62,8 @@ interface Story {
 
 function contributionText(player: StoryPlayer): string {
   const total = eur(20 * (1 + player.rebuys));
-  if (player.rebuys === 0) return `${total} contribution`;
-  return `${total} contribution · ${player.rebuys} ${player.rebuys === 1 ? 'rebuy' : 'rebuys'}`;
+  if (player.rebuys === 0) return total;
+  return `${total} · ${player.rebuys} ${player.rebuys === 1 ? 'rebuy' : 'rebuys'}`;
 }
 
 function playData(story: Story): PlayData {
@@ -108,8 +108,12 @@ function bankData(story: Story): BankReserveData {
     context: FIXTURE_CONTEXT,
     chipsText: `${chips} available chips`,
     chips: fixtureChips(story.bank),
-    valueNote: `${grouped(units(story.bank))} chip units in the bank. Total value alone does not prove a 200-unit stack is possible.`,
+    valueText: `${grouped(units(story.bank))} chip units`,
     reserve: {
+      leftText: target === 0 ? 'No reserve target' : `${unconsumed} of ${target} ${target === 1 ? 'stack' : 'stacks'}`,
+      left: unconsumed,
+      target,
+      achievableNowText: achievable < unconsumed ? `Only ${achievable} can be formed now` : null,
       startedTargetText: `${target} ${target === 1 ? 'stack' : 'stacks'}`,
       consumedText: String(consumed),
       unconsumedText: String(unconsumed),
@@ -138,7 +142,7 @@ function withPlayers(changes: Record<string, Partial<StoryPlayer>>, extra: reado
 const STORIES = {
   normal: {
     players: ROSTER,
-    reserveText: '2 reserve stacks available',
+    reserveText: '2 reserve stacks',
     bank: [45, 12, 11, 6, 1],
     reserve: { target: 3, consumed: 1, achievable: 2 },
   },
@@ -187,16 +191,23 @@ const STORIES = {
   /** Nora joined late with a starting stack: bank [30, 10, 8, 5, 1], 1 of 1 achievable. */
   joined: {
     players: withPlayers({}, [{ id: 'nora', name: 'Nora', rebuys: 0 }]),
-    reserveText: '1 reserve stack available',
+    reserveText: '1 reserve stack',
     bank: [30, 10, 8, 5, 1],
     reserve: { target: 3, consumed: 2, achievable: 1 },
   },
   /** Felix also finished, returning [15, 2, 1, 1, 0] (150 units, −EUR 5); Alice is correcting hers. */
   mixed: {
     players: withPlayers({ alice: { correctionDraft: true }, felix: { balance: -5 } }),
-    reserveText: '2 reserve stacks available',
+    reserveText: '2 reserve stacks',
     bank: [60, 14, 12, 7, 1],
     reserve: { target: 3, consumed: 1, achievable: 2 },
+  },
+  /** Same as `normal`, but a correction left chips for only 1 of the 2 unconsumed stacks. */
+  weakened: {
+    players: ROSTER,
+    reserveText: '1 of 2 reserve stacks',
+    bank: [30, 12, 11, 6, 1],
+    reserve: { target: 3, consumed: 1, achievable: 1 },
   },
   /** Everyone has a confirmed result; nobody is playing. */
   allFinished: {
@@ -207,7 +218,7 @@ const STORIES = {
       emma: { balance: 6 },
       felix: { balance: 5 },
     }),
-    reserveText: '2 reserve stacks available',
+    reserveText: '2 reserve stacks',
     bank: [135, 24, 27, 12, 1],
     reserve: { target: 3, consumed: 1, achievable: 2 },
   },

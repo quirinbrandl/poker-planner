@@ -2,6 +2,7 @@ import { useRef, useState } from 'react';
 import { View } from 'react-native';
 
 import { WorkspaceFrame, type WorkspaceTab } from '@/features/game/WorkspaceFrame';
+import { spokenContribution } from '@/features/shared/format';
 import {
   Badge,
   Button,
@@ -25,7 +26,7 @@ export interface ResultsViewProps {
   onMore: () => void;
   /** Open the player page (every row). */
   onOpenPlayer: (playerId: string) => void;
-  /** Count chips / Resume: open the final chip count editor. In progress only. */
+  /** Count / Resume: open the final chip count editor. In progress only. */
   onCount: (playerId: string) => void;
   /** Calculate Payments… when everything adds up: open the Calculate Payments? popup. */
   onCalculatePayments: () => void;
@@ -88,11 +89,7 @@ export function ResultsView({ data, onSelectTab, onBack, onMore, onOpenPlayer, o
         ))}
       </View>
 
-      {completed ? (
-        <Text variant="supporting" tone="supporting">
-          Read-only. To change something, reopen the game from ⋯.
-        </Text>
-      ) : (
+      {completed ? null : (
         <View style={{ gap: space.sm }}>
           <Button
             label="Calculate Payments…"
@@ -156,9 +153,7 @@ function PlayerRow({
   onCount: (id: string) => void;
 }) {
   const tag =
-    player.state === 'uncounted' ? (
-      <Badge label="Uncounted" size="small" />
-    ) : player.state === 'countDraft' ? (
+    player.state === 'countDraft' ? (
       <Badge label="Count draft" tone="warning" size="small" />
     ) : player.correctionDraft && !completed ? (
       <Badge label="Correction draft" tone="warning" size="small" />
@@ -166,9 +161,10 @@ function PlayerRow({
   const action =
     completed || player.state === 'result' ? null : (
       <Button
-        label={player.state === 'countDraft' ? 'Resume' : 'Count chips'}
+        label={player.state === 'countDraft' ? 'Resume' : 'Count'}
+        icon="count"
         size="compact"
-        accessibilityLabel={`${player.state === 'countDraft' ? 'Resume count' : 'Count chips'} for ${player.name}`}
+        accessibilityLabel={`${player.state === 'countDraft' ? 'Resume count' : 'Count'} for ${player.name}`}
         onPress={() => onCount(player.id)}
       />
     );
@@ -176,6 +172,18 @@ function PlayerRow({
     <ListRow
       title={player.name}
       subtitle={player.contributionText}
+      accessibilityLabel={[
+        player.name,
+        spokenContribution(player.contributionText),
+        player.result
+          ? `${CAPTION[player.result.direction]} ${player.result.amountText.replace('−', 'minus ')}`
+          : player.state === 'uncounted'
+            ? 'Not counted yet'
+            : 'Count draft',
+        player.state === 'result' && player.correctionDraft && !completed ? 'Correction draft' : null,
+      ]
+        .filter(Boolean)
+        .join(', ')}
       tags={tag}
       trailing={
         player.result ? (
