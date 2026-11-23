@@ -116,6 +116,8 @@ export function ChipTowers({ columns, size = 'showcase', accessibilityLabel = 'O
   const used = columns.filter((c) => c.count > 0).sort((a, b) => a.value - b.value);
   const compact = size === 'compact';
   const towerWidth = compact ? 58 : 76;
+  // Up to three towers share the row in thirds, so a label like "100 · No color" stays on one line.
+  const basis = used.length <= 3 ? '33.33%' : '25%';
   return (
     <View role="list" accessibilityLabel={accessibilityLabel} style={[styles.stage, compact && styles.stageCompact]}>
       {used.map((column) => {
@@ -126,7 +128,7 @@ export function ChipTowers({ columns, size = 'showcase', accessibilityLabel = 'O
             role="listitem"
             accessible
             accessibilityLabel={`${column.count} ${column.count === 1 ? 'chip' : 'chips'} of value ${column.value} (${name})`}
-            style={[styles.column, compact ? styles.columnCompact : null]}
+            style={[styles.column, { flexBasis: basis }, compact ? styles.columnCompact : null]}
           >
             <View accessibilityElementsHidden importantForAccessibility="no-hide-descendants">
               <Tower {...column} width={towerWidth} />
@@ -154,7 +156,7 @@ const styles = StyleSheet.create({
     paddingTop: space.sm,
   },
   stageCompact: { rowGap: space.md, paddingTop: 0 },
-  column: { flexBasis: '25%', flexGrow: 0, minWidth: 78, alignItems: 'center', gap: 2, paddingHorizontal: space.xs },
+  column: { flexGrow: 0, minWidth: 78, alignItems: 'center', gap: 2, paddingHorizontal: space.xs },
   columnCompact: { minWidth: 64 },
   count: { fontWeight: '800', marginTop: -space.xs },
 });
