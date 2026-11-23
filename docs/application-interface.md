@@ -5,8 +5,8 @@ How screens use game management. Everything here is exported from `@/game-manage
 validation or totals, and never talk to storage. Vocabulary follows [`CONTEXT.md`](../CONTEXT.md).
 
 Covers Planning (#11), saved players (#12), chip set templates (#13), Distribution preview and
-Start (#14–#17, tournament Start of #26), Return to Planning and the In progress read model. Later
-work adds rebuys, late entry, results, corrections and Payments to the same object.
+Start (#14–#17, tournament Start of #26), Return to Planning, the In progress read model, rebuys
+and late entry (#19–#21). Later work adds results, corrections and Payments to the same object.
 
 ## Basics
 
@@ -31,7 +31,8 @@ const plan = usePlanningView(gameId);     // PlanningView | null
 ```
 
 Hooks: `useGames`, `usePlanningView(gameId)`, `useDistributionPreview(gameId)`,
-`usePlayView(gameId)`, `usePlayerPicker(gameId)`, `useSavedPlayers`, `useTemplates`,
+`usePlayView(gameId)`, `usePlayScreen(gameId)`, `useBankReserve(gameId)`, `useGameDetails(gameId)`,
+`useAddPlayer(gameId)`, `usePlayerPicker(gameId)`, `useSavedPlayers`, `useTemplates`,
 `useWorkingLocation`, `usePersistenceStatus`. For any other read, call the method
 on `app` inside the component; reads are cheap, memoized and return the same object until
 something relevant changes.
@@ -372,6 +373,76 @@ Only facts are stored: the bank (chip set − issuances, + returns later), contr
 consumption (rebuys + late entries) and totals are derived in `play/ledger.ts`. The Planning draft
 stays untouched while In progress. Later record types become further fields of `play`, are cleared
 by Return to Planning and counted in its confirmation.
+
+## Rebuys and late entry
+
+Ticket #19–#21. Every later stack is allocated from the current bank under the started terms
+(stack value T, blinds, coverage k, preference). Proposals are **reads**: synchronous, memoized,
+recording nothing. Confirming recomputes the proposal and issues only if it still matches what the
+host saw.
+
+| Operation | Result |
+| --- | --- |
+| `play.proposeRebuy(gameId, participantId)` | `needsConfirmation { confirmation: RebuyConfirmation }` \| blocked: `rejected insufficientValue \| unsuitableDenominations \| tooComplex` **with `blocked`** (the popup's blocked content) \| `rejected gameNotFound \| notInProgress \| participantNotFound \| finishedPlaying \| eliminated`. |
+| `play.issueRebuy(gameId, acceptance)` | `accepted { participantId, issuanceId, feedback }` \| `rejected proposalChanged \| reducedCoverageNotAccepted \| …the request codes`. |
+| `play.proposeEntry(gameId, savedPlayerId)` | `needsConfirmation { confirmation: EntryConfirmation }` \| blocked: `rejected coverageShortage \| insufficientValue \| unsuitableDenominations \| tooComplex` **with `blocked` and `declinedNotice`** \| `rejected gameNotFound \| notInProgress \| savedPlayerNotFound \| alreadyInGame \| nameTakenInGame \| eliminationsRecorded`. |
+| `play.addLatePlayer(gameId, acceptance)` | `accepted { participantId, issuanceId, feedback }` \| `rejected proposalChanged \| …the request codes`. |
+
+```ts
+interface RebuyConfirmation { kind: 'rebuy'; popup: RebuyPopupData /* kind 'proposal' */; acceptance: RebuyAcceptance }
+interface RebuyAcceptance { participantId; mix: number[]; newTotalCents; reserveAfter; acceptedCoverage: number | null }
+interface EntryConfirmation { kind: 'lateEntry'; popup: EntryPopupData /* kind 'proposal' */; acceptance: EntryAcceptance;
+                              declinedNotice: 'Nora has not joined.' }
+interface EntryAcceptance { savedPlayerId; name; mix: number[]; reserveAfter }
+interface IssueFeedback { title: 'Rebuy issued for Ben' | 'Nora joined';
+                          message: '+EUR 20.00 contribution · 200 chip units issued.' /* + ' · covers 3 of 4 blind payments' */ }
+```
+
+- **Pass the `acceptance` back unchanged** on Issue rebuy / Accept & issue / Add player & issue stack.
+  It identifies the reviewed proposal (mix, new total, reserve after, accepted coverage), so a stale
+  proposal (`proposalChanged`: "The bank changed since this was proposed. Review it again.") and a
+  repeated confirm never issue anything. After `proposalChanged`, propose again and show the new popup.
+- **Rebuys** get the fully qualifying stack whenever one exists. Only if none exists: the exact-value
+  stack with the highest coverage c < k (`popup.reducedCoverage: { achieved, required }`, may be 0),
+  recorded only with `acceptance.acceptedCoverage === c` (else `reducedCoverageNotAccepted`); the
+  issuance keeps `reducedCoverage: c`. No exact stack: blocked with the requirement in words ("An
+  exact 200-unit stack is needed, but the bank holds only 180 chip units.", "No exact 200-unit stack
+  can be formed. The smaller chips make only 180 units, and the 500-unit chip cannot be split.").
+  A player with a confirmed result is `finishedPlaying` (Return to play removes the result first).
+- **Late entry** never gets reduced coverage: `coverageShortage` blocks with
+  `{ kind: 'coverage', achieved, required, stackUnitsText }`. Accepting appends the participant
+  (captured, trimmed name; `entry: 'lateEntry'`; next joining position), its buy-in and its stack in
+  one commit. Saving a new name is the separate `savedPlayers.create`. Candidates (`getAddPlayer`)
+  are unavailable when the same saved player or the same name is already in the game.
+- **Reserve.** Each rebuy and late entry consumes one unit of the started target. A proposal keeps
+  `unconsumed − 1` still-targeted stacks formable (or what the bank actually still achieves) and
+  never refuses a feasible request for the reserve; exhausted and zero targets still allow
+  qualifying requests (`reserveNote`: "More rebuys are still allowed when another stack is
+  possible." / "More players can join when …"). A weakened guarantee reads "1 of 2 still-targeted
+  stacks can be supplied.". Returned chips never replenish consumption.
+- Tournaments use the same operations with an extra `Prize pool` fact; an eliminated player cannot
+  rebuy and late entry is closed while any elimination is recorded (rest of #27 comes later).
+
+### Screen reads
+
+`play.getPlayScreen(gameId): PlayScreenView | null` (cash only; `usePlayScreen`),
+`play.getBankReserve(gameId): BankReserveScreenView | null` (`useBankReserve`),
+`play.getGameDetails(gameId): GameDetailsScreenView | null` (In progress, both modes;
+`useGameDetails`), `play.getAddPlayer(gameId): AddPlayerScreenView | null` (`useAddPlayer`). Each is
+exactly the screen's data in `src/features/{play,entry,details}/types.ts` minus what the workspace
+adds (context line, back label, formatted dates). Play rows read the shared records: a count draft
+gives **Resume** / "Count draft"; a confirmed result moves the player to Finished playing with the
+exact signed provisional balance (`+EUR 5.00`, Won / Lost / Break-even) and no Rebuy; a count
+draft beside a result is a "Correction draft".
+
+```tsx
+const result = app.play.proposeRebuy(gameId, participantId);
+if (result.status === 'needsConfirmation') open(result.confirmation.popup, result.confirmation.acceptance);
+else if ('blocked' in result) open(result.blocked, null);          // no accept action
+else toast.show(result.reason.message, { tone: 'error' });
+// Issue rebuy / Accept & issue
+const done = await app.play.issueRebuy(gameId, acceptance);
+```
 
 ## Saved players
 
