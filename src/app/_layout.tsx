@@ -6,7 +6,8 @@ import { StyleSheet } from 'react-native';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 
-import { colors, ToastProvider } from '@/ui';
+import { GameManagementProvider } from '@/state';
+import { colors, EmptyState, Screen, ToastProvider } from '@/ui';
 
 /** Navigator colours: always dark, whatever the device appearance. */
 const navigationTheme: Theme = {
@@ -35,13 +36,22 @@ export default function RootLayout() {
         <ThemeProvider value={navigationTheme}>
           <ToastProvider>
             <StatusBar style="light" />
-            <Stack
-              screenOptions={{
-                headerShown: false,
-                animation: 'none',
-                contentStyle: { backgroundColor: colors.background },
-              }}
-            />
+            <GameManagementProvider
+              loading={<Screen />}
+              renderError={(error) => (
+                <Screen>
+                  <EmptyState icon="error" title="Saved games can’t be opened" description={error.message} />
+                </Screen>
+              )}
+            >
+              <Stack
+                screenOptions={{
+                  headerShown: false,
+                  animation: 'none',
+                  contentStyle: { backgroundColor: colors.background },
+                }}
+              />
+            </GameManagementProvider>
           </ToastProvider>
         </ThemeProvider>
       </SafeAreaProvider>
