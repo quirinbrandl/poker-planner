@@ -47,7 +47,7 @@ it('says no payments are needed when everyone broke even', async () => {
   expect(screen.getByText('No payments needed')).toBeTruthy();
   expect(screen.getByText('Everyone broke even.')).toBeTruthy();
   expect(screen.queryByText(/payments$/)).toBeNull();
-  expect(screen.getAllByText('Even')).toHaveLength(6);
+  expect(screen.getAllByLabelText('Even EUR 0.00')).toHaveLength(6);
 });
 
 it('keeps ten payments and cent amounts readable', async () => {

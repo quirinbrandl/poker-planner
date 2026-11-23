@@ -39,13 +39,14 @@ async function renderEntry({
 
 const button = (name: string) => screen.getByRole('button', { name });
 
-it('stages a saved player; players in the game are unavailable with the reason', async () => {
+it('stages a saved player; players in the game are listed after them, not selectable', async () => {
   const { onSelect } = await renderEntry();
-  expect(screen.getByText('Existing terms · Full coverage required. Joining uses the same reserve as rebuys.')).toBeTruthy();
-  const alice = screen.getByRole('radio', { name: /Alice/ });
-  expect(alice).toBeDisabled();
-  expect(screen.getAllByText('Already in this game')).toHaveLength(6);
-  await fireEvent.press(alice);
+  expect(screen.getByLabelText('Search saved names')).toBeTruthy();
+  expect(screen.queryByRole('radio', { name: /Alice/ })).toBeNull();
+  expect(screen.getByLabelText('Alice, already in this game')).toBeTruthy();
+  expect(screen.getAllByLabelText(/, already in this game$/)).toHaveLength(6);
+  expect(screen.getAllByRole('radio')).toHaveLength(2);
+  await fireEvent.press(screen.getByLabelText('Alice, already in this game'));
   await fireEvent.press(screen.getByRole('radio', { name: /Nora/ }));
   expect(onSelect.mock.calls).toEqual([['sp-nora']]);
 });
@@ -59,26 +60,26 @@ it('asks for a choice before Review entry', async () => {
 
 it('reviews the staged choice and opens the new-name editor separately', async () => {
   const { onReview, onNewPlayer } = await renderEntry({ selectedId: 'sp-nora' });
-  expect(screen.getByText('Nora selected · not joined yet')).toBeTruthy();
+  expect(screen.getByRole('radio', { name: /Nora/ })).toBeChecked();
   await fireEvent.press(button('Review entry'));
   await fireEvent.press(button('New player'));
   expect(onReview).toHaveBeenCalledTimes(1);
   expect(onNewPlayer).toHaveBeenCalledTimes(1);
 });
 
-it('shows the stack, reserve after entry and initial contribution; Cancel adds nobody', async () => {
+it('shows the stack and reserve after entry, with the price on the add button; Cancel adds nobody', async () => {
   const { onConfirmEntry, onCancelReview } = await renderEntry({ selectedId: 'sp-nora', story: 'normal' });
   expect(screen.getByText('Add Nora')).toBeTruthy();
   expect(screen.getByLabelText('Stack to hand out: 200 chip units')).toBeTruthy();
   expect(screen.getByLabelText('3 chips of value 25 (Blue)')).toBeTruthy();
   expect(screen.getByLabelText('Reserve after entry: 1 stack left')).toBeTruthy();
-  expect(screen.getByLabelText('Initial contribution: EUR 20.00')).toBeTruthy();
+  expect(screen.queryByLabelText(/^Initial contribution/)).toBeNull();
   expect(screen.queryByText(/total contribution/i)).toBeNull();
   await fireEvent.press(button('Cancel'));
   expect(onCancelReview).toHaveBeenCalledTimes(1);
   expect(onConfirmEntry).not.toHaveBeenCalled();
-  await fireEvent.press(button('Add player & issue stack'));
-  await fireEvent.press(button('Add player & issue stack'));
+  await fireEvent.press(button('Add Nora · EUR 20.00'));
+  await fireEvent.press(button('Add Nora · EUR 20.00'));
   expect(onConfirmEntry).toHaveBeenCalledTimes(1);
 });
 
@@ -98,7 +99,7 @@ it.each<[EntryStoryName, RegExp]>([
   expect(screen.getByText('Cannot add Nora')).toBeTruthy();
   expect(screen.getByLabelText(reason)).toBeTruthy();
   expect(screen.getByText('Nora has not joined. No contribution recorded; chips and reserve unchanged.')).toBeTruthy();
-  expect(screen.queryByRole('button', { name: /Add player|Accept|issue/ })).toBeNull();
+  expect(screen.queryByRole('button', { name: /Add player|Add Nora|Accept|issue/ })).toBeNull();
   await fireEvent.press(button('View bank'));
   await fireEvent.press(button('Back to player selection'));
   expect(onViewBank).toHaveBeenCalledTimes(1);
