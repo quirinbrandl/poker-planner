@@ -24,7 +24,7 @@ export function buildResultsView(game: GameDocument & { play: PlayRecord }): Cas
       name: participant.name,
       contributionText: contributionText(play, participant.id),
       state: result ? 'result' : countDraftOf(play, participant.id) ? 'countDraft' : 'uncounted',
-      correctionDraft: false,
+      correctionDraft: !completion && result !== undefined && countDraftOf(play, participant.id) !== undefined,
       result: settled
         ? allocatedWinLoss(settled.balance)
         : result

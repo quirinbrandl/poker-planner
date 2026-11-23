@@ -8,6 +8,7 @@ import type { GameDocument, IssuanceRecord, PlayRecord } from '../../core/docume
 import { rejected, type Rejected } from '../../core/results';
 import type { Runtime } from '../../core/runtime';
 import { findGame, withGame } from '../../planning/draft';
+import { withFixAdvancedByRebuy } from '../corrections/fix';
 import { isEliminated, issuancesOf, resultOf, totalContributions } from '../ledger';
 import {
   counts,
@@ -146,7 +147,9 @@ export async function issueRebuy(rt: Runtime, gameId: string, acceptance: RebuyA
     recordedAt: rt.now().toISOString(),
     ...(acceptance.acceptedCoverage !== null ? { reducedCoverage: acceptance.acceptedCoverage } : {}),
   };
-  const next: GameDocument = { ...game, play: { ...play, issuances: [...play.issuances, issuance] } };
+  // Issuing the owner's new rebuy completes the last step of a recorded fix.
+  const nextPlay = withFixAdvancedByRebuy({ ...play, issuances: [...play.issuances, issuance] }, acceptance.participantId);
+  const next: GameDocument = { ...game, play: nextPlay };
   await rt.apply(withGame(state, next));
   const popup = current.confirmation.popup;
   const coverage = popup.reducedCoverage

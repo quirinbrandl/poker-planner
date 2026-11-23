@@ -18,6 +18,7 @@ import type { Cents, DistributionPreference, GameMode } from '@/domain/types';
 
 import type { GameDocument, PlayRecord } from '../core/documents';
 import type { Runtime } from '../core/runtime';
+import { fixLine } from './corrections/fix';
 import { summarizeDenominations } from '../shared/chip-rows';
 import { formatCount } from '../shared/numbers';
 import { withColors } from '../planning/distribution';
@@ -427,6 +428,11 @@ export interface PlayScreenView {
   finished: readonly FinishedPlayerRow[];
   /** "EUR 140.00 total contributions". */
   totalContributionsText: string;
+  /**
+   * An unfinished fix of a blocked correction: "Fixing Alice’s count · Step 2 of 3" (opens the
+   * fix page); `null` without one.
+   */
+  fixText: string | null;
 }
 
 /** Bank & reserve (`play.getBankReserve`). */
@@ -555,6 +561,7 @@ export function buildPlayScreen(game: StartedGame, view: PlayView): PlayScreenVi
     playing,
     finished,
     totalContributionsText: view.totals.contributions.label,
+    fixText: fixLine(play),
   };
 }
 

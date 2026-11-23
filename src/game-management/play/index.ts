@@ -6,6 +6,7 @@ import { createCompletionOperations } from '../completion';
 import { guardCompletedGames, readOnlyForCompletedGames } from '../completion/guard';
 import type { Runtime } from '../core/runtime';
 import { findGame } from '../planning/draft';
+import { createCorrectionsOperations } from './corrections';
 import { createIssuanceOperations } from './issuance';
 import { createResultOperations } from './results';
 import { returnToPlanning, type ReturnToPlanningResult } from './return-to-planning';
@@ -38,6 +39,7 @@ export function createPlayApi(rt: Runtime) {
   const recording = guardCompletedGames(rt, {
     ...createResultOperations(playRt),
     ...createIssuanceOperations(playRt),
+    ...createCorrectionsOperations(playRt),
     ...tournamentRecording,
   });
 

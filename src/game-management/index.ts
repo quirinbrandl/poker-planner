@@ -209,6 +209,35 @@ export type {
 } from './play/results/count';
 export type { ResultAccessCode } from './play/results/shared';
 
+// Corrections of recorded play: results, rebuy records and the fix flow
+export type {
+  CorrectionAccessCode,
+  CorrectionDependent,
+  CorrectionEditResult,
+  CorrectionFeedback,
+  FinishFixResult,
+  FixCode,
+  FixStart,
+  FixView,
+  MixGoal,
+  MixWarning,
+  NoResultCode,
+  PlayerBuyInsView,
+  RebuyMixAcceptance,
+  RebuyMixConfirmationData,
+  RebuyMixEditorView,
+  RebuyMixReviewResult,
+  RebuyMixTarget,
+  RebuyRecordCode,
+  RecordRebuyMixResult,
+  ReplaceResultResult,
+  ReturnToPlayResult,
+  ReviewCorrectionResult,
+  SaveFixStepResult,
+  UndoFixBlockerResult,
+  UndoRebuyResult,
+} from './play/corrections/types';
+
 // Completion: Calculate Payments, Payments, Reopen and History
 export type {
   CalculatePaymentsCode,

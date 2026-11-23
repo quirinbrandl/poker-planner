@@ -113,6 +113,36 @@ export interface PlayRecord {
    * the Games card say so). Return to Planning removes it with the rest of `play`.
    */
   reopenedAt?: string;
+  /**
+   * An unfinished one-step-at-a-time fix of a correction blocked by a dependent rebuy (cash games),
+   * recorded once its first step (undoing that rebuy) is accepted. Absent means none.
+   */
+  fix?: FixRecord;
+}
+
+/**
+ * A fix in progress: the dependent rebuy is undone; the correction (or removal) and the owner's
+ * new rebuy follow, each as its own confirmed operation. Nothing here moves chips by itself.
+ */
+export interface FixRecord {
+  /** Whose result is being corrected (or removed). */
+  participantId: string;
+  /** `count`: a corrected count waits to be saved. `result`: the result's removal (Return to play) waits. */
+  target: 'count' | 'result';
+  /** The rebuy undone in step 1, as it was recorded. */
+  blocker: {
+    participantId: string;
+    /** Its number among the owner's rebuys when it was undone ("rebuy 2"). */
+    rebuyNumber: number;
+    contribution: Cents;
+    mix: ChipMix;
+    /** The chips the correction was short of, ascending by value. */
+    shortages: { value: number; count: number }[];
+  };
+  /** `count`: the corrected quantities retained when the rebuy was undone, ascending by value. */
+  counts?: number[];
+  /** `save`: step 2, `rebuy`: step 3, `done`: all fixed (until the host goes back to Play). */
+  stage: 'save' | 'rebuy' | 'done';
 }
 
 /** An unconfirmed final chip count, exactly as typed. Empty text is "not entered", never zero. */
@@ -194,6 +224,10 @@ export interface IssuanceRecord {
    * (a reduced-coverage rebuy the host accepted, or a historical mix). Absent: full coverage.
    */
   reducedCoverage?: number;
+  /** Recorded later as a forgotten historical rebuy (its actual mix), not proposed from the bank. */
+  addedLater?: true;
+  /** Its mix was corrected to the chips actually handed out. */
+  corrected?: true;
 }
 
 /** The Planning draft: every input exactly as typed. */
