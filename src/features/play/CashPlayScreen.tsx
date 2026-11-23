@@ -2,7 +2,7 @@ import { router } from 'expo-router';
 import { useCallback, useState } from 'react';
 
 import { useWorkspace } from '@/features/game/useWorkspace';
-import { addPlayerHref, countHref, playerHref } from '@/features/shared/routes';
+import { addPlayerHref, countHref, fixHref, playerHref } from '@/features/shared/routes';
 import type { IssueFeedback, RebuyAcceptance, RebuyPopupData } from '@/game-management';
 import { useBankReserve, useGameManagement, usePlayScreen } from '@/state';
 import { Screen, useToast } from '@/ui';
@@ -100,6 +100,7 @@ export function CashPlayScreen({ gameId }: { gameId: string }) {
           setRebuy(null);
           setView('bank');
         }}
+        onContinueFix={() => router.push(fixHref(gameId))}
         onSelectTab={workspace.onSelectTab}
         onBack={workspace.onBack}
         onMore={workspace.onMore}

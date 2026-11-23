@@ -47,7 +47,9 @@ export interface CorrectionDependent {
 
 /** "Fix <name>’s count / result" (`play.getFix`), without the screen's context line. */
 export interface FixView {
-  /** Whose record is being corrected: "Alice". */
+  /** Whose record is being corrected (Back to count, Edit count first). */
+  participantId: string;
+  /** "Alice". */
   playerName: string;
   target: 'count' | 'result';
   /** 1 undo the dependent rebuy, 2 save the correction (or removal), 3 give a new rebuy, then `done`. */

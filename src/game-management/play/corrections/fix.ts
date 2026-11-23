@@ -97,6 +97,7 @@ function buildView(access: CashAccess, fix: FixRecord, step: FixView['step'], st
   const counts = fix.target === 'count' ? fixCounts(access, fix) : null;
   const name = nameOf(play, fix.participantId);
   return {
+    participantId: fix.participantId,
     playerName: name,
     target: fix.target,
     step,

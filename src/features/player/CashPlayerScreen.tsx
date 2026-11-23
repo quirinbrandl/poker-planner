@@ -1,15 +1,16 @@
 import { router, useLocalSearchParams } from 'expo-router';
 import { useState } from 'react';
 
+import type { ConfirmOutcome } from '@/features/count/types';
 import { GameActionsSheet } from '@/features/game/GameActionsSheet';
 import { workspaceContext } from '@/features/game/useWorkspace';
-import { countHref, paymentsHref, playHref, resultsHref } from '@/features/shared/routes';
-import { useCashPlayer, useGame } from '@/state';
-import { Screen } from '@/ui';
+import { RebuyDialog } from '@/features/play/RebuyDialog';
+import { useRebuyPopup } from '@/features/play/useRebuyPopup';
+import { countHref, fixHref, paymentsHref, playHref, rebuyMixHref, resultsHref } from '@/features/shared/routes';
+import { useCashPlayer, useGame, useGameManagement, usePlayerBuyIns } from '@/state';
+import { Screen, useToast } from '@/ui';
 
 import { PlayerPage } from './PlayerPage';
-
-const NOT_YET = Promise.resolve({ kind: 'rejected' } as const);
 
 const BACK = {
   play: { label: 'Back to Play', href: playHref },
@@ -23,16 +24,48 @@ const BACK = {
  */
 export function CashPlayerScreen({ gameId, participantId = '' }: { gameId: string; participantId?: string }) {
   const { from } = useLocalSearchParams<{ from?: string }>();
+  const app = useGameManagement();
+  const toast = useToast();
   const game = useGame(gameId);
   const player = useCashPlayer(gameId, participantId);
+  const buyIns = usePlayerBuyIns(gameId, participantId);
+  const rebuy = useRebuyPopup(gameId);
   const [actionsOpen, setActionsOpen] = useState(false);
   const origin = BACK[from === 'results' || from === 'payments' ? from : 'play'];
 
-  if (!game || !player) return <Screen />;
+  if (!game || !player || !buyIns) return <Screen />;
 
   const back = () => {
     if (router.canGoBack()) router.back();
     else router.replace(origin.href(gameId));
+  };
+
+  const undoRebuy = async (rebuyId: string): Promise<ConfirmOutcome> => {
+    const result = await app.play.undoRebuy(gameId, rebuyId);
+    if (result.status === 'accepted') {
+      toast.show(result.feedback.title, { tone: 'confirmed' });
+      return { kind: 'accepted' };
+    }
+    if (result.status === 'blocked') return { kind: 'blocked', blocked: result.blocked };
+    toast.show(result.reason.message, { tone: 'error' });
+    return { kind: 'rejected' };
+  };
+
+  const returnToPlay = async (): Promise<ConfirmOutcome> => {
+    const result = await app.play.returnToPlay(gameId, participantId);
+    switch (result.status) {
+      case 'accepted':
+        toast.show('Back in the game', { tone: 'confirmed' });
+        return { kind: 'accepted' };
+      case 'blocked':
+        return { kind: 'blocked', blocked: result.blocked };
+      case 'dependent':
+        router.push(fixHref(gameId, result.fix));
+        return { kind: 'rejected' };
+      case 'rejected':
+        toast.show(result.reason.message, { tone: 'error' });
+        return { kind: 'rejected' };
+    }
   };
 
   return (
@@ -46,8 +79,8 @@ export function CashPlayerScreen({ gameId, participantId = '' }: { gameId: strin
           backLabel: origin.label,
           result: player.result,
           countDraft: player.countDraft,
-          buyInsTotalText: player.buyInsTotalText,
-          buyIns: player.buyIns,
+          buyInsTotalText: buyIns.buyInsTotalText,
+          buyIns: buyIns.buyIns,
           returnToPlay: player.returnToPlay,
         }}
         onBack={back}
@@ -55,18 +88,26 @@ export function CashPlayerScreen({ gameId, participantId = '' }: { gameId: strin
         onCountFinalChips={() => {
           if (player.actions.countFinalChips) router.push(countHref(gameId, participantId));
         }}
-        // later task: the rebuy popup on the player page (#19).
-        onRebuy={() => undefined}
-        // later task: correcting a confirmed result (#22).
-        onCorrectResult={() => undefined}
-        // later task: Correct mix (#23).
-        onCorrectMix={() => undefined}
-        // later task: Add forgotten rebuy (#23).
-        onAddForgottenRebuy={() => undefined}
-        // later task: Undo rebuy (#22). Its popup never opens while `undo` is null.
-        onUndoRebuy={() => NOT_YET}
-        // later task: Return to play (#22). Hidden while `returnToPlay` is null.
-        onReturnToPlay={() => NOT_YET}
+        onRebuy={() => {
+          if (buyIns.actions.rebuy) rebuy.request(participantId);
+        }}
+        onCorrectResult={() => router.push(countHref(gameId, participantId))}
+        onCorrectMix={(rebuyId) => router.push(rebuyMixHref(gameId, participantId, rebuyId))}
+        onAddForgottenRebuy={() => {
+          if (buyIns.actions.addForgottenRebuy) router.push(rebuyMixHref(gameId, participantId));
+        }}
+        onUndoRebuy={undoRebuy}
+        onReturnToPlay={returnToPlay}
+      />
+      <RebuyDialog
+        rebuy={rebuy.popup}
+        busy={rebuy.busy}
+        onConfirm={rebuy.confirm}
+        onCancel={rebuy.cancel}
+        onViewBank={() => {
+          rebuy.close();
+          router.push(playHref(gameId));
+        }}
       />
       <GameActionsSheet gameId={gameId} visible={actionsOpen} onClose={() => setActionsOpen(false)} />
     </>

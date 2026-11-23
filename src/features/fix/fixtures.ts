@@ -13,6 +13,7 @@ const ALICE_CORRECTED = [10, 3, 5, 1, 0];
 function fixData(step: FixData['step'], target: FixData['target'] = 'count'): FixData {
   return {
     context: CONTEXT,
+    participantId: 'p1',
     playerName: 'Alice',
     target,
     step,
@@ -38,6 +39,8 @@ function fixData(step: FixData['step'], target: FixData['target'] = 'count'): Fi
         ? { mix: mix(ALICE_CORRECTED), confirmation: resultConfirmation('Alice', ALICE_CORRECTED, 2000 as Cents, 'replace') }
         : null,
     removal: target === 'result' ? { playerName: 'Alice', handBack: mix([15, 2, 5, 1, 0]), buyInsText: eur(2000) } : null,
+    newRebuy: { participantId: 'p2', note: 'Swap Bob’s chips so they match this stack.' },
+    start: step === 1 ? { participantId: 'p1', target } : null,
   };
 }
 

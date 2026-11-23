@@ -655,7 +655,7 @@ describe('Completed games', () => {
     for (const id of ids.slice(1)) await recordCount(app, gameId, id, STACK);
     expectStatus(await app.play.calculatePayments(gameId, { confirmed: true }), 'accepted');
 
-    const operations = [
+    const operations: (() => Promise<{ status: string }>)[] = [
       () => app.play.setCorrectionText(gameId, ids[0], 1, '3'),
       () => app.play.replaceResult(gameId, ids[0], { counts: STACK }),
       () => app.play.returnToPlay(gameId, ids[0]),
