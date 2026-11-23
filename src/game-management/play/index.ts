@@ -16,10 +16,29 @@ export function createPlayApi(rt: Runtime) {
   // Completed games are read-only: every play operation below answers `rejected gameCompleted` for
   // them, and their writes to a Completed game never apply (see completion/guard.ts).
   const playRt = readOnlyForCompletedGames(rt);
+  // The finishing-order draft lives in the editor screen and records nothing until `saveOrder`, so
+  // its functions stay as they are: they take and return a draft, never a rejection.
+  const {
+    startOrderDraft,
+    moveUpInOrderDraft,
+    moveDownInOrderDraft,
+    undoInOrderDraft,
+    addMissedToOrderDraft,
+    describeOrderDraft,
+    ...tournamentRecording
+  } = createTournamentOperations(playRt);
+  const orderDraft = {
+    startOrderDraft,
+    moveUpInOrderDraft,
+    moveDownInOrderDraft,
+    undoInOrderDraft,
+    addMissedToOrderDraft,
+    describeOrderDraft,
+  };
   const recording = guardCompletedGames(rt, {
     ...createResultOperations(playRt),
     ...createIssuanceOperations(playRt),
-    ...createTournamentOperations(playRt),
+    ...tournamentRecording,
   });
 
   return {
@@ -38,6 +57,7 @@ export function createPlayApi(rt: Runtime) {
     },
 
     ...recording,
+    ...orderDraft,
     ...createCompletionOperations(rt),
   };
 }

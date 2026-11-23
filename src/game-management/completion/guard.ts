@@ -6,8 +6,10 @@
  * game never apply ({@link readOnlyForCompletedGames}).
  *
  * The convention this relies on: a play operation takes the game id as its first argument, and a
- * read's name starts with `get`. Only Calculate Payments, Reopen, Return to Planning (which rejects
- * Completed games itself) and Delete change a Completed game.
+ * read's name starts with `get`. Functions that only transform a draft the screen holds (the
+ * finishing-order draft) are left out of the guard in `play/index.ts`; saving such a draft is
+ * guarded by the operation itself and by the read-only runtime. Only Calculate Payments, Reopen,
+ * Return to Planning (which rejects Completed games itself) and Delete change a Completed game.
  */
 import type { AppState } from '../core/documents';
 import { type Rejected, rejected } from '../core/results';
