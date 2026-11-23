@@ -12,6 +12,8 @@ import { renderUi } from '../ui/render';
 jest.mock('expo-router', () => ({
   router: { replace: jest.fn(), dismissTo: jest.fn(), push: jest.fn(), back: jest.fn() },
   useLocalSearchParams: () => ({}),
+  // The step frame registers its Android back handler while focused; a rendered step is focused.
+  useFocusEffect: (effect: () => void | (() => void)) => jest.requireActual('react').useEffect(effect, [effect]),
 }));
 
 const NAMES = ['Alice', 'Bob', 'Cleo', 'Dan', 'Emma', 'Felix'];
