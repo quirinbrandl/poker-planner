@@ -391,6 +391,49 @@ describe('History and Games', () => {
   });
 });
 
+describe('Delete game', () => {
+  it('removes a Planning or In progress game only, keeping saved players, templates and other games', async () => {
+    const templateId = expectStatus(
+      await app.templates.create({ name: 'Home', rows: [{ id: 'row-1', valueText: '1', quantityText: '100', color: null }] }),
+      'accepted',
+    ).templateId;
+    const done = await completedGame();
+    const running = await startedGame(['Cleo', 'Dan']);
+    const planning = await plannedGame(app, 'tournament', chips(['Emma', 'Felix']));
+    const saved = app.savedPlayers.list();
+    const templates = app.templates.list();
+    const doneBefore = observeAll(done.gameId, done.ids);
+    const history = app.games.history();
+
+    expectStatus(await app.games.open(planning), 'accepted');
+    expectStatus(await app.games.delete(planning), 'accepted');
+    app = await harness.restart(app);
+    expect(app.games.get(planning)).toBeNull();
+    expect(app.location.get()).toEqual({ kind: 'games' });
+    expect(app.games.list().map((g) => g.id)).toEqual([running.gameId]);
+
+    expectStatus(await app.games.open(running.gameId), 'accepted');
+    expectStatus(await app.games.delete(running.gameId), 'accepted');
+    app = await harness.restart(app);
+    expect(app.games.get(running.gameId)).toBeNull();
+    expect(app.play.getView(running.gameId)).toBeNull();
+    expect(app.location.get()).toEqual({ kind: 'games' });
+    expect(app.games.list()).toEqual([]);
+
+    // Nothing else changed: reusable records and the Completed game with its history entry.
+    expect(app.savedPlayers.list()).toEqual(saved);
+    expect(app.templates.list()).toEqual(templates);
+    expect(app.templates.get(templateId)).not.toBeNull();
+    expect(app.games.history()).toEqual(history);
+    expect({ ...observeAll(done.gameId, done.ids), location: null, list: null }).toEqual({
+      ...doneBefore,
+      location: null,
+      list: null,
+    });
+    expect(await app.games.delete(running.gameId)).toMatchObject({ status: 'rejected', reason: { code: 'gameNotFound' } });
+  });
+});
+
 describe('working location', () => {
   it('restores Payments and the other tabs of a Completed game, and falls back when the phase changed', async () => {
     const { gameId } = await completedGame();

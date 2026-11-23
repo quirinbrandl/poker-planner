@@ -31,7 +31,7 @@ export interface BalanceRow {
   name: string;
   /** Tournament finishing place: "1st". `null` in cash games. */
   placeLabel: string | null;
-  /** True for the winner: the place badge gets the Lavender ring. */
+  /** True for the winner: the place badge is filled Lavender. */
   placeHighlight: boolean;
   /**
    * The supporting lines, in order. Cash: "Final result EUR 33.00", "Buy-ins EUR 20.00".

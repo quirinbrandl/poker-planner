@@ -25,7 +25,7 @@ function Balance({ row, onPress }: { row: BalanceRow; onPress: () => void }) {
   return (
     <ListRow
       title={row.name}
-      titleAside={row.placeLabel ? <PlaceBadge label={row.placeLabel} highlight={row.placeHighlight} /> : undefined}
+      titleAside={row.placeLabel ? <PlaceBadge label={row.placeLabel} highlight={row.placeHighlight} filled={row.placeHighlight} /> : undefined}
       subtitle={row.lines}
       trailing={<SignedAmount amount={row.balanceText} direction={row.direction} caption={caption} />}
       accessibilityLabel={spoken}
