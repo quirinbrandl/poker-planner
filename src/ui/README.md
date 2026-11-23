@@ -53,7 +53,7 @@ Rules of use:
 **`Card`** — surface. `variant`: `raised` (default group), `highlight` (active game card), `inset` (page-coloured well, e.g. game identity in a dialog), `showcase` (radial stage). `padding` (18), `gap`, `onPress` + `accessibilityLabel` for a whole-card button.
 `<Card gap={space.xl}>…fields…</Card>`
 
-**`ListRow`** — players, links, balances. `title`, `subtitle` (string or lines), `leading`, `trailing` (e.g. `SignedAmount`), `tags` (badges under the text), `actions` (separate buttons beside the row, wrap under it at large text), `onPress`, `chevron`, `divider` (true), `density`.
+**`ListRow`** — players, links, balances. `title`, `titleAside` (beside the title, e.g. a `PlaceBadge`), `subtitle` (string or lines), `leading`, `trailing` (e.g. `SignedAmount`), `tags` (badges under the text), `actions` (separate buttons beside the row, wrap under it at large text), `onPress`, `chevron`, `divider` (true), `density`.
 `<ListRow title="Ben" subtitle="EUR 40.00 contribution · 1 rebuy" onPress={open} actions={<><Button label="Rebuy" … /><Button label="Result" … /></>} />`
 
 **`SectionHeading`** — `title`, `meta` ("1 draft"), `action` `{ label, icon, onPress }` (tertiary text button), `size="large"` with `aside` for "3 payments · EUR 21.00 in total".

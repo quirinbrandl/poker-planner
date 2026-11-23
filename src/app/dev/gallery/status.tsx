@@ -14,6 +14,7 @@ import {
   ListRow,
   MetricStrip,
   MetricTile,
+  PlaceBadge,
   ProgressBar,
   Screen,
   ScreenHeader,
@@ -123,6 +124,14 @@ export default function StatusGallery() {
           title="Felix"
           subtitle={['Final result EUR 20.00', 'Buy-ins EUR 20.00']}
           trailing={<SignedAmount amount="EUR 0.00" direction="even" caption="Even" />}
+        />
+        <ListRow
+          title="Alice"
+          titleAside={<PlaceBadge label="1st" highlight />}
+          subtitle={['Payout EUR 98.00', 'Buy-ins EUR 20.00']}
+          trailing={<SignedAmount amount="+EUR 78.00" direction="gain" caption="Gets" />}
+          accessibilityLabel="Alice, 1st, Payout EUR 98.00, Buy-ins EUR 20.00, +EUR 78.00, Gets"
+          onPress={() => undefined}
         />
         <ListRow
           title="History"
