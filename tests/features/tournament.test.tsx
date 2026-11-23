@@ -108,8 +108,7 @@ describe('Play · Standings', () => {
     let finish: (result: TournamentActionResult) => void = () => {};
     const { onRecordElimination } = await renderPlay(ORDERS.heads, () => new Promise((resolve) => (finish = resolve)));
     await fireEvent.press(button('Clara is out…'));
-    expect(screen.getByText(/Clara finishes/)).toBeTruthy();
-    expect(screen.getByText(/Alice is the last player left and wins\./)).toBeTruthy();
+    expect(label('Finishing place: 2nd')).toBeTruthy();
     expect(label('Payout: EUR 42.00')).toBeTruthy();
     expect(label('Winner: Alice · EUR 98.00')).toBeTruthy();
     expect(screen.queryByLabelText('Late entry: Closes')).toBeNull();

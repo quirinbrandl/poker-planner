@@ -164,7 +164,6 @@ function PlayerFixture({ order, id, backInOpen }: { order: readonly string[]; id
         title={name}
       />
       {result ? <TournamentResultCard result={result} /> : <Text variant="supporting">Still playing.</Text>}
-      <Text variant="supporting">The buy-ins with their mixes and Add forgotten rebuy come from the shared player page.</Text>
       {result && result.placeLabel !== '1st' ? <BackInButton name={name} onPress={() => setOpen(true)} /> : null}
       <BackInDialog
         visible={open}

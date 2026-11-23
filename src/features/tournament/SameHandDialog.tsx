@@ -53,7 +53,6 @@ export function SameHandDialog({
       }}
       onCancel={onCancel}
     >
-      <Text variant="supporting">Tick everyone who’s out. Places can’t be shared, so put them in order.</Text>
       <Text variant="title" accessibilityRole="header">
         Who’s out?
       </Text>
