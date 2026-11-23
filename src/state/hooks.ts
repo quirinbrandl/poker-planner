@@ -26,6 +26,12 @@ export function useGames(): readonly GameCard[] {
   return useRead(() => app.games.list());
 }
 
+/** One game's card in any phase; `null` if it does not exist (any more). */
+export function useGame(gameId: string): GameCard | null {
+  const app = useGameManagement();
+  return useRead(() => app.games.get(gameId));
+}
+
 /** One Planning game's view; `null` if it does not exist or has left Planning. */
 export function usePlanningView(gameId: string): PlanningView | null {
   const app = useGameManagement();

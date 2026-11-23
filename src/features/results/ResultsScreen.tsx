@@ -1,6 +1,14 @@
-import { NotBuilt } from '@/features/game/NotBuilt';
+import { useLocalSearchParams } from 'expo-router';
 
-/** Route screen. Placeholder until it is connected to game management. */
+import { CashResultsScreen } from '@/features/results/CashResultsScreen';
+import { TournamentResultsScreen } from '@/features/tournament/TournamentResultsScreen';
+import { useGame } from '@/state';
+import { Screen } from '@/ui';
+
+/** Route screen: Results of a started game, by mode. */
 export default function ResultsScreen() {
-  return <NotBuilt title="Results" />;
+  const params = useLocalSearchParams<{ gameId: string; participantId?: string }>();
+  const game = useGame(params.gameId);
+  if (!game) return <Screen />;
+  return game.mode === 'tournament' ? <TournamentResultsScreen {...params} /> : <CashResultsScreen {...params} />;
 }

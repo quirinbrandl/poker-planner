@@ -12,18 +12,24 @@ export interface ReturnToPlanningConfirmation {
   kind: 'returnToPlanning';
   clears: {
     rebuys: number;
-    /** Final results (cash-game counts, tournament eliminations) recorded so far. */
+    /** Cash games: confirmed final results recorded so far. */
     results: number;
+    /** Tournaments: final eliminations recorded so far. */
+    eliminations: number;
     /** Every stack handed out so far (starting stacks, rebuys, late entries). */
     handedOutStacks: number;
-    /** "2 rebuys · 6 results · all handed-out stacks" (zero parts omitted). */
+    /** ["2 rebuys", "6 results", "all handed-out stacks"] (zero parts omitted). */
+    parts: readonly string[];
+    /** The parts joined: "2 rebuys · 6 results · all handed-out stacks". */
     text: string;
   };
   keeps: {
     players: number;
     /** Tournaments keep their payout schedule. */
     payoutSchedule: boolean;
-    /** "6 players · buy-ins · settings" (" · payout schedule" in tournaments). */
+    /** ["6 players", "buy-ins", "settings"] (plus "payout schedule" in tournaments). */
+    parts: readonly string[];
+    /** The parts joined: "6 players · buy-ins · settings". */
     text: string;
   };
   /** "Collect all chips. You’ll hand out new stacks after Start." */
@@ -41,23 +47,28 @@ const plural = (count: number, word: string) => `${count} ${word}${count === 1 ?
 function confirmation(game: GameDocument): ReturnToPlanningConfirmation {
   const play = game.play!;
   const rebuys = play.issuances.filter((i) => i.kind === 'rebuy').length;
-  const results = 0;
+  const results = play.results?.length ?? 0;
+  const eliminations = play.eliminations?.length ?? 0;
   const players = play.roster.length;
   const payoutSchedule = game.mode === 'tournament';
-  const clears = [rebuys > 0 ? plural(rebuys, 'rebuy') : null, results > 0 ? plural(results, 'result') : null, 'all handed-out stacks'];
+  const clears = [
+    eliminations > 0 ? plural(eliminations, 'elimination') : null,
+    rebuys > 0 ? plural(rebuys, 'rebuy') : null,
+    results > 0 ? plural(results, 'result') : null,
+    'all handed-out stacks',
+  ].filter((part): part is string => part !== null);
+  const keeps = [plural(players, 'player'), 'buy-ins', 'settings', ...(payoutSchedule ? ['payout schedule'] : [])];
   return {
     kind: 'returnToPlanning',
     clears: {
       rebuys,
       results,
+      eliminations,
       handedOutStacks: play.issuances.length,
-      text: clears.filter((part): part is string => part !== null).join(' · '),
+      parts: clears,
+      text: clears.join(' · '),
     },
-    keeps: {
-      players,
-      payoutSchedule,
-      text: [plural(players, 'player'), 'buy-ins', 'settings', ...(payoutSchedule ? ['payout schedule'] : [])].join(' · '),
-    },
+    keeps: { players, payoutSchedule, parts: keeps, text: keeps.join(' · ') },
     note: 'Collect all chips. You’ll hand out new stacks after Start.',
   };
 }

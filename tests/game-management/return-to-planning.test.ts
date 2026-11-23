@@ -41,8 +41,20 @@ describe('Return to Planning', () => {
     const result = expectStatus(await app.play.returnToPlanning(gameId), 'needsConfirmation');
     expect(result.confirmation).toEqual({
       kind: 'returnToPlanning',
-      clears: { rebuys: 0, results: 0, handedOutStacks: 6, text: 'all handed-out stacks' },
-      keeps: { players: 6, payoutSchedule: false, text: '6 players · buy-ins · settings' },
+      clears: {
+        rebuys: 0,
+        results: 0,
+        eliminations: 0,
+        handedOutStacks: 6,
+        parts: ['all handed-out stacks'],
+        text: 'all handed-out stacks',
+      },
+      keeps: {
+        players: 6,
+        payoutSchedule: false,
+        parts: ['6 players', 'buy-ins', 'settings'],
+        text: '6 players · buy-ins · settings',
+      },
       note: 'Collect all chips. You’ll hand out new stacks after Start.',
     });
     expect(observe(app, gameId)).toEqual(before);
@@ -101,6 +113,7 @@ describe('Return to Planning', () => {
     expect(confirmation.keeps).toEqual({
       players: 6,
       payoutSchedule: true,
+      parts: ['6 players', 'buy-ins', 'settings', 'payout schedule'],
       text: '6 players · buy-ins · settings · payout schedule',
     });
     expectStatus(await app.play.returnToPlanning(gameId, { confirmed: true }), 'accepted');

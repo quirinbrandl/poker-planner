@@ -2,6 +2,7 @@ export { GameManagementProvider, useGameManagement } from './game-management-pro
 export type { GameManagementProviderProps } from './game-management-provider';
 export {
   useDistributionPreview,
+  useGame,
   useGames,
   usePersistenceStatus,
   usePlanningView,

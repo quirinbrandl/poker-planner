@@ -351,8 +351,8 @@ interface PlayView {
 ```ts
 interface ReturnToPlanningConfirmation {
   kind: 'returnToPlanning';
-  clears: { rebuys; results; handedOutStacks; text: '2 rebuys · 6 results · all handed-out stacks' };  // zero parts omitted
-  keeps: { players; payoutSchedule: boolean; text: '6 players · buy-ins · settings' };            // + ' · payout schedule'
+  clears: { rebuys; results; eliminations; handedOutStacks; parts: string[]; text: '2 rebuys · 6 results · all handed-out stacks' };  // zero parts omitted
+  keeps: { players; payoutSchedule: boolean; parts: string[]; text: '6 players · buy-ins · settings' };  // + ' · payout schedule'
   note: 'Collect all chips. You’ll hand out new stacks after Start.';
 }
 ```

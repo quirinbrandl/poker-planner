@@ -3,7 +3,10 @@
  */
 import type { Runtime } from '../core/runtime';
 import { findGame } from '../planning/draft';
+import { createIssuanceOperations } from './issuance';
+import { createResultOperations } from './results';
 import { returnToPlanning, type ReturnToPlanningResult } from './return-to-planning';
+import { createTournamentOperations } from './tournament';
 import { getPlayView, type PlayView } from './view';
 
 export function createPlayApi(rt: Runtime) {
@@ -21,6 +24,10 @@ export function createPlayApi(rt: Runtime) {
     returnToPlanning(gameId: string, options: { confirmed?: boolean } = {}): Promise<ReturnToPlanningResult> {
       return returnToPlanning(rt, gameId, options);
     },
+
+    ...createResultOperations(rt),
+    ...createIssuanceOperations(rt),
+    ...createTournamentOperations(rt),
   };
 }
 
