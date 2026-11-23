@@ -78,7 +78,7 @@ const CASH: CompletionMode = {
     return {
       placeLabel: null,
       placeHighlight: false,
-      lines: [`${formatEur(player.finalResult)} chips · ${formatEur(player.contributions)} buy-ins`],
+      lines: [`${formatEur(player.contributions)} in · ${formatEur(player.finalResult)} out`],
     };
   },
 
@@ -145,7 +145,7 @@ const TOURNAMENT: CompletionMode = {
       placeLabel: player.place !== undefined ? placeLabel(player.place) : null,
       placeHighlight: player.place === 1,
       lines: [
-        `${player.finalResult > 0 ? `${formatEur(player.finalResult)} payout · ` : ''}${formatEur(player.contributions)} buy-ins`,
+        `${formatEur(player.contributions)} in${player.finalResult > 0 ? ` · ${formatEur(player.finalResult)} out` : ''}`,
       ],
     };
   },

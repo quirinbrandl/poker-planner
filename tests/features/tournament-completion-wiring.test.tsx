@@ -162,7 +162,7 @@ it('Calculate Payments… on tournament Results confirms once and lands on Payme
   expect(calculate.mock.calls.filter(([, options]) => options?.confirmed)).toHaveLength(1);
   expect(router.getPathname()).toBe(`/game/${gameId}/payments`);
   expect(screen.getByText('5 payments')).toBeTruthy();
-  expect(screen.getByRole('button', { name: /^Alice, 1st, EUR 84\.00 payout · EUR 20\.00 buy-ins,/ })).toBeTruthy();
+  expect(screen.getByRole('button', { name: /^Alice, 1st, EUR 20\.00 in · EUR 84\.00 out,/ })).toBeTruthy();
   expect(live.games.get(gameId)!.phase).toBe('completed');
 });
 

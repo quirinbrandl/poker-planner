@@ -101,7 +101,7 @@ export const RESULTS_FIXTURES = {
   'too-many': data(MISSING.map((p) => (p.name === 'Clara' ? { ...p, units: 201 } : p))),
   balanced: data(BALANCED),
   reopened: data(BALANCED, { reopened: true }),
-  completed: data(BALANCED, { phase: 'completed', context: `${CONTEXT} · finished 23:41` }),
+  completed: data(BALANCED, { phase: 'completed', context: `${CONTEXT}–23:41` }),
   /** EUR 20.01 buy-in: Alice's 250 units are worth exactly EUR 25.0125 (+EUR 5.0025). */
   'sub-cent': data(
     [{ name: 'Alice', units: 250 }, { name: 'Bob', units: 150 }, ...NAMES.slice(2).map((name) => ({ name }))],

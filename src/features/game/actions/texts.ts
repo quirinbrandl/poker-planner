@@ -11,9 +11,6 @@ export const GAME_TOASTS = {
   deleted: 'Game deleted',
 } as const;
 
-/** The reopened game's line under Calculate Payments on Results. */
-export const REOPENED_NOTE = 'Reopened · calculate Payments again when you’re done.';
-
 /** The reopened game's entry line on its Games card (the card adds the arrow). */
 export const REOPENED_ENTRY = 'Reopened · calculate Payments again';
 

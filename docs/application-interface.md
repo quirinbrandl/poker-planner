@@ -614,7 +614,7 @@ interface PaymentsView {
              payments: { id; fromName: 'Bob'; toName: 'Clara'; amountText: 'EUR 8.00' }[] }
          | { kind: 'noPayments' };                             // No payments needed · Everyone broke even.
   balances: { participantId; name; placeLabel: null | '1st'; placeHighlight;
-              lines: ['EUR 33.00 chips · EUR 20.00 buy-ins']; balanceText: '+EUR 13.00';
+              lines: ['EUR 20.00 in · EUR 33.00 out']; balanceText: '+EUR 13.00';
               direction: 'gain' | 'loss' | 'even' }[];         // joining order (cash)
 }
 interface HistoryGameView {
@@ -646,7 +646,7 @@ interface HistoryGameView {
   `place`. Calculate Payments? reads `readyLine: 'Alice wins · all 5 eliminations recorded'`,
   `facts: [{ 'Prize pool', 'EUR 140.00' }, { '1st · Alice', 'EUR 98.00' }, { '2nd · Clara', 'EUR 42.00' }]`.
   Balances (joining order) carry `placeLabel: '1st'`, `placeHighlight` for the winner and
-  `lines: ['EUR 98.00 payout · EUR 20.00 buy-ins' | 'EUR 20.00 buy-ins']`; the History card reads
+  `lines: ['EUR 20.00 in · EUR 98.00 out' | 'EUR 20.00 in']`; the History card reads
   `Prize pool EUR 140.00 · 5 payments (or No payments needed) · Winner Alice`.
 - Completed is read-only. Every play operation that is not a `get…` read answers
   `rejected gameCompleted` ("This game is completed. To change something, reopen it from ⋯.") —

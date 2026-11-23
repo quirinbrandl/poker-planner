@@ -74,6 +74,7 @@ export function ResultsView({ data, onSelectTab, onBack, onMore, onOpenPlayer, o
       backLabel={data.backLabel}
       onBack={onBack}
       onMore={onMore}
+      reopened={data.reopened}
       scrollRef={scrollRef}
     >
       {explained && blocker && !completed ? (
@@ -103,11 +104,6 @@ export function ResultsView({ data, onSelectTab, onBack, onMore, onOpenPlayer, o
           {blocker ? (
             <Text variant="supporting" tone="supporting" align="center">
               {blocker}
-            </Text>
-          ) : null}
-          {data.reopened ? (
-            <Text variant="supporting" tone="supporting" align="center">
-              Reopened · calculate Payments again when you’re done.
             </Text>
           ) : null}
         </View>

@@ -146,12 +146,12 @@ describe('Calculate Payments', () => {
     expect(payments.summary).toMatchObject({ kind: 'payments', countText: '3 payments', totalText: 'EUR 21.00 in total' });
     expect(paymentLines(payments)).toEqual(['Bob → Cleo EUR 8.00', 'Dan → Alice EUR 7.00', 'Emma → Alice EUR 6.00']);
     expect(payments.balances.map((b) => [b.name, b.lines.join(' · '), b.balanceText, b.direction])).toEqual([
-      ['Alice', 'EUR 33.00 chips · EUR 20.00 buy-ins', '+EUR 13.00', 'gain'],
-      ['Bob', 'EUR 12.00 chips · EUR 20.00 buy-ins', '−EUR 8.00', 'loss'],
-      ['Cleo', 'EUR 28.00 chips · EUR 20.00 buy-ins', '+EUR 8.00', 'gain'],
-      ['Dan', 'EUR 13.00 chips · EUR 20.00 buy-ins', '−EUR 7.00', 'loss'],
-      ['Emma', 'EUR 14.00 chips · EUR 20.00 buy-ins', '−EUR 6.00', 'loss'],
-      ['Felix', 'EUR 20.00 chips · EUR 20.00 buy-ins', 'EUR 0.00', 'even'],
+      ['Alice', 'EUR 20.00 in · EUR 33.00 out', '+EUR 13.00', 'gain'],
+      ['Bob', 'EUR 20.00 in · EUR 12.00 out', '−EUR 8.00', 'loss'],
+      ['Cleo', 'EUR 20.00 in · EUR 28.00 out', '+EUR 8.00', 'gain'],
+      ['Dan', 'EUR 20.00 in · EUR 13.00 out', '−EUR 7.00', 'loss'],
+      ['Emma', 'EUR 20.00 in · EUR 14.00 out', '−EUR 6.00', 'loss'],
+      ['Felix', 'EUR 20.00 in · EUR 20.00 out', 'EUR 0.00', 'even'],
     ]);
     expect(payments.balances.every((b) => b.placeLabel === null && !b.placeHighlight)).toBe(true);
     expect(payments.balances.map((b) => b.participantId)).toEqual(ids);
@@ -219,7 +219,7 @@ describe('Calculate Payments', () => {
     const payments = app.play.getPayments(gameId)!;
     expect(paymentLines(payments)).toEqual(['Bob → Alice EUR 2.50']);
     // Final results sum to all contributions exactly: 6 × EUR 10.01.
-    const finals = payments.balances.map((b) => Number(b.lines[0].split(' chips')[0].replace('EUR ', '')) * 100);
+    const finals = payments.balances.map((b) => Number(b.lines[0].split(' · ')[1].replace('EUR ', '').replace(' out', '')) * 100);
     expect(Math.round(finals.reduce((sum, cents) => sum + cents, 0))).toBe(6006);
   });
 });

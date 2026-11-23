@@ -21,9 +21,9 @@ it('lists who pays whom, then every balance with its meaning spoken', async () =
   expect(screen.getByLabelText('Bob pays Clara EUR 8.00')).toBeTruthy();
   expect(screen.getByLabelText('David pays Alice EUR 7.00')).toBeTruthy();
   expect(screen.getByLabelText('Emma pays Alice EUR 6.00')).toBeTruthy();
-  expect(screen.getByRole('button', { name: 'Alice, EUR 33.00 chips · EUR 20.00 buy-ins, Gets +EUR 13.00' })).toBeTruthy();
-  expect(screen.getByRole('button', { name: 'Bob, EUR 32.00 chips · EUR 40.00 buy-ins, Pays −EUR 8.00' })).toBeTruthy();
-  expect(screen.getByRole('button', { name: 'Felix, EUR 20.00 chips · EUR 20.00 buy-ins, Even EUR 0.00' })).toBeTruthy();
+  expect(screen.getByRole('button', { name: 'Alice, EUR 20.00 in · EUR 33.00 out, Gets +EUR 13.00' })).toBeTruthy();
+  expect(screen.getByRole('button', { name: 'Bob, EUR 40.00 in · EUR 32.00 out, Pays −EUR 8.00' })).toBeTruthy();
+  expect(screen.getByRole('button', { name: 'Felix, EUR 20.00 in · EUR 20.00 out, Even EUR 0.00' })).toBeTruthy();
   expect(screen.queryByText('No payments needed')).toBeNull();
 });
 
@@ -55,14 +55,14 @@ it('keeps ten payments and cent amounts readable', async () => {
   expect(screen.getByLabelText('Felix pays Grace EUR 7.10')).toBeTruthy();
   await renderPayments('cents');
   expect(screen.getByLabelText('Bob pays Alice EUR 1.26')).toBeTruthy();
-  expect(screen.getByRole('button', { name: /EUR 12\.51 chips/ })).toBeTruthy();
+  expect(screen.getByRole('button', { name: /EUR 12\.51 out/ })).toBeTruthy();
 });
 
 it('shows places, payouts and buy-ins in a tournament', async () => {
   await renderPayments('tournament');
   expect(screen.getByText('5 payments')).toBeTruthy();
-  expect(screen.getByRole('button', { name: 'Alice, 1st, EUR 98.00 payout · EUR 20.00 buy-ins, Gets +EUR 78.00' })).toBeTruthy();
-  expect(screen.getByRole('button', { name: 'Bob, 3rd, EUR 40.00 buy-ins, Pays −EUR 40.00' })).toBeTruthy();
+  expect(screen.getByRole('button', { name: 'Alice, 1st, EUR 20.00 in · EUR 98.00 out, Gets +EUR 78.00' })).toBeTruthy();
+  expect(screen.getByRole('button', { name: 'Bob, 3rd, EUR 40.00 in, Pays −EUR 40.00' })).toBeTruthy();
 });
 
 describe('Calculate Payments?', () => {

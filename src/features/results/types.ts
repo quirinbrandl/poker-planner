@@ -10,11 +10,11 @@ export type { ResultsPlayerRow, ResultsStatus } from '@/game-management';
 export interface ResultsData {
   /** In progress (editable) or Completed (read-only, allocated cents). */
   phase: 'inProgress' | 'completed';
-  /** "Cash game · 23 Nov, 19:30" (Completed adds " · finished 23:41"). */
+  /** "Cash game · 23 Nov, 19:30" (Completed: "Cash game · 23 Nov, 19:30–23:41"). */
   context: string;
   /** Where the top-left control leads. */
   backLabel: 'Games' | 'History';
-  /** The game was reopened after Payments: shows the "calculate Payments again" line. */
+  /** The game was reopened after Payments: shows "Reopened" in the game line. */
   reopened: boolean;
   status: ResultsStatus;
   players: readonly ResultsPlayerRow[];

@@ -342,12 +342,12 @@ describe('Calculate Payments for a tournament', () => {
     const payments = app.play.getPayments(gameId)!;
     expect(payments.mode).toBe('tournament');
     expect(balances(payments)).toEqual([
-      'Alice | 1st | EUR 84.00 payout · EUR 20.00 buy-ins | +EUR 64.00 | gain',
-      'Bob | 2nd | EUR 36.00 payout · EUR 20.00 buy-ins | +EUR 16.00 | gain',
-      'Cleo | 3rd | EUR 20.00 buy-ins | −EUR 20.00 | loss',
-      'Dan | 4th | EUR 20.00 buy-ins | −EUR 20.00 | loss',
-      'Emma | 5th | EUR 20.00 buy-ins | −EUR 20.00 | loss',
-      'Felix | 6th | EUR 20.00 buy-ins | −EUR 20.00 | loss',
+      'Alice | 1st | EUR 20.00 in · EUR 84.00 out | +EUR 64.00 | gain',
+      'Bob | 2nd | EUR 20.00 in · EUR 36.00 out | +EUR 16.00 | gain',
+      'Cleo | 3rd | EUR 20.00 in | −EUR 20.00 | loss',
+      'Dan | 4th | EUR 20.00 in | −EUR 20.00 | loss',
+      'Emma | 5th | EUR 20.00 in | −EUR 20.00 | loss',
+      'Felix | 6th | EUR 20.00 in | −EUR 20.00 | loss',
     ]);
     expect(payments.balances.map((b) => b.placeHighlight)).toEqual([true, false, false, false, false, false]);
     expect(payments.summary).toMatchObject({ kind: 'payments', countText: '5 payments', totalText: 'EUR 80.00 in total' });
@@ -378,9 +378,9 @@ describe('Calculate Payments for a tournament', () => {
     await calculate(gameId);
     app = await harness.restart(app);
     expect(balances(app.play.getPayments(gameId))).toEqual([
-      'Alice | 1st | EUR 10.01 payout · EUR 6.67 buy-ins | +EUR 3.34 | gain',
-      'Bob | 2nd | EUR 6.00 payout · EUR 6.67 buy-ins | −EUR 0.67 | loss',
-      'Cleo | 3rd | EUR 4.00 payout · EUR 6.67 buy-ins | −EUR 2.67 | loss',
+      'Alice | 1st | EUR 6.67 in · EUR 10.01 out | +EUR 3.34 | gain',
+      'Bob | 2nd | EUR 6.67 in · EUR 6.00 out | −EUR 0.67 | loss',
+      'Cleo | 3rd | EUR 6.67 in · EUR 4.00 out | −EUR 2.67 | loss',
     ]);
     expectPaymentsSettleBalances(app.play.getPayments(gameId)!);
   });
@@ -392,9 +392,9 @@ describe('Calculate Payments for a tournament', () => {
     await out(gameId, 'Alice', 'Bob');
     await calculate(gameId);
     expect(balances(app.play.getPayments(gameId))).toEqual([
-      'Alice | 3rd | EUR 3.00 payout · EUR 5.01 buy-ins | −EUR 2.01 | loss',
-      'Bob | 2nd | EUR 4.51 payout · EUR 5.01 buy-ins | −EUR 0.50 | loss',
-      'Cleo | 1st | EUR 7.52 payout · EUR 5.01 buy-ins | +EUR 2.51 | gain',
+      'Alice | 3rd | EUR 5.01 in · EUR 3.00 out | −EUR 2.01 | loss',
+      'Bob | 2nd | EUR 5.01 in · EUR 4.51 out | −EUR 0.50 | loss',
+      'Cleo | 1st | EUR 5.01 in · EUR 7.52 out | +EUR 2.51 | gain',
     ]);
   });
 
@@ -409,13 +409,13 @@ describe('Calculate Payments for a tournament', () => {
     app = await harness.restart(app);
     const payments = app.play.getPayments(gameId)!;
     expect(balances(payments)).toEqual([
-      'Alice | 2nd | EUR 54.02 payout · EUR 20.01 buy-ins | +EUR 34.01 | gain',
-      'Bob | 3rd | EUR 60.03 buy-ins | −EUR 60.03 | loss',
-      'Cleo | 4th | EUR 20.01 buy-ins | −EUR 20.01 | loss',
-      'Dan | 5th | EUR 20.01 buy-ins | −EUR 20.01 | loss',
-      'Emma | 6th | EUR 20.01 buy-ins | −EUR 20.01 | loss',
-      'Felix | 7th | EUR 20.01 buy-ins | −EUR 20.01 | loss',
-      'Nora | 1st | EUR 126.07 payout · EUR 20.01 buy-ins | +EUR 106.06 | gain',
+      'Alice | 2nd | EUR 20.01 in · EUR 54.02 out | +EUR 34.01 | gain',
+      'Bob | 3rd | EUR 60.03 in | −EUR 60.03 | loss',
+      'Cleo | 4th | EUR 20.01 in | −EUR 20.01 | loss',
+      'Dan | 5th | EUR 20.01 in | −EUR 20.01 | loss',
+      'Emma | 6th | EUR 20.01 in | −EUR 20.01 | loss',
+      'Felix | 7th | EUR 20.01 in | −EUR 20.01 | loss',
+      'Nora | 1st | EUR 20.01 in · EUR 126.07 out | +EUR 106.06 | gain',
     ]);
     expectPaymentsSettleBalances(payments);
     expect(app.games.history()[0].facts).toEqual([
@@ -438,8 +438,8 @@ describe('Calculate Payments for a tournament', () => {
     const payments = app.play.getPayments(gameId)!;
     expect(payments.summary).toEqual({ kind: 'noPayments' });
     expect(balances(payments)).toEqual([
-      'Alice | 1st | EUR 20.00 payout · EUR 20.00 buy-ins | EUR 0.00 | even',
-      'Bob | 2nd | EUR 20.00 payout · EUR 20.00 buy-ins | EUR 0.00 | even',
+      'Alice | 1st | EUR 20.00 in · EUR 20.00 out | EUR 0.00 | even',
+      'Bob | 2nd | EUR 20.00 in · EUR 20.00 out | EUR 0.00 | even',
     ]);
     expect(app.games.history()[0].facts).toEqual([
       { label: 'Prize pool', value: 'EUR 40.00' },
@@ -569,7 +569,7 @@ describe('a Completed tournament', () => {
     await calculate(gameId);
     expect(app.play.getPayments(gameId)!.balances.find((b) => b.name === 'Bob')).toMatchObject({
       placeLabel: '1st',
-      lines: ['EUR 112.00 payout · EUR 40.00 buy-ins'],
+      lines: ['EUR 40.00 in · EUR 112.00 out'],
       balanceText: '+EUR 72.00',
     });
   });

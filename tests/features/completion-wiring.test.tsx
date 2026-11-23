@@ -134,7 +134,7 @@ it('Reopen from ⋯ lands on In progress Results with the reopened note', async 
 
   expect(router.getPathname()).toBe(`/game/${gameId}/results`);
   expect(await screen.findByText('Game reopened')).toBeTruthy();
-  expect(screen.getByText('Reopened · calculate Payments again when you’re done.')).toBeTruthy();
+  expect(screen.getByText('Reopened')).toBeTruthy();
   expect(screen.getByRole('button', { name: 'Back to Games' })).toBeTruthy();
   expect(live.games.get(gameId)).toMatchObject({ phase: 'inProgress', reopened: true });
   expect(live.play.getPayments(gameId)).toBeNull();

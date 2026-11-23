@@ -180,7 +180,7 @@ export interface CashResultsView {
   gameId: string;
   /** In progress (editable, exact amounts) or Completed (read-only, allocated cents). */
   phase: 'inProgress' | 'completed';
-  /** Reopened after Payments and not calculated again yet: Results shows "Reopened · calculate Payments again…". */
+  /** Reopened after Payments and not calculated again yet: the game line shows "Reopened". */
   reopened: boolean;
   status: ResultsStatus;
   /** In joining order. */

@@ -20,7 +20,7 @@ export interface PaymentsViewProps {
 }
 
 /**
- * "EUR 33.00 chips · EUR 20.00 buy-ins" may wrap only at the "·": each part keeps its spaces and
+ * "EUR 20.00 in · EUR 33.00 out" may wrap only at the "·": each part keeps its spaces and
  * hyphen unbreakable, so no amount or word is split. The spoken name uses the plain text.
  */
 function keepPartsWhole(line: string): string {

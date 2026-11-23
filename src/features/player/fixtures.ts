@@ -76,7 +76,7 @@ export function playerData({
   const units = result ? unitsOf(result) : 0;
   return {
     phase,
-    context: phase === 'completed' ? `${CONTEXT} · finished 23:41` : CONTEXT,
+    context: phase === 'completed' ? `${CONTEXT}–23:41` : CONTEXT,
     playerId: id,
     name,
     backLabel,

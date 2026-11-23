@@ -78,7 +78,7 @@ function cash(players: readonly CashPlayer[], payments: readonly Payment[], cont
         name: player.name,
         placeLabel: null,
         placeHighlight: false,
-        lines: [`${formatEur(player.final)} chips · ${formatEur(player.buyIns)} buy-ins`],
+        lines: [`${formatEur(player.buyIns)} in · ${formatEur(player.final)} out`],
         balanceText: formatSignedEur(balance),
         direction: direction(balance),
       };
@@ -99,7 +99,7 @@ function tournament(players: readonly TournamentPlayer[], payments: readonly Pay
         name: player.name,
         placeLabel: ORDINAL[player.place - 1],
         placeHighlight: player.place === 1,
-        lines: [`${player.payout > 0 ? `${formatEur(player.payout)} payout · ` : ''}${formatEur(player.buyIns)} buy-ins`],
+        lines: [`${formatEur(player.buyIns)} in${player.payout > 0 ? ` · ${formatEur(player.payout)} out` : ''}`],
         balanceText: formatSignedEur(balance),
         direction: direction(balance),
       };

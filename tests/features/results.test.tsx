@@ -72,7 +72,7 @@ it('makes Calculate Payments the primary action only when everything adds up', a
 
 it('adds the reopened line under Calculate Payments', async () => {
   await renderResults('reopened');
-  expect(screen.getByText('Reopened · calculate Payments again when you’re done.')).toBeTruthy();
+  expect(screen.getByText('Reopened')).toBeTruthy();
 });
 
 it('shows Completed results read-only', async () => {
