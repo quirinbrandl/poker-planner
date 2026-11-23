@@ -156,7 +156,7 @@ export interface LockedDetailsView {
     name: string;
     places: readonly { place: number; placeLabel: string; shareText: string; amount: Cents; amountText: string }[];
     prizePool: MoneyView;
-    /** "Prize pool EUR 140.00 · 6 buy-ins + 1 rebuy. Rebuys raise every prize; the percentages stay." */
+    /** "Prize pool EUR 140.00 · 6 buy-ins + 1 rebuy" */
     prizePoolLine: string;
   } | null;
   /** "Setup is locked. To change it, use ⋯ → Return to Planning." */
@@ -239,7 +239,7 @@ function payoutsView(play: PlayRecord, prizePool: Cents, buyIns: number, rebuys:
       amountText: formatEur(amounts[index]),
     })),
     prizePool: pool,
-    prizePoolLine: `Prize pool ${pool.text} · ${plural(buyIns, 'buy-in')}${rebuys > 0 ? ` + ${plural(rebuys, 'rebuy')}` : ''}. Rebuys raise every prize; the percentages stay.`,
+    prizePoolLine: `Prize pool ${pool.text} · ${plural(buyIns, 'buy-in')}${rebuys > 0 ? ` + ${plural(rebuys, 'rebuy')}` : ''}`,
   };
 }
 
@@ -492,9 +492,9 @@ export interface GameDetailsScreenView {
   blindsText: string;
   /** "100 BB", "98 BB (requested 100 BB)". */
   depthText: string;
-  /** "4 payments of each blind". */
+  /** "4 payments" (of each blind; the screen's label says "Blind coverage"). */
   coverageText: string;
-  /** "Fewer chips" / "More chips". */
+  /** "Fewer" / "More" (the screen's label says "Chips"). */
   preferenceText: string;
   /** "3 stacks", "1 stack (configured 3)". */
   reserveText: string;
@@ -598,8 +598,8 @@ export function buildGameDetails(game: StartedGame, view: PlayView): GameDetails
     chipValueText: terms.cashRate ? `${formatExactEur(terms.cashRate)} per chip unit` : 'No chip money value',
     blindsText: `${view.terms.blinds.text} chip units`,
     depthText: details.depth.text,
-    coverageText: details.coverageText,
-    preferenceText: details.preferenceText,
+    coverageText: plural(terms.coverage, 'payment'),
+    preferenceText: terms.preference === 'fewer' ? 'Fewer' : 'More',
     reserveText,
     startingStack: { unitsText: formatCount(details.startingStack.value), chips: details.startingStack.mix },
     chipSet: details.chipSet.denominations.map((d) => ({ value: d.value, color: d.color, count: d.quantity })),

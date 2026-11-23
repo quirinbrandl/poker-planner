@@ -34,8 +34,8 @@ export interface BalanceRow {
   /** True for the winner: the place badge is filled Lavender. */
   placeHighlight: boolean;
   /**
-   * The supporting lines, in order. Cash: "Final result EUR 33.00", "Buy-ins EUR 20.00".
-   * Tournament: "Payout EUR 98.00" or "No payout", then "Buy-ins EUR 20.00".
+   * The supporting line. Cash: "EUR 33.00 chips · EUR 20.00 buy-ins".
+   * Tournament: "EUR 98.00 payout · EUR 20.00 buy-ins", or only "EUR 20.00 buy-ins" without a payout.
    */
   lines: readonly string[];
   /** The allocated signed balance: "+EUR 13.00", "−EUR 8.00", "EUR 0.00". */

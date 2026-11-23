@@ -47,32 +47,31 @@ describe('Play · Standings', () => {
     expect(label('1st place, 70%, EUR 98.00, open')).toBeTruthy();
     expect(label('2nd place, 30%, EUR 42.00, open')).toBeTruthy();
     expect(screen.getByText('Still in · 6')).toBeTruthy();
-    expect(screen.getByText('Playing for 1st–6th · next out 6th · no payout')).toBeTruthy();
+    expect(screen.getByText('Next out: 6th')).toBeTruthy();
     expect(screen.queryByText('Late entry closed: someone is out.')).toBeNull();
     await fireEvent.press(button('Add player'));
     expect(onAddPlayer).toHaveBeenCalledTimes(1);
-    await fireEvent.press(button('2 reserve stacks available. Bank and reserve details'));
+    await fireEvent.press(button('2 reserve stacks. Bank and reserve details'));
     expect(onOpenBank).toHaveBeenCalledTimes(1);
   });
 
   it('locks Add player once someone is out and explains why without opening late entry', async () => {
     const { onAddPlayer } = await renderPlay(ORDERS.midway);
-    expect(screen.getByText('Late entry closed: someone is out.')).toBeTruthy();
+    // The lock says it on screen; the reason is the spoken hint, and a toast when pressed.
+    expect(screen.queryByText('Late entry closed: someone is out.')).toBeNull();
     const add = button('Add player');
     expect(add).toBeDisabled();
+    expect(add.props.accessibilityHint).toBe(
+      'Late entry closes once anyone is out (2 eliminations recorded). It opens again only if every elimination is undone.',
+    );
     await fireEvent.press(add);
     expect(onAddPlayer).not.toHaveBeenCalled();
-    expect(screen.getByText('Can’t add a player now')).toBeTruthy();
-    expect(
-      screen.getByText(
-        'Late entry closes once anyone is out (2 eliminations recorded). It opens again only if every elimination is undone.',
-      ),
-    ).toBeTruthy();
+    expect(screen.getByText('Late entry closed: someone is out.')).toBeTruthy();
   });
 
   it('lists unpaid finishers on the Out ladder with spoken place and payout', async () => {
     const { onOpenPlayer } = await renderPlay(ORDERS.bubble);
-    expect(screen.getByText('Playing for 1st–3rd · next out 3rd · no payout')).toBeTruthy();
+    expect(screen.getByText('Next out: 3rd')).toBeTruthy();
     await fireEvent.press(button('Felix, 6th place, no payout, EUR 20.00'));
     expect(onOpenPlayer).toHaveBeenCalledWith('felix');
     expect(button('Emma, 4th place, no payout, EUR 20.00')).toBeTruthy();
@@ -80,12 +79,13 @@ describe('Play · Standings', () => {
 
   it('shows heads-up for a paid place and, with a winner, fills the rungs and drops the Still in card', async () => {
     await renderPlay(ORDERS.heads);
-    expect(screen.getByText('Playing for 1st–2nd · next out 2nd · EUR 42.00')).toBeTruthy();
+    expect(screen.getByText('Next out: 2nd · EUR 42.00')).toBeTruthy();
     expect(screen.queryByRole('button', { name: 'Several out in the same hand…' })).toBeNull();
 
     const { onOpenPlayer } = await renderPlay(ORDERS.winner);
     expect(screen.queryByText(/Still in/)).toBeNull();
-    expect(screen.getByText('Alice is the last player left and wins. Next: Results → Calculate Payments.')).toBeTruthy();
+    expect(screen.getByText('Alice wins')).toBeTruthy();
+    expect(button('Alice wins. Go to Results')).toBeTruthy();
     await fireEvent.press(button('1st place, 70%, EUR 98.00, Alice, winner'));
     expect(onOpenPlayer).toHaveBeenCalledWith('alice');
     expect(button('2nd place, 30%, EUR 42.00, Clara')).toBeTruthy();
@@ -186,7 +186,7 @@ describe('Results', () => {
     const { onCalculatePayments, onEditOrder } = await renderResults();
     expect(screen.getByText('4 still playing')).toBeTruthy();
     expect(label('2 of 5 eliminations recorded')).toBeTruthy();
-    expect(label('1st–4th place: Still playing · 1st 98.00 · 2nd 42.00 open')).toBeTruthy();
+    expect(label('1st–4th place, still playing')).toBeTruthy();
     expect(button('David, 5th place, EUR 20.00, no payout')).toBeTruthy();
     expect(screen.getByText('Record eliminations until one player is left.')).toBeTruthy();
     const calculate = button('Calculate Payments…');
@@ -203,7 +203,7 @@ describe('Results', () => {
     expect(screen.getByText('Alice wins')).toBeTruthy();
     expect(button('Alice, 1st place, winner, payout EUR 98.00')).toBeTruthy();
     expect(button('Clara, 2nd place, EUR 20.00, payout EUR 42.00')).toBeTruthy();
-    expect(screen.getByText('Reopened · calculate Payments again when you’re done.')).toBeTruthy();
+    expect(screen.getByText('Reopened')).toBeTruthy();
     await fireEvent.press(button('Calculate Payments…'));
     expect(onCalculatePayments).toHaveBeenCalledTimes(1);
   });
@@ -236,7 +236,7 @@ describe('Finishing order editor', () => {
 
   it('reports row intentions and marks moved and missed rows', async () => {
     const { onMoveUp, onMoveDown, onUndoElimination } = await renderEditor(edited);
-    expect(screen.getByText('Changes not saved yet')).toBeTruthy();
+    expect(screen.getByText('Unsaved')).toBeTruthy();
     expect(label('David, 4th place, was 5th, no payout')).toBeTruthy();
     expect(label('Emma, 5th place, missed, added now, no payout')).toBeTruthy();
     expect(button('Move David up to 3rd')).toBeDisabled();

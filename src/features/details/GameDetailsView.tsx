@@ -2,17 +2,20 @@ import { StyleSheet, View } from 'react-native';
 
 import { WorkspaceFrame, type WorkspaceTab } from '@/features/game/WorkspaceFrame';
 import {
+  Avatar,
   Badge,
   Button,
   Card,
   ChipPill,
   ChipPillRow,
+  ChipTowers,
   colors,
   FactRow,
   Icon,
-  ListRow,
+  radii,
   SectionHeading,
   space,
+  StackShowcase,
   Text,
 } from '@/ui';
 
@@ -34,19 +37,19 @@ const CLOSING_LINE = {
 
 /**
  * Game details: the started setup, read-only. Tournaments lead with the locked payout schedule;
- * then the terms, the recorded starting stack, the players and the chip set, and how to change it.
+ * then the terms, the recorded starting stack as towers, the players as a wrapping set, the chip
+ * set with colour names, and how to change it.
  */
 export function GameDetailsView({ data, onViewBank, onSelectTab, onBack, onMore }: GameDetailsViewProps) {
-  const facts: { label: string; value: string; stacked?: boolean }[] = [
-    { label: 'Created', value: data.createdText },
-    ...(data.finishedText ? [{ label: 'Finished', value: data.finishedText }] : []),
+  // Created and Finished are in the game line above the tabs.
+  const facts: { label: string; value: string }[] = [
     { label: 'Buy-in / rebuy', value: data.buyInText },
-    { label: data.mode === 'cash' ? 'Cash-game rate' : 'Chips', value: data.chipValueText },
+    { label: data.mode === 'cash' ? 'Rate' : 'Chip value', value: data.chipValueText },
     { label: 'Blinds', value: data.blindsText },
     { label: 'Starting depth', value: data.depthText },
-    { label: 'Blind-payment coverage', value: data.coverageText, stacked: true },
-    { label: 'Distribution preference', value: data.preferenceText },
-    { label: 'Reserve at start', value: data.reserveText },
+    { label: 'Blind coverage', value: data.coverageText },
+    { label: 'Chips', value: data.preferenceText },
+    { label: 'Reserve', value: data.reserveText },
   ];
   return (
     <WorkspaceFrame
@@ -59,71 +62,66 @@ export function GameDetailsView({ data, onViewBank, onSelectTab, onBack, onMore 
       onMore={onMore}
     >
       {data.payouts ? (
-        <View style={styles.group}>
-          <Card gap={0}>
-            <View style={styles.payoutsHeading}>
-              <Text variant="sectionTitle" style={styles.grow}>{`Payouts · ${data.payouts.name}`}</Text>
-              <Badge label="Locked" icon="lock" />
-            </View>
-            <View accessibilityRole="list" accessibilityLabel="Paid places">
-              {data.payouts.places.map((place) => (
-                <View
-                  key={place.id}
-                  accessible
-                  accessibilityLabel={`${place.placeLabel} place, ${place.shareText}, ${place.amountText}`}
-                  style={styles.place}
-                >
-                  <View style={styles.placeShare}>
-                    <Text style={styles.placeLabel}>{place.placeLabel}</Text>
-                    <Text tone="supporting" tabular>
-                      {place.shareText}
-                    </Text>
-                  </View>
-                  <Text variant="bodyStrong" tabular style={styles.amount}>
-                    {place.amountText}
+        <Card gap={0}>
+          <View style={styles.payoutsHeading}>
+            <Text variant="sectionTitle" style={styles.grow}>{`Payouts · ${data.payouts.name}`}</Text>
+            <Badge label="Locked" icon="lock" size="small" />
+          </View>
+          <View accessibilityRole="list" accessibilityLabel="Paid places">
+            {data.payouts.places.map((place) => (
+              <View
+                key={place.id}
+                accessible
+                accessibilityLabel={`${place.placeLabel} place, ${place.shareText}, ${place.amountText}`}
+                style={styles.place}
+              >
+                <View style={styles.placeShare}>
+                  <Text style={styles.placeLabel}>{place.placeLabel}</Text>
+                  <Text tone="supporting" tabular>
+                    {place.shareText}
                   </Text>
                 </View>
-              ))}
-            </View>
-          </Card>
-          <Text variant="supporting">{data.payouts.note}</Text>
-        </View>
+                <Text variant="bodyStrong" tabular style={styles.amount}>
+                  {place.amountText}
+                </Text>
+              </View>
+            ))}
+          </View>
+          <Text variant="supporting" style={styles.payoutsNote}>
+            {data.payouts.note}
+          </Text>
+        </Card>
       ) : null}
 
       <Card gap={0}>
         {facts.map((fact, index) => (
-          <FactRow
-            key={fact.label}
-            label={fact.label}
-            value={fact.value}
-            stacked={fact.stacked}
-            divider={index < facts.length - 1}
-          />
+          <FactRow key={fact.label} label={fact.label} value={fact.value} divider={index < facts.length - 1} />
         ))}
       </Card>
 
-      <Card gap={space.md}>
-        <Text variant="sectionTitle">{`Starting stack · ${data.startingStack.unitsText} chip units`}</Text>
-        <ChipPillRow accessibilityLabel="Recorded starting stack">
-          {data.startingStack.chips
-            .filter((chip) => chip.count > 0)
-            .map((chip) => (
-              <ChipPill key={chip.value} color={chip.color} value={chip.value} count={chip.count} showValue />
-            ))}
-        </ChipPillRow>
-      </Card>
+      <StackShowcase label="Starting stack" value={data.startingStack.unitsText} unit="chip units">
+        <ChipTowers
+          columns={data.startingStack.chips}
+          accessibilityLabel="Recorded starting stack"
+        />
+      </StackShowcase>
 
-      <View>
+      <View style={styles.group}>
         <SectionHeading title={`Players · ${data.players.length}`} />
-        {data.players.map((player, index) => (
-          <ListRow
-            key={player.id}
-            title={player.name}
-            subtitle={player.note ?? undefined}
-            density="compact"
-            divider={index < data.players.length - 1}
-          />
-        ))}
+        <View accessibilityRole="list" style={styles.players}>
+          {data.players.map((player) => (
+            <View
+              key={player.id}
+              accessible
+              accessibilityLabel={player.note ? `${player.name}, ${player.note.toLowerCase()}` : player.name}
+              style={styles.player}
+            >
+              <Avatar name={player.name} size={28} />
+              <Text variant="bodyStrong">{player.name}</Text>
+              {player.note ? <Badge label="late" size="small" /> : null}
+            </View>
+          ))}
+        </View>
       </View>
 
       <View style={styles.group}>
@@ -141,7 +139,7 @@ export function GameDetailsView({ data, onViewBank, onSelectTab, onBack, onMore 
 
       <View style={styles.locked}>
         <Icon name="lock" size={20} color={colors.textSupporting} />
-        <Text tone="supporting" style={styles.grow}>
+        <Text variant="supporting" style={styles.grow}>
           {CLOSING_LINE[data.phase]}
         </Text>
       </View>
@@ -157,7 +155,7 @@ const styles = StyleSheet.create({
     flexWrap: 'wrap',
     alignItems: 'center',
     gap: space.sm,
-    paddingBottom: space.md,
+    paddingBottom: space.sm,
   },
   place: {
     flexDirection: 'row',
@@ -172,5 +170,18 @@ const styles = StyleSheet.create({
   placeShare: { flexDirection: 'row', gap: space.xl, flexShrink: 1 },
   placeLabel: { minWidth: 40 },
   amount: { marginLeft: 'auto' },
+  payoutsNote: { paddingTop: space.md, borderTopWidth: 1, borderTopColor: colors.divider },
+  players: { flexDirection: 'row', flexWrap: 'wrap', gap: space.sm },
+  player: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: space.sm,
+    paddingVertical: space.xs,
+    paddingLeft: space.xs,
+    paddingRight: space.md,
+    borderRadius: radii.pill,
+    backgroundColor: colors.surface,
+    maxWidth: '100%',
+  },
   locked: { flexDirection: 'row', alignItems: 'flex-start', gap: space.sm },
 });

@@ -73,8 +73,8 @@ it('Play: Out records the elimination once and the standings follow', async () =
   await fireEvent.press(confirm);
   await fireEvent.press(confirm);
   expect(await screen.findByText('Still in · 5')).toBeTruthy();
-  expect(screen.getByText('Late entry closed: someone is out.')).toBeTruthy();
-  expect(screen.getByText('Playing for 1st–5th · next out 5th · no payout')).toBeTruthy();
+  expect(button('Add player')).toBeDisabled();
+  expect(screen.getByText('Next out: 5th')).toBeTruthy();
   await waitFor(async () => expect(await savedOrder(store, gameId)).toEqual(['6th Felix']));
 });
 
@@ -85,7 +85,7 @@ it('Order editor: Save order applies the draft', async () => {
   await render(store, <OrderScreen />);
   expect(await screen.findByText('Finishing order')).toBeTruthy();
   await fireEvent.press(button('Move Felix up to 5th'));
-  expect(screen.getByText('Changes not saved yet')).toBeTruthy();
+  expect(screen.getByText('Unsaved')).toBeTruthy();
   expect(await savedOrder(store, gameId)).toEqual(['5th Dan', '6th Felix']);
 
   await fireEvent.press(button('Save order…'));

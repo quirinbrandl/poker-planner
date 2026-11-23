@@ -349,7 +349,7 @@ interface PlayView {
              rateText: string | null; coverageText; preferenceText;
              reserve: { mode, configured, atStart, reduced, text: '3 stacks' | '1 of 3 stacks' };
              payouts: { name: 'Top 2'; places: { place, placeLabel, shareText: '70%', amount, amountText }[];
-                        prizePool: MoneyView; prizePoolLine: 'Prize pool EUR 120.00 · 6 buy-ins. Rebuys raise every prize; the percentages stay.' } | null;
+                        prizePool: MoneyView; prizePoolLine: 'Prize pool EUR 120.00 · 6 buy-ins' } | null;
              lockedNote: 'Setup is locked. To change it, use ⋯ → Return to Planning.' };
 }
 ```
@@ -609,7 +609,7 @@ interface PaymentsView {
              payments: { id; fromName: 'Bob'; toName: 'Clara'; amountText: 'EUR 8.00' }[] }
          | { kind: 'noPayments' };                             // No payments needed · Everyone broke even.
   balances: { participantId; name; placeLabel: null | '1st'; placeHighlight;
-              lines: ['Final result EUR 33.00', 'Buy-ins EUR 20.00']; balanceText: '+EUR 13.00';
+              lines: ['EUR 33.00 chips · EUR 20.00 buy-ins']; balanceText: '+EUR 13.00';
               direction: 'gain' | 'loss' | 'even' }[];         // joining order (cash)
 }
 interface HistoryGameView {
@@ -641,7 +641,7 @@ interface HistoryGameView {
   `place`. Calculate Payments? reads `readyLine: 'Alice wins · all 5 eliminations recorded'`,
   `facts: [{ 'Prize pool', 'EUR 140.00' }, { '1st · Alice', 'EUR 98.00' }, { '2nd · Clara', 'EUR 42.00' }]`.
   Balances (joining order) carry `placeLabel: '1st'`, `placeHighlight` for the winner and
-  `lines: ['Payout EUR 98.00' | 'No payout', 'Buy-ins EUR 20.00']`; the History card reads
+  `lines: ['EUR 98.00 payout · EUR 20.00 buy-ins' | 'EUR 20.00 buy-ins']`; the History card reads
   `Prize pool EUR 140.00 · 5 payments (or No payments needed) · Winner Alice`.
 - Completed is read-only. Every play operation that is not a `get…` read answers
   `rejected gameCompleted` ("This game is completed. To change something, reopen it from ⋯.") —

@@ -99,7 +99,7 @@ const contributionText = (game: FixtureGame, player: FixturePlayer) =>
   `${formatEur(contribution(game, player))}${player.rebuys ? ` · ${plural(player.rebuys, 'rebuy')}` : ''}`;
 const bestFirst = (order: readonly string[]) => [...order].reverse();
 const frameContext = (game: FixtureGame) =>
-  `Tournament · 23 Nov, 19:30${game.phase === 'completed' ? ' · finished 23:41' : ''}`;
+  `Tournament · 23 Nov, 19:30${game.phase === 'completed' ? '–23:41' : ''}`;
 
 // ----- Play -----
 

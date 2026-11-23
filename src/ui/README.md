@@ -146,7 +146,7 @@ Rules of use:
 **`SignedAmount`** — `amount` ("+EUR 13.00"), `direction` (`gain` / `loss` / `even`), `caption` (Won / Lost / Gets / Pays / Even), `size`, `align`.
 `<ListRow title="Alice" subtitle="EUR 20.00 contribution" trailing={<SignedAmount amount="+EUR 13.00" direction="gain" caption="Won" />} />`
 
-**`TransferCard`** — payment instruction card: `from`, `to`, `amount`, `verb` ("pays"), `onPress`. Spoken "Bob pays Clara EUR 8.00"; stacks vertically at large text / narrow widths.
+**`TransferCard`** — payment instruction card: `from`, `to`, `amount`, `verb` ("pays", spoken), `showVerb` (also print it under the arrow; off by default), `onPress`. Spoken "Bob pays Clara EUR 8.00"; stacks vertically at large text / narrow widths.
 
 ## Chips
 

@@ -33,8 +33,8 @@ export function ReopenDialog({ visible, busy, mode, onConfirm, onCancel }: Reope
     >
       <Text>
         {mode === 'tournament'
-          ? 'Places and buy-ins stay. These Payments stop being final.'
-          : 'Results and buy-ins stay. These Payments stop being final. Calculate them again when you’re done.'}
+          ? 'Places and buy-ins stay. Payments stop being final until you calculate them again.'
+          : 'Results and buy-ins stay. Payments stop being final until you calculate them again.'}
       </Text>
     </Dialog>
   );

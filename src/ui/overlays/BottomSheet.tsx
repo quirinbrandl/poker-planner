@@ -14,8 +14,10 @@ export interface SheetAction {
   key: string;
   /** Ends with "…" when it opens a confirmation: "Delete game…". */
   label: string;
-  /** One line under the label: "Removes this game for good." */
+  /** One line under the label. Prefer none: an icon and a clear label usually say enough. */
   description?: string;
+  /** Spoken only (screen-reader hint), when the label alone is enough to see. Default `description`. */
+  hint?: string;
   icon: IconName;
   destructive?: boolean;
   onPress: () => void;
@@ -76,9 +78,10 @@ export function BottomSheet({ visible, title, subtitle, actions, onCancel, cance
                     onPress={action.onPress}
                     accessibilityRole="button"
                     accessibilityLabel={action.label}
-                    accessibilityHint={action.description}
+                    accessibilityHint={action.hint ?? action.description}
                     style={({ pressed }) => [
                       styles.item,
+                      !action.description && styles.itemSingle,
                       action.destructive && styles.itemDestructive,
                       feedback(pressed, colors.surfacePressed),
                     ]}
@@ -137,6 +140,7 @@ const styles = StyleSheet.create({
     borderColor: colors.controlBorder,
     backgroundColor: colors.surface,
   },
+  itemSingle: { alignItems: 'center' },
   itemDestructive: { borderColor: colors.errorBorder },
   itemIcon: { paddingTop: 1 },
   itemText: { flex: 1, minWidth: 0, gap: 2 },
