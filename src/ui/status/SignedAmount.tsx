@@ -9,8 +9,14 @@ export interface SignedAmountProps {
   /** Pre-formatted amount, e.g. "+EUR 13.00" or "−EUR 8.00". */
   amount: string;
   direction: AmountDirection;
-  /** Word under the amount: "Won", "Lost", "Break-even", "Gets", "Pays", "Even". */
+  /**
+   * The amount's meaning in words: "Won", "Lost", "Break-even", "Gets", "Pays", "Even". Always
+   * spoken before the amount; shown under it only with `captionVisible` (the sign and colour already
+   * say it on screen).
+   */
   caption: string;
+  /** Also show the caption word under the amount. Default false. */
+  captionVisible?: boolean;
   /** `large` for hero summaries. */
   size?: 'regular' | 'large';
   align?: 'left' | 'right';
@@ -18,8 +24,15 @@ export interface SignedAmountProps {
 
 const tone: Record<AmountDirection, TextTone> = { gain: 'confirmed', loss: 'error', even: 'even' };
 
-/** Signed EUR amount with its meaning in words below it. */
-export function SignedAmount({ amount, direction, caption, size = 'regular', align = 'right' }: SignedAmountProps) {
+/** Signed EUR amount: sign and colour on screen, its meaning in words for screen readers. */
+export function SignedAmount({
+  amount,
+  direction,
+  caption,
+  captionVisible = false,
+  size = 'regular',
+  align = 'right',
+}: SignedAmountProps) {
   return (
     <View
       accessible
@@ -29,9 +42,11 @@ export function SignedAmount({ amount, direction, caption, size = 'regular', ali
       <Text variant={size === 'large' ? 'amountLarge' : 'amount'} tone={tone[direction]} tabular>
         {amount}
       </Text>
-      <Text variant="caption" tone="supporting">
-        {caption}
-      </Text>
+      {captionVisible ? (
+        <Text variant="caption" tone="supporting">
+          {caption}
+        </Text>
+      ) : null}
     </View>
   );
 }

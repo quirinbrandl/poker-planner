@@ -143,8 +143,8 @@ Rules of use:
 **`FactRow`** — read-only label / value line. `label`, `value`, `unit`, `emphasis="large"` for money rows in popups, `tone`, `divider`, `stacked` (value under the label, Game details).
 `<FactRow label="New total contribution" value="EUR 60.00" emphasis="large" />`
 
-**`SignedAmount`** — `amount` ("+EUR 13.00"), `direction` (`gain` / `loss` / `even`), `caption` (Won / Lost / Gets / Pays / Even), `size`, `align`.
-`<ListRow title="Alice" subtitle="EUR 20.00 contribution" trailing={<SignedAmount amount="+EUR 13.00" direction="gain" caption="Won" />} />`
+**`SignedAmount`** — `amount` ("+EUR 13.00"), `direction` (`gain` / `loss` / `even`), `caption` (Won / Lost / Gets / Pays / Even: always spoken, shown only with `captionVisible`), `size`, `align`. Sign and colour carry it on screen.
+`<ListRow title="Alice" subtitle="EUR 20.00" trailing={<SignedAmount amount="+EUR 13.00" direction="gain" caption="Won" />} />`
 
 **`TransferCard`** — payment instruction card: `from`, `to`, `amount`, `verb` ("pays"), `onPress`. Spoken "Bob pays Clara EUR 8.00"; stacks vertically at large text / narrow widths.
 
