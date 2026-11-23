@@ -69,7 +69,7 @@ export default function StatusGallery() {
 
       <SectionHeading title="Metric tiles" />
       <MetricStrip>
-        <MetricTile label="Blinds" value="1 / 2" subLabel="Rounded SB · 98 BB" adjustedFrom="100 BB" />
+        <MetricTile label="Blinds" value="1 / 2" subLabel="98 BB" adjustedFrom="100 BB" adjusts="subLabel" />
         <MetricTile label="Cash value" value="EUR 20.00" subLabel="EUR 0.10 / unit" />
         <MetricTile label="Reserve" value="1 stack" subLabel="1 of 3 possible" adjustedFrom="3" />
       </MetricStrip>

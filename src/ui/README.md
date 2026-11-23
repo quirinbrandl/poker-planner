@@ -128,7 +128,7 @@ Rules of use:
 **`StatusCard`** — big centred status ("Everything adds up"). `tone`, `icon` or `ringText` ("4/6"), `title`, `description`, `progress` `{ value, max, accessibilityLabel }`, `children`, `ref` (to move focus here).
 `<StatusCard title="Everything adds up" description="All 6 counted · 1,600 chip units" />`
 
-**`MetricTile`** / **`MetricStrip`** — label / value / sub-label tiles that wrap. `adjustedFrom` gives the amber struck-through state.
+**`MetricTile`** / **`MetricStrip`** — label / value / sub-label tiles that wrap. `adjustedFrom` gives the amber struck-through state; `adjusts="subLabel"` strikes the sub-label instead of the value (Blinds "1 / 2" over "~~100 BB~~ → 98 BB").
 `<MetricTile label="Reserve" value="1 stack" subLabel="1 of 3 possible" adjustedFrom="3" />`
 
 **`ChangePill`** — amber "⚠ ~~100 BB~~ → 98 BB". `from`, `to`.

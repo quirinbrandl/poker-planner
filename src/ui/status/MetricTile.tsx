@@ -14,12 +14,23 @@ export interface MetricTileProps {
   subLabel?: string;
   /** Amber adjusted state: the old value is struck through before the new one. */
   adjustedFrom?: string;
+  /**
+   * What `adjustedFrom` replaces: the main `value` (default, e.g. "~~3~~ → 1 stack") or the
+   * `subLabel` (e.g. Blinds "1 / 2" over "~~100 BB~~ → 98 BB").
+   */
+  adjusts?: 'value' | 'subLabel';
 }
 
 /** Compact label / value / sub-label tile for the game-terms strip. */
-export function MetricTile({ label, value, subLabel, adjustedFrom }: MetricTileProps) {
+export function MetricTile({ label, value, subLabel, adjustedFrom, adjusts = 'value' }: MetricTileProps) {
   const adjusted = adjustedFrom !== undefined;
-  const spoken = [label, adjusted ? `${value}, adjusted from ${adjustedFrom}` : value, subLabel]
+  const valueAdjusted = adjusted && adjusts === 'value';
+  const subAdjusted = adjusted && adjusts === 'subLabel' && subLabel !== undefined;
+  const spoken = [
+    label,
+    valueAdjusted ? `${value}, adjusted from ${adjustedFrom}` : value,
+    subAdjusted ? `${subLabel}, adjusted from ${adjustedFrom}` : subLabel,
+  ]
     .filter(Boolean)
     .join(', ');
   return (
@@ -31,7 +42,7 @@ export function MetricTile({ label, value, subLabel, adjustedFrom }: MetricTileP
         </Text>
       </View>
       <Text variant="title" tabular>
-        {adjusted ? (
+        {valueAdjusted ? (
           <>
             <Text variant="title" tabular strike style={styles.old}>
               {nonBreaking(adjustedFrom ?? '')}
@@ -47,7 +58,16 @@ export function MetricTile({ label, value, subLabel, adjustedFrom }: MetricTileP
           nonBreaking(value)
         )}
       </Text>
-      {subLabel ? <Text variant="caption">{subLabel}</Text> : null}
+      {subAdjusted ? (
+        <Text variant="caption" tabular tone="warning" strong>
+          <Text variant="caption" tabular strike style={styles.old}>
+            {adjustedFrom}
+          </Text>
+          {` → ${subLabel}`}
+        </Text>
+      ) : subLabel ? (
+        <Text variant="caption">{subLabel}</Text>
+      ) : null}
     </View>
   );
 }
