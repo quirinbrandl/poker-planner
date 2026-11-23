@@ -55,6 +55,44 @@ export interface PlayRecord {
   roster: RosterEntry[];
   /** Every stack handed out, in the order it was handed out, with the contribution it was for. */
   issuances: IssuanceRecord[];
+  /**
+   * Cash games: unconfirmed final chip counts, at most one per participant. A draft moves no chips
+   * and is no result. Absent means none.
+   */
+  countDrafts?: CountDraft[];
+  /**
+   * Cash games: confirmed final results, at most one per participant. Confirming returns the
+   * counted mix to the bank; removing the record takes it back out. Absent means none.
+   */
+  results?: ResultRecord[];
+  /**
+   * Tournaments: final eliminations, earliest first (the first entry finishes last). Places and the
+   * winner are derived from this order and the roster. Eliminations move no chips. Absent means none.
+   */
+  eliminations?: EliminationRecord[];
+}
+
+/** An unconfirmed final chip count, exactly as typed. Empty text is "not entered", never zero. */
+export interface CountDraft {
+  participantId: string;
+  /** Raw quantity text per denomination, in the chip set's ascending order (same length). */
+  quantityTexts: string[];
+}
+
+/** A cash-game player's one confirmed final result: the chips they returned to the bank. */
+export interface ResultRecord {
+  participantId: string;
+  /** The counted chips, one entry per denomination of the chip set, ascending. */
+  mix: ChipMix;
+  /** ISO 8601 date-time it was confirmed (or last replaced). */
+  confirmedAt: string;
+}
+
+/** One final elimination of a tournament player. */
+export interface EliminationRecord {
+  participantId: string;
+  /** ISO 8601 date-time it was recorded. */
+  recordedAt: string;
 }
 
 export interface RosterEntry extends Participant {
@@ -108,6 +146,11 @@ export interface IssuanceRecord {
   mix: ChipMix;
   /** ISO 8601 date-time it was recorded. */
   recordedAt: string;
+  /**
+   * Blind-payment coverage this stack achieves when it is below the game's configured coverage
+   * (a reduced-coverage rebuy the host accepted, or a historical mix). Absent: full coverage.
+   */
+  reducedCoverage?: number;
 }
 
 /** The Planning draft: every input exactly as typed. */

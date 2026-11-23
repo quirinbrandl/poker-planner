@@ -5,7 +5,7 @@
  */
 import type { Cents, ChipMix } from '@/domain/types';
 
-import type { IssuanceRecord, PlayRecord } from '../core/documents';
+import type { CountDraft, IssuanceRecord, PlayRecord, ResultRecord } from '../core/documents';
 
 /** Adds `sign × mix` to `counts` (same denomination order). */
 function addMix(counts: number[], mix: ChipMix, sign: 1 | -1): void {
@@ -18,11 +18,27 @@ export function mixOf(play: PlayRecord, counts: readonly number[]): ChipMix {
   return play.terms.chipSet.map((d, i) => ({ value: d.value, count: counts[i] }));
 }
 
-/** Bank = configured chip set − every recorded issuance (+ recorded returns, once they exist). */
+/** Bank = configured chip set − every recorded issuance + every confirmed final result's returned mix. */
 export function bankMix(play: PlayRecord): ChipMix {
   const counts = play.terms.chipSet.map((d) => d.quantity);
   for (const issuance of play.issuances) addMix(counts, issuance.mix, -1);
+  for (const result of play.results ?? []) addMix(counts, result.mix, 1);
   return mixOf(play, counts);
+}
+
+/** The participant's confirmed final result (cash games), if any. */
+export function resultOf(play: PlayRecord, participantId: string): ResultRecord | undefined {
+  return play.results?.find((r) => r.participantId === participantId);
+}
+
+/** The participant's unconfirmed final chip count draft (cash games), if any. */
+export function countDraftOf(play: PlayRecord, participantId: string): CountDraft | undefined {
+  return play.countDrafts?.find((d) => d.participantId === participantId);
+}
+
+/** Whether the participant has been finally eliminated (tournaments). */
+export function isEliminated(play: PlayRecord, participantId: string): boolean {
+  return play.eliminations?.some((e) => e.participantId === participantId) ?? false;
 }
 
 /** Chips handed out across the table (every issuance so far). */
