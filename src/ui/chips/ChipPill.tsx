@@ -12,9 +12,12 @@ export interface ChipPillProps {
   value: number;
   /** Number of chips. Zero is shown (×0) – callers decide whether to include zero rows. */
   count: number;
-  /** Also print "(value)" after the count, as in the bank strip. Default false. */
+  /**
+   * Kept for compatibility; adds nothing any more. The value is printed readably on the chip itself,
+   * so the pill is always chip + "×N".
+   */
   showValue?: boolean;
-  /** With `showValue`, also print the colour name: "(1 · White)", as in a locked chip set. Default false. */
+  /** Also print the colour name after the count ("×135 White"), where the chip set is shown as the record. */
   showColorName?: boolean;
   size?: 'regular' | 'compact';
   /** Optional ±N badge for blocked-mix explanations ("−5"). */
@@ -22,7 +25,7 @@ export interface ChipPillProps {
 }
 
 /** Chip symbol plus ×N. Spoken as "N × <value> <color>", e.g. "15 × 1 White". */
-export function ChipPill({ color, value, count, showValue, showColorName, size = 'regular', delta }: ChipPillProps) {
+export function ChipPill({ color, value, count, showColorName, size = 'regular', delta }: ChipPillProps) {
   const compact = size === 'compact';
   return (
     <View
@@ -30,13 +33,13 @@ export function ChipPill({ color, value, count, showValue, showColorName, size =
       accessibilityLabel={`${count} × ${value} ${chipColorName(color)}${delta ? `, ${delta.replace('−', 'minus ')}` : ''}`}
       style={[styles.pill, compact && styles.compact]}
     >
-      <ChipSymbol color={color} value={value} size={compact ? 24 : 28} />
+      <ChipSymbol color={color} value={value} size={compact ? 28 : 32} />
       <Text variant={compact ? 'label' : 'bodyStrong'} tabular>
         {`×${count}`}
       </Text>
-      {showValue ? (
-        <Text variant="supporting" tabular>
-          {showColorName ? `(${value} · ${chipColorName(color)})` : `(${value})`}
+      {showColorName ? (
+        <Text variant={compact ? 'caption' : 'supporting'} tone="supporting">
+          {chipColorName(color)}
         </Text>
       ) : null}
       {delta ? (
@@ -70,15 +73,15 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     gap: space.sm,
-    paddingLeft: 6,
+    paddingLeft: 5,
     paddingRight: space.md,
-    paddingVertical: 6,
+    paddingVertical: 5,
     borderRadius: radii.pill,
     backgroundColor: colors.surfaceSunken,
     borderWidth: 1,
     borderColor: palette.slate500,
   },
-  compact: { paddingLeft: 4, paddingRight: space.sm + 2, paddingVertical: 4, gap: 6 },
+  compact: { paddingLeft: 3, paddingRight: space.sm + 2, paddingVertical: 3, gap: 6 },
   delta: {
     paddingHorizontal: 6,
     borderRadius: radii.pill,

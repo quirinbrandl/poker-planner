@@ -154,10 +154,10 @@ Colours are `ChipColor | null` from `src/domain/types.ts`; `null` is "No color".
 
 **`paintFor(color)`**, **`chipColorName(color)`**, **`chipPaint`**, **`noColorPaint`**, **`chipColorChoices`** (the 12 palette choices in picker order).
 
-**`ChipSymbol`** — round chip. `color`, `value` (printed on the face; omit for blank), `size` (20 bullet, 28 pill, 48 tray, 60 editor row, 96 count editor), optional `accessibilityLabel` (otherwise decorative).
+**`ChipSymbol`** — round chip. `color`, `value` (printed on the face; omit for blank), `size` (20 bullet, 28–32 pill, 48 tray, 60 editor row, 96 count editor; below 40 a simplified face with a large numeral and "1K" for thousands), optional `accessibilityLabel` (otherwise decorative).
 `<ChipSymbol color="red" value={5} size={60} />`
 
-**`ChipPill`** / **`ChipPillRow`** — symbol + `×N`; spoken "N × value color". `color`, `value`, `count`, `showValue` (adds "(value)" as in the bank strip), `size="compact"`, `delta` ("−5" badge).
+**`ChipPill`** / **`ChipPillRow`** — symbol + `×N`; spoken "N × value color". `color`, `value`, `count`, `showValue` (accepted, no effect: the value is readable on the chip), `showColorName` ("×135 White", where the set is the record), `size="compact"`, `delta` ("−5" badge).
 `<ChipPill color="grey" value={1} count={110} showValue />`
 
 **`ChipColorButton`** — tappable chip + "Chip color / Red" in a denomination row. `color`, `value`, `onPress`, specific `accessibilityLabel`. `ref` lets the palette return focus to it.
