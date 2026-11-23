@@ -19,6 +19,7 @@ export { Columns, type ColumnsProps } from './layout/Columns';
 export { Button, type ButtonProps, type ButtonVariant } from './controls/Button';
 export { IconButton, type IconButtonProps } from './controls/IconButton';
 export { TextField, type TextFieldProps, type FieldKeyboard } from './controls/TextField';
+export { SearchField, type SearchFieldProps } from './controls/SearchField';
 export { StepperField, type StepperFieldProps } from './controls/Stepper';
 export { RadioRow, RadioGroup, type RadioRowProps, type RadioGroupProps } from './controls/RadioRow';
 export { CheckboxRow, type CheckboxRowProps } from './controls/CheckboxRow';

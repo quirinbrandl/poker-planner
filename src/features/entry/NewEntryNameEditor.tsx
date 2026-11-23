@@ -1,9 +1,8 @@
 import { type EditorRejection, SavedPlayerEditor } from '@/features/players/SavedPlayerEditor';
-import { Badge, BadgeRow } from '@/ui';
 
 export interface NewEntryNameEditorProps {
-  /** "Cash game · 13 Nov, 19:30". */
-  context: string;
+  /** "Cash game · 13 Nov, 19:30". Kept for callers; a sub-page inside a game shows no context line. */
+  context?: string;
   /** Starting text, e.g. the search text when nothing matched. */
   initialName: string;
   /**
@@ -17,19 +16,13 @@ export interface NewEntryNameEditorProps {
 }
 
 /** New player during late entry: an explicit Save and select, separate from joining the game. */
-export function NewEntryNameEditor({ context, initialName, onSave, onClose }: NewEntryNameEditorProps) {
+export function NewEntryNameEditor({ initialName, onSave, onClose }: NewEntryNameEditorProps) {
   return (
     <SavedPlayerEditor
       title="New player"
       backLabel="Back"
-      badges={
-        <BadgeRow>
-          <Badge label="In progress" tone="primary" />
-        </BadgeRow>
-      }
-      context={context}
       initialName={initialName}
-      helper="Saved for future games. Selecting does not add them to this game yet."
+      helper=""
       saveLabel="Save and select"
       unchangedNote="Your saved players and this game haven’t changed."
       onSave={onSave}

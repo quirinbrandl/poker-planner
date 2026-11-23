@@ -12,10 +12,11 @@ export function denominationName(chip: ChipFace): string {
   return `${chipUnitsName(chip.value)}, ${chipColorName(chip.color)}`;
 }
 
-/** Picker caption under a chip: "12x", "0x" for a blank, "Check entry" for text that is not a quantity. */
+/** Picker caption under a chip: "×12", "×0", "–" for a blank, "Check entry" for text that is not a quantity. */
 export function quantityCaption(entry: QuantityEntry): string {
   if (entry.state === 'invalid') return 'Check entry';
-  return `${entry.count ?? 0}x`;
+  if (entry.state === 'notEntered') return '–';
+  return `×${entry.count ?? 0}`;
 }
 
 /** Spoken status of a quantity: a blank is "quantity not entered", never zero. */

@@ -117,7 +117,7 @@ it('History opens Payments with back to History; a player opens read-only', asyn
   });
   expect(router.getPathname()).toBe(`/game/${gameId}/player/${ids[0]}`);
   expect(screen.getByRole('button', { name: /Back to Payments/ })).toBeTruthy();
-  expect(screen.queryByRole('button', { name: 'Count final chips' })).toBeNull();
+  expect(screen.queryByRole('button', { name: /^Count( final)? chips$/ })).toBeNull();
   await press(/Back to Payments/);
   expect(router.getPathname()).toBe(`/game/${gameId}/payments`);
 

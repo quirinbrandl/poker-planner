@@ -93,7 +93,7 @@ export interface PlayPlayerView {
     stacks: number;
     rebuys: number;
     cents: Cents;
-    /** "EUR 40.00 contribution · 1 rebuy". */
+    /** "EUR 40.00 · 1 rebuy". */
     text: string;
   };
   /** Every chip handed to this player so far. */
@@ -267,7 +267,7 @@ export function buildPlayView(game: GameDocument & { play: PlayRecord }): PlayVi
         stacks: issued.length,
         rebuys,
         cents,
-        text: `${formatEur(cents)} contribution${rebuys > 0 ? ` · ${plural(rebuys, 'rebuy')}` : ''}`,
+        text: `${formatEur(cents)}${rebuys > 0 ? ` · ${plural(rebuys, 'rebuy')}` : ''}`,
       },
       handedOut: chipsView(play, issuedMix(issued, play)),
       firstStack: chipsView(play, issued[0]?.mix ?? issuedMix([], play)),
@@ -380,7 +380,7 @@ export interface PlayingPlayerRow {
   id: string;
   /** Captured name. */
   name: string;
-  /** "EUR 40.00 contribution · 1 rebuy". */
+  /** "EUR 40.00 · 1 rebuy" (the screen speaks it as "contributed EUR 40.00, 1 rebuy"). */
   contributionText: string;
   /** A saved, unconfirmed final chip count: tagged "Count draft", and the shortcut reads Resume. */
   hasCountDraft: boolean;
@@ -392,7 +392,7 @@ export interface FinishedPlayerRow {
   id: string;
   /** Captured name. */
   name: string;
-  /** "EUR 20.00 contribution". */
+  /** "EUR 20.00". */
   contributionText: string;
   /** Signed provisional balance: exact chip value minus all contributions, "+EUR 5.00" / "−EUR 5.00" / "EUR 0.00". */
   balanceText: string;
@@ -417,9 +417,9 @@ export interface PlayScreenView {
     stackText: string;
   };
   /**
-   * The reserve line that opens Bank & reserve: "2 reserve stacks available", "1 of 2 reserve stacks
-   * available" (weakened), "Reserve used · more stacks may be possible", "No reserve target · more
-   * stacks may be possible".
+   * The reserve line that opens Bank & reserve: "2 reserve stacks", "1 of 2 reserve stacks"
+   * (weakened), "Reserve used · more stacks may be possible", "No reserve target · more stacks may
+   * be possible".
    */
   reserveText: string;
   /** Players without a confirmed result, in joining order. */
@@ -441,9 +441,19 @@ export interface BankReserveScreenView {
   chipsText: string;
   /** Every denomination in the bank, ascending, zero counts included. */
   chips: readonly DisplayChip[];
-  /** "1,480 chip units in the bank. Total value alone does not prove a 200-unit stack is possible." */
-  valueNote: string;
+  /** Total value of the bank: "1,480 chip units". */
+  valueText: string;
   reserve: {
+    /** Unconsumed stacks of the started target: "2 of 3 stacks" ("No reserve target" when it is 0). */
+    leftText: string;
+    /** For the bar: unconsumed and started target. */
+    left: number;
+    target: number;
+    /**
+     * Only when corrections weakened the reserve (fewer can be formed at once than are left) or it
+     * could not be worked out: "Only 1 can be formed now" / "Could not be worked out"; otherwise `null`.
+     */
+    achievableNowText: string | null;
     /** "3 stacks". */
     startedTargetText: string;
     /** Rebuys and late entries recorded since Start: "1". */
@@ -517,8 +527,8 @@ function reserveLine(reserve: ReserveStatusView): string {
   if (reserve.startedTarget === 0) return 'No reserve target · more stacks may be possible';
   if (reserve.unconsumed === 0) return 'Reserve used · more stacks may be possible';
   if (reserve.achievable === null) return 'Reserve could not be worked out';
-  if (reserve.weakened) return `${reserve.achievable} of ${plural(reserve.unconsumed, 'reserve stack')} available`;
-  return `${plural(reserve.achievable, 'reserve stack')} available`;
+  if (reserve.weakened) return `${reserve.achievable} of ${plural(reserve.unconsumed, 'reserve stack')}`;
+  return plural(reserve.achievable, 'reserve stack');
 }
 
 function finishedRow(play: PlayRecord, player: PlayPlayerView, units: number): FinishedPlayerRow {
@@ -567,13 +577,25 @@ export function buildPlayScreen(game: StartedGame, view: PlayView): PlayScreenVi
   };
 }
 
-export function buildBankReserve(game: StartedGame, view: PlayView): BankReserveScreenView {
+export function buildBankReserve(_game: StartedGame, view: PlayView): BankReserveScreenView {
   const { reserve } = view;
   return {
     chipsText: view.bank.label,
     chips: view.bank.mix,
-    valueNote: `${view.bank.valueText} in the bank. Total value alone does not prove a ${formatCount(game.play.terms.stackValue)}-unit stack is possible.`,
+    valueText: view.bank.valueText,
     reserve: {
+      leftText:
+        reserve.startedTarget === 0
+          ? 'No reserve target'
+          : `${formatCount(reserve.unconsumed)} of ${plural(reserve.startedTarget, 'stack')}`,
+      left: reserve.unconsumed,
+      target: reserve.startedTarget,
+      achievableNowText:
+        reserve.achievable === null
+          ? 'Could not be worked out'
+          : reserve.weakened
+            ? `Only ${formatCount(reserve.achievable)} can be formed now`
+            : null,
       startedTargetText: plural(reserve.startedTarget, 'stack'),
       consumedText: formatCount(reserve.consumed),
       unconsumedText: formatCount(reserve.unconsumed),

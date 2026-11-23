@@ -23,8 +23,8 @@ function blockedReason(reason: IssueBlockReason): string {
 }
 
 /**
- * **Add <name>**: the actual fully qualifying stack, Reserve after entry and Initial contribution,
- * then **Add player & issue stack**. A blocked entry (**Cannot add <name>**) has no accept action.
+ * **Add <name>**: the actual fully qualifying stack and Reserve after entry, then
+ * **Add <name> · EUR 20.00** (the button carries the initial contribution). A blocked entry (**Cannot add <name>**) has no accept action.
  */
 export function EntryDialog({ entry, busy, onConfirm, onCancel, onViewBank }: EntryDialogProps) {
   const confirm = useSingleConfirm(busy, entry, onConfirm);
@@ -55,7 +55,7 @@ export function EntryDialog({ entry, busy, onConfirm, onCancel, onViewBank }: En
     <Dialog
       visible
       title={`Add ${entry.name}`}
-      confirmLabel="Add player & issue stack"
+      confirmLabel={`Add ${entry.name} · ${entry.initialContributionText}`}
       confirmLoading={busy}
       confirmLoadingLabel="Adding…"
       onConfirm={confirm}
@@ -65,7 +65,7 @@ export function EntryDialog({ entry, busy, onConfirm, onCancel, onViewBank }: En
       <IssueFacts
         reserveLabel="Reserve after entry"
         reserveAfter={entry.reserveAfter}
-        rows={[{ label: 'Initial contribution', value: entry.initialContributionText }]}
+        rows={[]}
         extraFacts={entry.extraFacts}
       />
       {entry.reserveNote ? <Text variant="supporting">{entry.reserveNote}</Text> : null}

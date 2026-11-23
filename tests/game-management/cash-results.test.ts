@@ -292,7 +292,7 @@ describe('confirm', () => {
     expect(results(gameId).players[0]).toEqual({
       id: ids[0],
       name: 'Alice',
-      contributionText: 'EUR 20.00 contribution',
+      contributionText: 'EUR 20.00',
       state: 'result',
       correctionDraft: false,
       result: { amountText: '+EUR 5.00', direction: 'gain' },

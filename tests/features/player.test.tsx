@@ -25,11 +25,14 @@ async function renderPlayer(name: PlayerFixtureName, operation: () => Promise<Co
 it('shows a result: win / loss, final chips with Correct, buy-ins and Return to play', async () => {
   const { onCorrectResult, onAddForgottenRebuy } = await renderPlayer('alice');
   expect(screen.getByLabelText('Won +EUR 5.00')).toBeTruthy();
-  expect(screen.getByLabelText('Confirmed chip value: EUR 25.00')).toBeTruthy();
-  expect(screen.getByLabelText('All contributions: −EUR 20.00')).toBeTruthy();
+  expect(screen.queryByText('Won')).toBeNull();
+  expect(screen.getByLabelText('Chips: EUR 25.00')).toBeTruthy();
+  expect(screen.getByLabelText('Buy-ins: −EUR 20.00')).toBeTruthy();
   expect(screen.getByText('Final chips · 250')).toBeTruthy();
   expect(screen.getByLabelText('0 × 500 Green')).toBeTruthy();
-  expect(screen.getByText('Buy-ins · EUR 20.00')).toBeTruthy();
+  // The total is in the summary already; the section heading does not repeat it.
+  expect(screen.getAllByText('Buy-ins')).toHaveLength(2);
+  expect(screen.queryByText('Buy-ins · EUR 20.00')).toBeNull();
   expect(screen.queryByRole('button', { name: /Count final chips|Rebuy for/ })).toBeNull();
   expect(screen.queryByRole('button', { name: /Remove/ })).toBeNull();
   await fireEvent.press(screen.getByRole('button', { name: 'Correct Alice’s final chips' }));
@@ -45,21 +48,22 @@ it('tags rebuys and offers Correct mix and Undo on each', async () => {
   expect(screen.getAllByText('added later')).toHaveLength(2);
   expect(screen.getByText('3 of 4 coverage')).toBeTruthy();
   expect(screen.getByText('0 of 4 coverage')).toBeTruthy();
-  await fireEvent.press(screen.getByRole('button', { name: 'Correct the mix of rebuy 2' }));
+  await fireEvent.press(screen.getByRole('button', { name: 'Correct mix of rebuy 2' }));
   expect(onCorrectMix).toHaveBeenCalledWith('p4-r2');
   expect(screen.getByRole('button', { name: 'Resume correction of David’s final chips' })).toBeTruthy();
 });
 
-it('offers Count final chips and Rebuy while still playing', async () => {
+it('offers Count chips and Rebuy while still playing', async () => {
   const { onCountFinalChips, onRebuy } = await renderPlayer('bob');
-  expect(screen.getByText('Still playing.')).toBeTruthy();
-  await fireEvent.press(screen.getByRole('button', { name: 'Count final chips' }));
+  expect(screen.getByText('Buy-ins · EUR 40.00')).toBeTruthy();
+  await fireEvent.press(screen.getByRole('button', { name: 'Count chips' }));
   await fireEvent.press(screen.getByRole('button', { name: 'Rebuy for Bob' }));
   expect(onCountFinalChips).toHaveBeenCalledTimes(1);
   expect(onRebuy).toHaveBeenCalledTimes(1);
   expect(screen.queryByRole('button', { name: 'Return to play…' })).toBeNull();
   await renderPlayer('clara-draft');
   expect(screen.getByRole('button', { name: 'Resume count' })).toBeTruthy();
+  expect(screen.getByText('Count draft')).toBeTruthy();
 });
 
 it('undoes a rebuy only after its popup; Cancel undoes nothing', async () => {
@@ -104,7 +108,6 @@ it('shows a Completed player read-only', async () => {
   await renderPlayer('completed');
   expect(screen.getByText('Completed')).toBeTruthy();
   expect(screen.queryByRole('button', { name: /Correct|Undo|Add forgotten|Return to play|Rebuy for/ })).toBeNull();
-  expect(screen.getByText('Read-only. To change something, reopen the game from ⋯.')).toBeTruthy();
 });
 
 it('renders the extra summary and section slots', async () => {

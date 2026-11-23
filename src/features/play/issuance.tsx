@@ -35,7 +35,13 @@ export function IssueFacts({
   const all = [...rows, ...extraFacts];
   return (
     <View>
-      <FactRow label={reserveLabel} value={reserveAfter.value} unit={reserveAfter.unit} emphasis="large" />
+      <FactRow
+        label={reserveLabel}
+        value={reserveAfter.value}
+        unit={reserveAfter.unit}
+        emphasis="large"
+        divider={all.length > 0}
+      />
       {all.map((row, index) => (
         <FactRow key={row.label} label={row.label} value={row.value} emphasis="large" divider={index < all.length - 1} />
       ))}

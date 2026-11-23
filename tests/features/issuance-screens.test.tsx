@@ -107,7 +107,7 @@ it('Rebuy opens the proposal; Cancel records nothing; Issue records it once with
   expect(await screen.findByText('Rebuy issued for Bob')).toBeTruthy();
   expect(screen.queryByText('No rebuy issued')).toBeNull();
   expect(screen.getByText(/EUR 20.00 contribution · 200 chip units issued/)).toBeTruthy();
-  expect(screen.getByText('EUR 40.00 contribution · 1 rebuy')).toBeTruthy();
+  expect(screen.getByText('EUR 40.00 · 1 rebuy')).toBeTruthy();
   expect(app().play.getView(gameId)!.totals.rebuys).toBe(1);
 });
 
@@ -127,14 +127,14 @@ it('a reduced-coverage rebuy needs Accept & issue; Decline records nothing', asy
   expect(app().play.getView(gameId)!.totals.rebuys).toBe(1);
 });
 
-it('Result opens the count editor of that player', async () => {
+it('Count opens the count editor of that player', async () => {
   const { router, gameId, app } = await setup(STANDARD, 2);
-  await press('Result for Cleo');
+  await press('Count for Cleo');
   const cleo = app().play.getView(gameId)!.players[2].id;
   await waitFor(() => expect(router.getPathname()).toBe(`/game/${gameId}/count/${cleo}`));
 });
 
-it('late entry: Review entry, then Add player & issue stack joins and returns to Play', async () => {
+it('late entry: Review entry, then Add Nora · EUR 20.00 joins and returns to Play', async () => {
   const { router, gameId, app } = await setup(STANDARD, 2);
   await press('Add player');
   await waitFor(() => expect(router.getPathname()).toBe(`/game/${gameId}/add-player`));
@@ -147,7 +147,7 @@ it('late entry: Review entry, then Add player & issue stack joins and returns to
   expect(app().play.getView(gameId)!.players).toHaveLength(3);
 
   await press('Review entry');
-  await press('Add player & issue stack');
+  await press('Add Nora · EUR 20.00');
   await waitFor(() => expect(router.getPathname()).toBe(`/game/${gameId}/play`));
   expect(await screen.findByText('Nora joined')).toBeTruthy();
   expect(screen.getByText('Playing · 4')).toBeTruthy();
@@ -161,7 +161,7 @@ it('a blocked entry explains why and offers no accept', async () => {
   await press('Review entry');
   expect(await screen.findByText('Cannot add Nora')).toBeTruthy();
   expect(screen.getByText(/covers only 3 of the required 4 payments of each blind/)).toBeTruthy();
-  expect(screen.queryByRole('button', { name: 'Add player & issue stack' })).toBeNull();
+  expect(screen.queryByRole('button', { name: 'Add Nora · EUR 20.00' })).toBeNull();
   await press('Back to player selection');
   expect(await screen.findByText('Nora has not joined.')).toBeTruthy();
   expect(app().play.getView(gameId)!.players).toHaveLength(2);

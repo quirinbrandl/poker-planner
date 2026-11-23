@@ -526,6 +526,9 @@ describe('forgotten rebuys and Correct mix', () => {
     expectStatus(await app.play.recordRebuyMix(gameId, ids[1], { counts: weaken, acceptedWarnings: ['weakenedReserve'] }), 'accepted');
     app = await harness.restart(app);
     expect(app.play.getView(gameId)!.reserve).toMatchObject({ unconsumed: 2, achievable: 0, weakened: true });
+    // Bank & reserve keeps what is left and what can be formed now apart.
+    expect(app.play.getBankReserve(gameId)!.reserve).toMatchObject({ leftText: '2 of 3 stacks', achievableNowText: 'Only 0 can be formed now' });
+    expect(app.play.getPlayScreen(gameId)!.reserveText).toBe('0 of 2 reserve stacks');
     // Chip returns restore capacity without resetting consumption.
     await recordCount(app, gameId, ids[1], [115, 22, 3, 1, 0]);
     expect(app.play.getView(gameId)!.reserve).toMatchObject({ consumed: 1, unconsumed: 2, achievable: 2 });

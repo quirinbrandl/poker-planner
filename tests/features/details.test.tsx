@@ -22,7 +22,7 @@ it('shows the locked cash-game setup and the In progress closing line', async ()
   expect(screen.getByLabelText('15 chips of value 1 (White)')).toBeTruthy();
   expect(screen.getByLabelText('135 × 1 White')).toBeTruthy();
   // The locked chip set keeps its colour names readable as text, not only as chip colour.
-  expect(screen.getByText('(1 · White)')).toBeTruthy();
+  expect(screen.getAllByText('White').length).toBeGreaterThan(0);
   expect(screen.getByText('Players · 7')).toBeTruthy();
   expect(screen.getByLabelText('Nora, joined late')).toBeTruthy();
   expect(screen.getByText('late')).toBeTruthy();

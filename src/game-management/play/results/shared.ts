@@ -87,11 +87,11 @@ export function contributionsOf(play: PlayRecord, participantId: string): Cents 
   return totalContributions(issuancesOf(play, participantId));
 }
 
-/** "EUR 40.00 contribution · 1 rebuy" (as on Play). */
+/** "EUR 40.00 · 1 rebuy" (as on Play). */
 export function contributionText(play: PlayRecord, participantId: string): string {
   const issued = issuancesOf(play, participantId);
   const rebuys = issued.filter((i) => i.kind === 'rebuy').length;
-  return `${formatEur(totalContributions(issued))} contribution${rebuys > 0 ? ` · ${plural(rebuys, 'rebuy')}` : ''}`;
+  return `${formatEur(totalContributions(issued))}${rebuys > 0 ? ` · ${plural(rebuys, 'rebuy')}` : ''}`;
 }
 
 /** "EUR 25.0125": the exact money value of `units` at the game rate. */

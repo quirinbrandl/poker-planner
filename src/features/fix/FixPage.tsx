@@ -7,8 +7,6 @@ import { ResultConfirmationDialog } from '@/features/count/ResultConfirmationDia
 import type { BlockedMixData, ConfirmOutcome } from '@/features/count/types';
 import { ReturnToPlayDialog, UndoRebuyDialog } from '@/features/player/PlayerDialogs';
 import {
-  Badge,
-  BadgeRow,
   Button,
   Card,
   colors,
@@ -182,12 +180,6 @@ export function FixPage({
     <>
       <Screen topBar={<TopBar backLabel="Back to Play" onBack={onBack} onMore={onMore} />}>
         <ScreenHeader
-          context={data.context}
-          badges={
-            <BadgeRow>
-              <Badge label="In progress" tone="primary" />
-            </BadgeRow>
-          }
           title={`Fix ${name}’s ${what}`}
         >
           <ProgressBar

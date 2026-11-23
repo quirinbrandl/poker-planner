@@ -19,8 +19,8 @@ export interface RebuyDialogProps {
 }
 
 /**
- * **Rebuy for <name>**: the actual stack, Reserve after rebuy, Additional and New total
- * contribution, and the issue action. A reduced-coverage proposal keeps its warning visible and
+ * **Rebuy for <name>**: the actual stack, Reserve after rebuy, New total contribution and the issue
+ * action, which carries the price ("Issue rebuy · EUR 20.00"). A reduced-coverage proposal keeps its warning visible and
  * needs Accept & issue; a blocked request explains why and offers Back to Play / View bank.
  */
 export function RebuyDialog({ rebuy, busy, onConfirm, onCancel, onViewBank, note }: RebuyDialogProps) {
@@ -66,10 +66,7 @@ export function RebuyDialog({ rebuy, busy, onConfirm, onCancel, onViewBank, note
       <IssueFacts
         reserveLabel="Reserve after rebuy"
         reserveAfter={rebuy.reserveAfter}
-        rows={[
-          { label: 'Additional contribution', value: rebuy.priceText },
-          { label: 'New total contribution', value: rebuy.newTotalText },
-        ]}
+        rows={[{ label: 'New total contribution', value: rebuy.newTotalText }]}
         extraFacts={rebuy.extraFacts}
       />
       {rebuy.reserveNote ? <Text variant="supporting">{rebuy.reserveNote}</Text> : null}

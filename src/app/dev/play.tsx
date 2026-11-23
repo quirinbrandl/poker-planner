@@ -1,6 +1,6 @@
 /**
  * Development only: Play, the rebuy popup and Bank & reserve with fixture data (no game management).
- *   /dev/play?state=normal|exhausted|zero-target|joined|mixed|all-finished|feedback|bank|
+ *   /dev/play?state=normal|exhausted|zero-target|joined|mixed|all-finished|feedback|bank|bank-weakened|bank-used|bank-none|
  *     rebuy|rebuy-exhausted|rebuy-zero-target|rebuy-reduced|rebuy-zero|rebuy-impossible|
  *     rebuy-shortage|rebuy-tournament
  * Rebuy on any row opens that story's proposal; issuing resolves after a short delay.
@@ -37,6 +37,9 @@ const STATES: Record<string, DevState> = {
   'all-finished': { story: 'allFinished', view: 'play' },
   feedback: { story: 'normal', view: 'play', feedback: true },
   bank: { story: 'normal', view: 'bank' },
+  'bank-weakened': { story: 'weakened', view: 'bank' },
+  'bank-used': { story: 'exhausted', view: 'bank' },
+  'bank-none': { story: 'zeroTarget', view: 'bank' },
   rebuy: { story: 'normal', view: 'play', popupFor: 'ben' },
   'rebuy-exhausted': { story: 'exhausted', view: 'play', popupFor: 'felix' },
   'rebuy-zero-target': { story: 'zeroTarget', view: 'play', popupFor: 'ben' },

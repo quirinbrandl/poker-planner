@@ -11,6 +11,7 @@ import {
   Card,
   colors,
   FactRow,
+  IconButton,
   Screen,
   ScreenHeader,
   SectionHeading,
@@ -76,8 +77,8 @@ const OUTCOME = { gain: 'Won', loss: 'Lost', even: 'Break-even' } as const;
 const AMOUNT_TONE = { gain: 'confirmed', loss: 'error', even: 'even' } as const;
 
 /**
- * Player page: the win / loss summary, Final chips with Correct, Buy-ins with each actual mix
- * (Correct mix / Undo per rebuy), + Add forgotten rebuy and Return to play…; or Count final
+ * Player page: the signed win / loss with Chips and Buy-ins, Final chips with Correct, Buy-ins with
+ * each actual mix (Correct mix / Undo icon buttons per rebuy), + Add forgotten rebuy and Return to play…; or Count final
  * chips / + Rebuy while still playing. Completed is read-only.
  */
 export function PlayerPage({
@@ -101,11 +102,9 @@ export function PlayerPage({
   const busy = useRef(false);
   const editable = data.phase === 'inProgress';
   const { result } = data;
-  const statusText = playing
-    ? playing.statusText
-    : data.countDraft
-      ? 'Count started, not confirmed yet.'
-      : 'Still playing.';
+  // Cash: the buttons already say the player is still playing; only an open count draft gets a tag.
+  const statusText = playing ? playing.statusText : null;
+  const draftTag = !playing && !result && data.countDraft;
   const showCount = playing?.count ?? true;
   const showRebuy = playing?.rebuy ?? true;
 
@@ -128,15 +127,13 @@ export function PlayerPage({
   return (
     <>
       <Screen topBar={<TopBar backLabel={data.backLabel} onBack={onBack} onMore={onMore} />}>
-        <ScreenHeader
-          context={data.context}
-          badges={
+        <ScreenHeader title={data.name}>
+          {editable && !draftTag ? null : (
             <BadgeRow>
-              {editable ? <Badge label="In progress" tone="primary" /> : <Badge label="Completed" tone="confirmed" />}
+              {editable ? null : <Badge label="Completed" tone="confirmed" />}
+              {draftTag ? <Badge label="Count draft" tone="warning" /> : null}
             </BadgeRow>
-          }
-          title={data.name}
-        >
+          )}
           {result || !statusText ? null : (
             <Text variant="supporting" tone="supporting">
               {statusText}
@@ -160,7 +157,7 @@ export function PlayerPage({
                 {showCount ? (
                   <View style={styles.action}>
                     <Button
-                      label={data.countDraft ? 'Resume count' : 'Count final chips'}
+                      label={data.countDraft ? 'Resume count' : 'Count chips'}
                       variant="primary"
                       fullWidth
                       onPress={onCountFinalChips}
@@ -178,7 +175,7 @@ export function PlayerPage({
         )}
 
         <View>
-          <SectionHeading title={`Buy-ins · ${data.buyInsTotalText}`} />
+          <SectionHeading title={result ? 'Buy-ins' : `Buy-ins · ${data.buyInsTotalText}`} />
           {data.buyIns.map((record, index) => (
             <BuyInRow
               key={record.id}
@@ -206,12 +203,6 @@ export function PlayerPage({
         {editable && result && data.returnToPlay ? (
           <Button label="Return to play…" fullWidth onPress={() => setDialog({ kind: 'return' })} />
         ) : null}
-
-        {editable ? null : (
-          <Text variant="supporting" tone="supporting">
-            Read-only. To change something, reopen the game from ⋯.
-          </Text>
-        )}
       </Screen>
 
       <UndoRebuyDialog
@@ -257,13 +248,12 @@ function ResultSections({
     <>
       <Card variant="highlight" gap={space.xs}>
         <View accessible accessibilityLabel={`${OUTCOME[direction]} ${result.winLoss.amountText.replace('−', 'minus ')}`}>
-          <Text tone="supporting">{OUTCOME[direction]}</Text>
           <Text variant="amountHero" tone={AMOUNT_TONE[direction]} tabular>
             {result.winLoss.amountText}
           </Text>
         </View>
-        <FactRow label="Confirmed chip value" value={result.chipValueText} />
-        <FactRow label="All contributions" value={result.contributionsText} divider={Boolean(summaryExtra)} />
+        <FactRow label="Chips" value={result.chipValueText} />
+        <FactRow label="Buy-ins" value={result.contributionsText} divider={Boolean(summaryExtra)} />
         {summaryExtra}
       </Card>
 
@@ -310,17 +300,29 @@ function BuyInRow({
           {record.corrected ? <Badge label="corrected" size="small" /> : null}
           {record.coverageText ? <Badge label={record.coverageText} tone="warning" size="small" /> : null}
         </View>
-        <Text variant="supporting" tone="supporting" tabular>
-          {record.amountText}
-        </Text>
+        <View style={styles.recordAside}>
+          <Text variant="supporting" tone="supporting" tabular>
+            {record.amountText}
+          </Text>
+          {rebuy && editable ? (
+            <>
+              <IconButton
+                icon="edit"
+                variant="plain"
+                accessibilityLabel={`Correct mix of ${record.label.toLowerCase()}`}
+                onPress={onCorrectMix}
+              />
+              <IconButton
+                icon="undo"
+                variant="plain"
+                accessibilityLabel={`Undo ${record.label.toLowerCase()}`}
+                onPress={onUndo}
+              />
+            </>
+          ) : null}
+        </View>
       </View>
       <MixPills mix={record.mix} hideZero size="compact" accessibilityLabel={`${record.label} chips`} />
-      {rebuy && editable ? (
-        <View style={styles.recordActions}>
-          <Button label="Correct mix" size="compact" accessibilityLabel={`Correct the mix of ${record.label.toLowerCase()}`} onPress={onCorrectMix} />
-          <Button label="Undo" size="compact" accessibilityLabel={`Undo ${record.label.toLowerCase()}`} onPress={onUndo} />
-        </View>
-      ) : null}
     </View>
   );
 }
@@ -333,5 +335,5 @@ const styles = StyleSheet.create({
   divider: { borderBottomWidth: StyleSheet.hairlineWidth, borderBottomColor: colors.divider },
   recordHead: { flexDirection: 'row', flexWrap: 'wrap', justifyContent: 'space-between', alignItems: 'center', gap: space.sm },
   recordTitle: { flexDirection: 'row', flexWrap: 'wrap', alignItems: 'center', gap: space.sm, flexShrink: 1 },
-  recordActions: { flexDirection: 'row', flexWrap: 'wrap', gap: space.sm },
+  recordAside: { flexDirection: 'row', alignItems: 'center', gap: space.xs, marginLeft: 'auto' },
 });

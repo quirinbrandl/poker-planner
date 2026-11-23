@@ -158,10 +158,10 @@ export interface ResultsPlayerRow {
   /** Participant id: passed back in callbacks. */
   id: string;
   name: string;
-  /** "EUR 40.00 contribution · 1 rebuy". */
+  /** "EUR 40.00 · 1 rebuy". */
   contributionText: string;
   /**
-   * `uncounted`: no result, no draft (tag Uncounted, Count chips).
+   * `uncounted`: no result, no draft (no tag; Count).
    * `countDraft`: no result, a saved count draft (tag Count draft, Resume).
    * `result`: a confirmed result (signed amount, no tag unless a correction is drafted).
    */

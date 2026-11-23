@@ -46,3 +46,8 @@ export function phaseModeLabel(phase: GamePhase, mode: GameMode): string {
 export function participantNamesLabel(names: readonly string[]): string {
   return names.length > 0 ? names.join(', ') : 'No players yet';
 }
+
+/** "EUR 40.00 · 1 rebuy" → "contributed EUR 40.00, 1 rebuy": a player row's contribution in its spoken name. */
+export function spokenContribution(text: string): string {
+  return `contributed ${text.replace(/ · /g, ', ')}`;
+}

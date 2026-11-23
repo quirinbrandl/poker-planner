@@ -139,9 +139,9 @@ it('Add player opens late entry before anyone is out, and explains instead once 
 it('the reserve line opens Bank & reserve in place', async () => {
   await open(tournament(), (id) => `/game/${id}/play`);
   await press(/reserve stacks?\. Bank and reserve details/);
-  // The top bar and the button under the page both go back to Play.
+  // The top bar goes back to Play (no second Back button under the page).
   const back = screen.getAllByRole('button', { name: 'Back to Play' });
-  expect(back).toHaveLength(2);
+  expect(back).toHaveLength(1);
   await act(async () => {
     await fireEvent.press(back[0]);
   });

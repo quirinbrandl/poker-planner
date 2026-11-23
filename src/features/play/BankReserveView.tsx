@@ -1,20 +1,6 @@
-import { View } from 'react-native';
+import { StyleSheet, View } from 'react-native';
 
-import {
-  Badge,
-  BadgeRow,
-  Button,
-  Card,
-  ChipPill,
-  ChipPillRow,
-  FactRow,
-  FooterActions,
-  Screen,
-  ScreenHeader,
-  space,
-  Text,
-  TopBar,
-} from '@/ui';
+import { Card, ChipPill, ChipPillRow, ProgressBar, Screen, ScreenHeader, space, Text, TopBar } from '@/ui';
 
 import type { BankReserveData } from './types';
 
@@ -28,51 +14,63 @@ export interface BankReserveViewProps {
 }
 
 /**
- * Bank & reserve: what the bank holds per denomination and how much of the shared reserve target
- * is left and achievable. Read-only; opened from Play's reserve line or a blocked request.
+ * Bank & reserve: the chips the bank holds (one pill per denomination, the total value as the
+ * headline) and how much of the shared reserve target is left. Read-only; opened from Play's
+ * reserve line or a blocked request. When corrections weakened the reserve, one extra line says
+ * how many stacks can be formed now.
  */
 export function BankReserveView({ data, backLabel, onBack, onMore }: BankReserveViewProps) {
   const { reserve } = data;
   return (
-    <Screen
-      topBar={<TopBar backLabel={backLabel} onBack={onBack} onMore={onMore} />}
-      footer={
-        <FooterActions>
-          <Button label={backLabel} variant="primary" onPress={onBack} />
-        </FooterActions>
-      }
-    >
-      <ScreenHeader
-        context={data.context}
-        badges={
-          <BadgeRow>
-            <Badge label="In progress" tone="primary" />
-          </BadgeRow>
-        }
-        title="Bank & reserve"
-      />
-      <Card gap={space.md}>
-        <Text variant="sectionTitle">{data.chipsText}</Text>
+    <Screen topBar={<TopBar backLabel={backLabel} onBack={onBack} onMore={onMore} />}>
+      <ScreenHeader title="Bank & reserve" />
+      <Card gap={space.lg}>
+        <View style={styles.headline} accessible accessibilityLabel={`Bank: ${data.valueText}, ${data.chipsText}`}>
+          <Text variant="sectionTitle">Bank</Text>
+          <Text variant="amount" tabular>
+            {data.valueText}
+          </Text>
+        </View>
         <ChipPillRow accessibilityLabel="Chips in the bank">
           {data.chips.map((chip) => (
-            <ChipPill key={chip.value} color={chip.color} value={chip.value} count={chip.count} showValue />
+            <ChipPill key={chip.value} color={chip.color} value={chip.value} count={chip.count} />
           ))}
         </ChipPillRow>
-        <Text variant="supporting">{data.valueNote}</Text>
       </Card>
-      <Card gap={space.xs}>
-        <Text variant="sectionTitle">Shared reserve</Text>
-        <View>
-          <FactRow label="Started target" value={reserve.startedTargetText} />
-          <FactRow label="Rebuys + late entries" value={reserve.consumedText} />
-          <FactRow label="Unconsumed target" value={reserve.unconsumedText} />
-          <FactRow label="Simultaneously achievable" value={reserve.achievableText} divider={false} />
+      <Card gap={space.md}>
+        <View
+          style={styles.headline}
+          accessible
+          accessibilityLabel={`Reserve: ${reserve.target > 0 ? `${reserve.leftText} left` : reserve.leftText}`}
+        >
+          <Text variant="sectionTitle">Reserve</Text>
+          <Text variant="amount" tabular>
+            {reserve.leftText}
+          </Text>
         </View>
+        {reserve.target > 0 ? (
+          <ProgressBar
+            value={reserve.left}
+            max={reserve.target}
+            accessibilityLabel={`${reserve.leftText} left`}
+          />
+        ) : null}
+        {reserve.achievableNowText ? (
+          <Text variant="supporting" tone="warning">
+            {reserve.achievableNowText}
+          </Text>
+        ) : null}
       </Card>
-      <Text variant="supporting">
-        Shared bank capacity, not prepacked stacks or a limit on rebuys. Chip returns add available chips; they do not
-        reset reserve consumption.
-      </Text>
     </Screen>
   );
 }
+
+const styles = StyleSheet.create({
+  headline: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    alignItems: 'baseline',
+    justifyContent: 'space-between',
+    columnGap: space.md,
+  },
+});

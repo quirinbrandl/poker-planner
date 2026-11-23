@@ -20,15 +20,18 @@ async function renderResults(name: ResultsFixtureName) {
 
 const calculate = () => screen.getByRole('button', { name: 'Calculate Payments…' });
 
-it('names who is still to count and offers Count chips / Resume by row state', async () => {
+it('names who is still to count and offers Count / Resume by row state', async () => {
   const { onCount, onOpenPlayer } = await renderResults('incomplete');
   expect(screen.getByLabelText('5 still to count. Bob, Clara, David, Emma, Felix')).toBeTruthy();
   expect(screen.getByLabelText('1 of 6 players counted')).toBeTruthy();
-  expect(screen.getAllByText('Uncounted')).toHaveLength(4);
+  // Only open work is tagged; an uncounted row says so in its spoken name.
+  expect(screen.queryByText('Uncounted')).toBeNull();
+  expect(screen.getByRole('button', { name: 'Bob, contributed EUR 40.00, 1 rebuy, Not counted yet' })).toBeTruthy();
   expect(screen.getByText('Count draft')).toBeTruthy();
   expect(screen.getByLabelText('Won +EUR 5.00')).toBeTruthy();
+  expect(screen.queryByText('Won')).toBeNull();
   expect(screen.queryByText('Result confirmed')).toBeNull();
-  await fireEvent.press(screen.getByRole('button', { name: 'Count chips for Bob' }));
+  await fireEvent.press(screen.getByRole('button', { name: 'Count for Bob' }));
   await fireEvent.press(screen.getByRole('button', { name: 'Resume count for Clara' }));
   expect(onCount.mock.calls).toEqual([['p2'], ['p3']]);
   expect(screen.queryByRole('button', { name: /for Alice/ })).toBeNull();
@@ -76,8 +79,7 @@ it('shows Completed results read-only', async () => {
   await renderResults('completed');
   expect(screen.getByText('Completed')).toBeTruthy();
   expect(screen.queryByRole('button', { name: 'Calculate Payments…' })).toBeNull();
-  expect(screen.queryByRole('button', { name: /Count chips|Resume/ })).toBeNull();
-  expect(screen.getByText('Read-only. To change something, reopen the game from ⋯.')).toBeTruthy();
+  expect(screen.queryByRole('button', { name: /^Count for|Resume/ })).toBeNull();
 });
 
 it('shows exact sub-cent amounts and a correction draft tag', async () => {

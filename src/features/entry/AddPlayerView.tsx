@@ -2,20 +2,21 @@ import { useEffect, useRef, useState } from 'react';
 import { StyleSheet, View } from 'react-native';
 
 import {
-  Badge,
-  BadgeRow,
   Button,
+  colors,
   focusView,
   FooterActions,
+  Icon,
   InlineNotice,
   RadioGroup,
   RadioRow,
   Screen,
   ScreenHeader,
+  SearchField,
   space,
   Text,
-  TextField,
   TopBar,
+  touchTarget,
   type ViewRef,
 } from '@/ui';
 
@@ -82,6 +83,9 @@ export function AddPlayerView({
   const wasOpen = useRef(open);
   const selected = data.candidates.find((candidate) => candidate.savedPlayerId === selectedId && !candidate.inGame);
   const shown = data.candidates.filter((candidate) => matches(candidate.name, search));
+  // Selectable names first; players already in the game follow as dimmed, non-selectable lines.
+  const selectable = shown.filter((candidate) => !candidate.inGame);
+  const inGame = shown.filter((candidate) => candidate.inGame);
 
   // Closing the popup puts focus back on Review entry, with the choice still staged.
   useEffect(() => {
@@ -102,7 +106,7 @@ export function AddPlayerView({
       <Screen
         topBar={<TopBar backLabel="Back to Play" onBack={onBack} onMore={onMore} />}
         footer={
-          <FooterActions note={selected ? `${selected.name} selected · not joined yet` : 'Nobody selected'}>
+          <FooterActions>
             <Button
               ref={reviewRef}
               label="Review entry"
@@ -115,17 +119,8 @@ export function AddPlayerView({
           </FooterActions>
         }
       >
-        <ScreenHeader
-          context={data.context}
-          badges={
-            <BadgeRow>
-              <Badge label="In progress" tone="primary" />
-            </BadgeRow>
-          }
-          title="Add player"
-        >
-          <View style={styles.terms}>
-            <Text variant="supporting">
+        <ScreenHeader title="Add player">
+          <Text variant="supporting">
               {'Buy-in '}
               <Text variant="supporting" strong tone="main">
                 {data.terms.buyInText}
@@ -138,38 +133,45 @@ export function AddPlayerView({
               <Text variant="supporting" strong tone="main">
                 {data.terms.blindsText.replace(/ \/ /g, '\u00A0/\u00A0')}
               </Text>
-            </Text>
-            <Text variant="supporting">
-              Existing terms · Full coverage required. Joining uses the same reserve as rebuys.
-            </Text>
-          </View>
+          </Text>
         </ScreenHeader>
 
-        <TextField
-          label="Search saved names"
-          keyboard="text"
-          autoCapitalize="none"
-          returnKeyType="search"
-          value={search}
-          onChangeText={onSearch}
-        />
+        <SearchField accessibilityLabel="Search saved names" value={search} onChangeText={onSearch} />
         {shown.length > 0 ? (
-          <RadioGroup label="Saved players" hideLabel>
-            {shown.map((candidate) => (
-              <RadioRow
-                key={candidate.savedPlayerId}
-                label={candidate.name}
-                description={candidate.inGame ? 'Already in this game' : undefined}
-                selected={candidate.savedPlayerId === selectedId && !candidate.inGame}
-                unavailable={candidate.inGame}
-                onPress={() => {
-                  if (candidate.inGame) return;
-                  setMissing(false);
-                  onSelect(candidate.savedPlayerId);
-                }}
-              />
-            ))}
-          </RadioGroup>
+          <View style={styles.lists}>
+            {selectable.length > 0 ? (
+              <RadioGroup label="Saved players" hideLabel>
+                {selectable.map((candidate) => (
+                  <RadioRow
+                    key={candidate.savedPlayerId}
+                    label={candidate.name}
+                    selected={candidate.savedPlayerId === selectedId}
+                    onPress={() => {
+                      setMissing(false);
+                      onSelect(candidate.savedPlayerId);
+                    }}
+                  />
+                ))}
+              </RadioGroup>
+            ) : null}
+            {inGame.length > 0 ? (
+              <View accessibilityRole="list" accessibilityLabel="Already in this game">
+                {inGame.map((candidate) => (
+                  <View
+                    key={candidate.savedPlayerId}
+                    accessible
+                    accessibilityLabel={`${candidate.name}, already in this game`}
+                    style={styles.inGame}
+                  >
+                    <Icon name="check" size={18} color={colors.textSupporting} />
+                    <Text tone="supporting" style={styles.inGameName}>
+                      {candidate.name}
+                    </Text>
+                  </View>
+                ))}
+              </View>
+            ) : null}
+          </View>
         ) : (
           <Text tone="supporting" align="center" style={styles.empty}>
             {data.candidates.length === 0 ? 'No saved players yet. Create a new one below.' : 'No matching saved players.'}
@@ -185,6 +187,14 @@ export function AddPlayerView({
 }
 
 const styles = StyleSheet.create({
-  terms: { gap: space.xs },
+  lists: { gap: space.lg },
+  inGame: {
+    minHeight: touchTarget,
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: space.md,
+    paddingHorizontal: space.lg,
+  },
+  inGameName: { flexShrink: 1 },
   empty: { paddingVertical: space.xl },
 });
