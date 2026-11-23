@@ -52,7 +52,7 @@ export interface OrderEditorProps {
 }
 
 /**
- * Finishing order editor: the order as a draft ("Changes not saved yet"), ↑ / ↓ and undo per
+ * Finishing order editor: the order as a draft ("Unsaved"), ↑ / ↓ and undo per
  * elimination, Add a missed elimination…, and Save order… with a summary of only what changes.
  */
 export function OrderEditor({
@@ -95,21 +95,12 @@ export function OrderEditor({
         </FooterActions>
       }
     >
-      <ScreenHeader
-        context={data.context}
-        badges={
-          <BadgeRow>
-            <Badge label="In progress" tone="primary" />
-          </BadgeRow>
-        }
-        title="Finishing order"
-      >
+      <ScreenHeader title="Finishing order">
         {data.hasChanges ? (
           <BadgeRow>
-            <Badge label="Changes not saved yet" tone="warning" />
+            <Badge label="Unsaved" tone="warning" />
           </BadgeRow>
         ) : null}
-        <Text variant="supporting">Best place at the top. Arrows move a player one place.</Text>
       </ScreenHeader>
 
       <View
@@ -128,7 +119,7 @@ export function OrderEditor({
         <Text tone="supporting" style={styles.grow}>
           {data.top.kind === 'stillPlaying'
             ? `Still playing: ${data.top.names}`
-            : `${data.top.name} wins (last player left)`}
+            : `${data.top.name} wins`}
         </Text>
       </View>
 
@@ -205,6 +196,9 @@ function DraftRow({
   onUndo: () => void;
 }) {
   const marker = row.marker;
+  const detail = [marker?.kind === 'was' ? marker.text : null, row.paid ? row.payoutText : null]
+    .filter(Boolean)
+    .join(' · ');
   const spokenMarker = marker?.kind === 'missed' ? ', missed, added now' : marker ? `, ${marker.text}` : '';
   return (
     <View style={[styles.row, marker ? styles.changed : null]}>
@@ -219,7 +213,7 @@ function DraftRow({
             <Text variant="title">{row.name}</Text>
             {marker?.kind === 'missed' ? <Badge label="missed" tone="primary" size="small" /> : null}
           </View>
-          <Text variant="supporting">{marker?.kind === 'was' ? marker.text : row.payoutText}</Text>
+          {detail ? <Text variant="supporting">{detail}</Text> : null}
         </View>
       </View>
       <View style={styles.actions}>

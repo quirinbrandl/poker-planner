@@ -3,7 +3,7 @@
  * 70 / 30, Bob with one rebuy). Nothing touches game management; a fixture model stands in for it.
  *   /dev/tournament?state=
  *     Play:     open | midway | bubble | heads | winner
- *     popups:   out-first | out-winner | same-hand | entry-closed
+ *     popups:   out-first | out-winner | same-hand
  *     Results:  resultsMid | withdrawn | winnerResults | completedResults | reopened | calc-blocked
  *     Editor:   edit | undoAll | missed | save-order | undo-all-save | discard
  *     Player:   backin | back-in | winner-player | forgotten
@@ -251,8 +251,6 @@ function Fixture({ state, reject }: { state: string; reject: boolean }) {
       return <PlayFixture order={ORDERS.heads} popup={{ kind: 'out', playerId: 'clara' }} reject={reject} />;
     case 'same-hand':
       return <PlayFixture order={ORDERS.midway} popup={{ kind: 'sameHand', selectedIds: ['bob', 'clara'] }} reject={reject} />;
-    case 'entry-closed':
-      return <PlayFixture order={ORDERS.midway} popup={{ kind: 'entryClosed' }} reject={reject} />;
     case 'resultsMid':
       return <ResultsFixture game={fixtureGame(ORDERS.midway)} />;
     case 'calc-blocked':

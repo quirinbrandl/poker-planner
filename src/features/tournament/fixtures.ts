@@ -106,7 +106,6 @@ const frameContext = (game: FixtureGame) =>
 export function playData(game: FixtureGame): TournamentPlayData {
   const left = remaining(game);
   const winner = winnerOf(game);
-  const amounts = prizes(game);
   const count = left.length;
   const players: StillInPlayer[] = left.map((player) => {
     const other = count === 2 ? left.find((p) => p.id !== player.id) : undefined;
@@ -123,6 +122,7 @@ export function playData(game: FixtureGame): TournamentPlayData {
     };
   });
   const rebuys = rebuyCount(game);
+  const amounts = prizes(game);
   return {
     frame: { context: frameContext(game), backLabel: 'Games' },
     terms: [
@@ -150,7 +150,7 @@ export function playData(game: FixtureGame): TournamentPlayData {
       ? null
       : {
           count,
-          summary: `Playing for 1st–${placeLabel(count)} · next out ${placeLabel(count)} · ${payoutText(game, count).replace('No payout', 'no payout')}`,
+          summary: `Next out: ${placeLabel(count)}${count <= game.shares.length ? ` · ${payoutText(game, count)}` : ''}`,
           players,
           sameHandAvailable: count >= 3,
           nextPlaceLabels: Array.from({ length: count - 1 }, (_, i) => placeLabel(i + 2)),
@@ -176,7 +176,7 @@ export function playData(game: FixtureGame): TournamentPlayData {
           payoutText: 'No payout',
         };
       }),
-    reserveText: `${plural(game.reserveLeft, 'reserve stack')} available`,
+    reserveText: plural(game.reserveLeft, 'reserve stack'),
   };
 }
 
@@ -206,7 +206,6 @@ export function resultsData(game: FixtureGame): TournamentResultsData {
   const winner = winnerOf(game);
   const needed = game.players.length - 1;
   const recorded = game.order.length;
-  const amounts = prizes(game);
   const ids = [...(winner ? [winner.id] : []), ...bestFirst(game.order)];
   return {
     phase: game.phase,
@@ -230,11 +229,7 @@ export function resultsData(game: FixtureGame): TournamentResultsData {
       ? null
       : {
           rangeLabel: `1st–${placeLabel(left.length)}`,
-          description: `Still playing${
-            game.shares.length <= left.length
-              ? ` · ${amounts.map((amount, i) => `${placeLabel(i + 1)} ${eurInputText(amount)}`).join(' · ')} open`
-              : ''
-          }`,
+          description: 'still playing',
         },
     finishers: ids.map((id) => finisherRow(game, id)),
     canEditOrder: game.phase === 'inProgress' && recorded > 0,
@@ -328,6 +323,7 @@ export function editorData(game: FixtureGame, draft: FixtureDraft): OrderEditorD
           : was !== null && was !== place
             ? { kind: 'was', text: `was ${placeLabel(was)}` }
             : null,
+        paid: place <= game.shares.length,
         payoutText: payoutText(game, place),
         canMoveUp: index > 0,
         canMoveDown: index < best.length - 1,

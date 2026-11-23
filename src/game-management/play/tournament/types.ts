@@ -95,7 +95,7 @@ export type LateEntryState =
 export interface StillInData {
   /** N in "Still in · N". */
   count: number;
-  /** "Playing for 1st–4th · next out 4th · no payout" (or "· EUR 42.00" on a paid place). */
+  /** "Next out: 4th" (with " · EUR 42.00" when that place is paid). */
   summary: string;
   /** Players still in, in joining order. */
   players: readonly StillInPlayer[];
@@ -133,7 +133,7 @@ export interface TournamentPlayView {
   lateEntry: LateEntryState;
   /** Players out on unpaid places, best place first. Paid finishers sit on the prize rungs. */
   unpaidFinishers: readonly UnpaidFinisher[];
-  /** "2 reserve stacks available": opens the bank view. */
+  /** "2 reserve stacks": opens the bank view. */
   reserveText: string;
 }
 
@@ -212,7 +212,7 @@ export interface TournamentResultsView {
   openPlaces: {
     /** "1st–4th". */
     rangeLabel: string;
-    /** "Still playing · 1st 98.00 · 2nd 42.00 open". */
+    /** "still playing" (beside the open range "1st–4th"). */
     description: string;
   } | null;
   /** Winner (if any) and everyone out, best place first. */
@@ -253,6 +253,8 @@ export interface OrderDraftRow {
   placeLabel: string;
   /** "was 5th" when the draft moved them; "missed" when added in this draft; otherwise none. */
   marker: { kind: 'was'; text: string } | { kind: 'missed' } | null;
+  /** The draft place is paid: rows show `payoutText` only then. */
+  paid: boolean;
   /** Payout at the draft place: "EUR 42.00" or "No payout". */
   payoutText: string;
   /** False on the best eliminated place. */
