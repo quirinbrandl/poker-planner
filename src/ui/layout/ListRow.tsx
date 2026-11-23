@@ -8,6 +8,8 @@ import { colors, radii, space, touchTarget } from '../theme';
 
 export interface ListRowProps {
   title: string;
+  /** Beside the title, wrapping under it at large text: a decorative `PlaceBadge`. Say its words in `accessibilityLabel`. */
+  titleAside?: ReactNode;
   /** One or more supporting lines under the title. */
   subtitle?: string | readonly string[];
   /** Before the text: Avatar, ChipSymbol or Icon. */
@@ -35,6 +37,7 @@ export interface ListRowProps {
 /** Row for players, links and facts. Text wraps; actions and trailing content reflow at large text. */
 export function ListRow({
   title,
+  titleAside,
   subtitle,
   leading,
   trailing,
@@ -54,7 +57,14 @@ export function ListRow({
     <>
       {leading}
       <View style={styles.texts}>
-        <Text variant="title">{title}</Text>
+        {titleAside ? (
+          <View style={styles.titleLine}>
+            <Text variant="title">{title}</Text>
+            {titleAside}
+          </View>
+        ) : (
+          <Text variant="title">{title}</Text>
+        )}
         {lines.map((line) => (
           <Text key={line} variant="supporting">
             {line}
@@ -115,6 +125,7 @@ const styles = StyleSheet.create({
     borderRadius: radii.control,
   },
   texts: { flexGrow: 1, flexShrink: 1, flexBasis: 110, minWidth: 0, gap: 2 },
+  titleLine: { flexDirection: 'row', flexWrap: 'wrap', alignItems: 'center', gap: space.sm },
   tags: { flexDirection: 'row', flexWrap: 'wrap', gap: space.xs + 2, marginTop: space.xs },
   trailing: { flexShrink: 0, maxWidth: '100%', alignItems: 'flex-end' },
   actions: { flexDirection: 'row', flexWrap: 'wrap', gap: space.sm, marginLeft: 'auto', paddingVertical: space.xs },
