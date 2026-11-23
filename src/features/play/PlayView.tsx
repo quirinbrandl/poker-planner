@@ -105,13 +105,6 @@ export function PlayView({
           { label: 'Stack', value: terms.stackText, unit: 'chip units' },
         ]}
       />
-      <Button
-        label={data.reserveText}
-        trailingIcon="external"
-        fullWidth
-        accessibilityLabel={`${data.reserveText}. Bank and reserve`}
-        onPress={onViewBank}
-      />
       {data.fixText && onContinueFix ? (
         <Button label={data.fixText} trailingIcon="forward" variant="primary" fullWidth onPress={onContinueFix} />
       ) : null}
@@ -166,6 +159,15 @@ export function PlayView({
       <Text variant="supporting" tabular>
         {data.totalContributionsText}
       </Text>
+      {/* Quiet and last, as on tournament Play: the reserve matters when a rebuy or a late arrival comes up. */}
+      <Button
+        label={data.reserveText}
+        trailingIcon="external"
+        fullWidth
+        variant="tertiary"
+        accessibilityLabel={`${data.reserveText}. Bank and reserve`}
+        onPress={onViewBank}
+      />
 
       <RebuyDialog
         rebuy={rebuy}
