@@ -1,6 +1,15 @@
-# Tournament payout setup and Start · Review v1
+# Tournament payout setup and Start · Approved
 
-**Throwaway UI prototype, waiting for review.** It asks: how does tournament Planning add a payout schedule to the approved setup journey, keep chip stacks apart from prize money, and Start into a locked schedule?
+**Throwaway UI prototype. The human approved it after Review v1.** It asks: how does tournament Planning add a payout schedule to the approved setup journey, keep chip stacks apart from prize money, and Start into a locked schedule?
+
+## Resolution
+
+- **Payout schedule layout C · Prize ladder** is chosen (“layout C is best”). A (preset chips) and B (preset cards) stay switchable as archived alternatives, not MVP choices.
+- **Suggestion behaviour as recommended** (“your rec is OK”): the first visit preselects the suggested preset and saves it; from then on only the host changes the schedule. Roster changes move the **Suggested** hint, never the schedule, and a schedule with more paid places than players stays, flagged, with a one-tap **Use <suggested>** fix.
+- The rest of the Review v1 proposal (Game settings buy-in line, preview Payouts card, Setup incomplete routing, Start tournament? rows, locked Game details, Return to Planning keeping the schedule) was shown with the review and not changed.
+- **Post-review layout fix:** in C, the % field moved from the amount row to sit beside its share bar, so the prize amount gets the full row. Review v1 clipped amounts at 320px and broke the place badge at 200% text. Content and behaviour are unchanged.
+
+Approved captures: `previews/approved-*.png` (`approved-montage.png` for the overview). The `review-v1-*` captures are the review history and still show the earlier C row layout.
 
 Decision ticket: [Design tournament payout setup and starting](https://github.com/quirinbrandl/poker-planner/issues/39). It reuses the approved Planning ([cash-game planning](https://github.com/quirinbrandl/poker-planner/tree/1753f00fdc36c3a68dd1d7529b736200a933dcd2/docs/prototypes/cash-game-planning)), [distribution preview / Start](https://github.com/quirinbrandl/poker-planner/tree/70b9018f533581ce33a27c8625785041366071fd/docs/prototypes/distribution-preview-start) and [lifecycle](https://github.com/quirinbrandl/poker-planner/tree/d005d10b346dd532e4e2f0655d14613408a4a677/docs/prototypes/cash-game-payments) screens. Players, Chip set and Game settings are simplified stand-ins here; the distribution is a fixed fixture, not the solver. Tournament Play is the next ticket and is only stubbed. No production code, functional specification or implementation-ticket criteria are changed by this branch.
 
@@ -16,7 +25,7 @@ Open <http://127.0.0.1:4191/>. Opening `index.html` directly works offline too. 
 
 URL parameters:
 
-- `variant=A|B|C`: Payout schedule layout (also the floating bar at the bottom, or ← / → keys).
+- `variant=C|A|B`: Payout schedule layout; C (approved) is the default, A and B are archived (also the floating bar at the bottom, or ← / → keys).
 - `walk=fresh|custom|shrunk|invalid|cents|nobuyin|preview|blocked|started|mode`: jump to a scenario (also listed in the side panel).
 - `scale=1.5|2`: app text size.
 - `open=start|reset|steps|presets`: open that popup on load (for captures).
@@ -25,7 +34,7 @@ URL parameters:
 
 The wizard is the approved one with one extra step: **Choose mode → Players → Chip set → Game settings → Payout schedule → Distribution preview**. Everything else is the cash-game design, unchanged, except where listed below.
 
-### Payout schedule step (three layouts to choose from)
+### Payout schedule step (C approved; A and B archived)
 
 All three show the same things:
 
@@ -38,7 +47,7 @@ Layouts:
 
 - **A · Preset chips**: a wrap of preset chips above one card with the place rows. Everything on one screen.
 - **B · Preset cards**: one radio card per preset with its split, a proportional bar and the actual prize amounts for this pool. Presets that need more places than players are disabled (“Needs 5 players”). **Custom** expands the place editor inside its card.
-- **C · Prize ladder**: a large prize-pool hero, a **Preset** button that opens a sheet, then one card per place with a big amount, the percentage field and a share bar.
+- **C · Prize ladder (approved)**: a large prize-pool hero; a **Preset** button showing the current preset (or Custom) and, when it differs, “Suggested for 6 players: Top 2”; it opens a sheet listing every preset with its split, the **Suggested** tag, a check on the current one and “Needs N players” on presets with too many places. Then one card per place: place badge and a big prize amount on top, the share bar and the % field beneath, remove icon on the last card. **Add place** and the total sit under the ladder.
 
 ### Suggestions versus rules (same in all layouts)
 
@@ -60,7 +69,7 @@ Layouts:
 
 ## Captures
 
-Phone surface at 390px: `previews/review-v1-layouts.png` (A / B / C side by side), `previews/review-v1-shared.png` (roster shrank, preview, Start popup, locked details), and one file per state (`review-v1-*.png`).
+Phone surface at 390px unless named otherwise. Approved: `previews/approved-montage.png` plus one file per state (`approved-*.png`, including 200% text and 320px). Review history: `previews/review-v1-layouts.png` (A / B / C side by side), `previews/review-v1-shared.png` and `review-v1-*.png`.
 
 ## Checks run
 

@@ -3,7 +3,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <link rel="icon" href="data:,">
-<title>Tournament payouts & Start · Review v1</title>
+<title>Tournament payouts & Start · Approved (Review v1)</title>
 <style>
   * { box-sizing: border-box; }
   :root { color-scheme: dark; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; background: #0b1117; color: #f1f4f5; --accent: #c9b5ff; --on-accent: #2b1e45; --tint: #322b45; --warn: #e2b857; }
@@ -104,11 +104,11 @@
   .preset-chip[aria-disabled="true"] small { color: #8d9aa5; }
   /* Place rows (shared editor) */
   .places { list-style: none; margin: 0; padding: 0; }
-  .place-row { display: grid; grid-template-columns: 46px minmax(0,1fr) minmax(5.5em,auto) 48px; align-items: center; gap: 8px; padding: 8px 0; border-bottom: 1px solid #2e3c48; }
+  .place-row { display: grid; grid-template-columns: auto minmax(0,1fr) minmax(5.5em,auto) 48px; align-items: center; gap: 8px; padding: 8px 0; border-bottom: 1px solid #2e3c48; }
   .place-row .input-wrap { max-width: 9em; }
   .place-row input[type="text"] { min-height: 48px; font-size: 1.05em; }
   .place-row .error { grid-column: 2 / -1; margin-top: 0; }
-  .place { display: inline-grid; place-items: center; width: 42px; height: 42px; border-radius: 50%; background: #111920; border: 1px solid #637084; font-size: .78em; font-weight: 750; font-variant-numeric: tabular-nums; }
+  .place { display: inline-grid; place-items: center; min-width: 42px; min-height: 42px; padding: 0 .45em; white-space: nowrap; border-radius: 100px; background: #111920; border: 1px solid #637084; font-size: .78em; font-weight: 750; font-variant-numeric: tabular-nums; }
   .place.p1 { border-color: var(--accent); color: var(--accent); }
   .amt { text-align: right; font-weight: 700; font-variant-numeric: tabular-nums; white-space: nowrap; }
   .amt.none { color: #7c90a0; font-weight: 500; }
@@ -147,12 +147,13 @@
   .preset-select strong { font-size: 1.05em; }
   .rungs { list-style: none; margin: 0; padding: 0; display: grid; gap: 10px; }
   .rung { padding: 12px 14px 14px; border: 1px solid #364653; border-radius: 20px; background: #1e2a34; }
-  .rung-top { display: grid; grid-template-columns: 42px minmax(0,1fr) minmax(0,4.8em) 44px; gap: 8px; align-items: center; }
+  .rung-top { display: grid; grid-template-columns: auto minmax(0,1fr) 44px; gap: 10px; align-items: center; }
+  .rung-share { display: grid; grid-template-columns: minmax(0,1fr) minmax(0,5.2em); gap: 12px; align-items: center; margin-top: 8px; }
   .rung-amt { font-size: 1.3em; font-weight: 760; letter-spacing: -.035em; font-variant-numeric: tabular-nums; white-space: nowrap; }
   .rung-amt.none { color: #7c90a0; font-size: 1.1em; font-weight: 500; }
   .rung .input-wrap input[type="text"] { min-height: 46px; font-size: 1em; padding: 8px 4px 8px 10px; }
   .rung .input-wrap > span { padding-right: 8px; }
-  .rung-bar { height: 10px; border-radius: 100px; background: #111920; margin-top: 10px; overflow: hidden; }
+  .rung-bar { height: 10px; border-radius: 100px; background: #111920; overflow: hidden; }
   .rung-bar span { display: block; height: 100%; border-radius: 100px; background: linear-gradient(90deg, #8f78d8, var(--accent)); }
   .rung .error { margin-top: 6px; }
   .rung:has([aria-invalid="true"]) { border-color: #6b4447; }
@@ -233,11 +234,10 @@
   .switcher button { background: #2b1e45; color: #fff; border: 0; border-radius: 100px; padding: 8px; }
   .switcher span { font-size: 13px; min-width: 0; padding: 0 8px; text-align: center; }
   /* Large text */
-  [data-large="true"] .place-row { grid-template-columns: 46px minmax(0,1fr) 48px; }
+  [data-large="true"] .place-row { grid-template-columns: auto minmax(0,1fr) 48px; }
   [data-large="true"] .place-row .amt { grid-column: 2; grid-row: 2; text-align: left; }
   [data-large="true"] .place-row .error { grid-row: 3; }
-  [data-large="true"] .rung-top { grid-template-columns: 46px minmax(0,1fr) 48px; }
-  [data-large="true"] .rung-top .input-wrap { grid-column: 2; grid-row: 2; }
+  [data-large="true"] .rung-share { grid-template-columns: minmax(0,1fr) minmax(0,6em); }
   [data-large="true"] .game-terms, [data-large="true"] .nav { grid-template-columns: 1fr; }
   [data-large="true"] .term { border-left: 0; border-top: 1px solid #46515f; padding: 10px 16px; }
   [data-large="true"] .term:first-child { border-top: 0; }
@@ -249,15 +249,15 @@
   body.shot .layout { display: block; }
   body.shot #app { border: 0; border-radius: 0; box-shadow: none; min-height: 100vh; }
   @media (max-width:760px) { body { padding: 16px 8px 110px; } .layout { grid-template-columns: minmax(0,430px); justify-content: center; } .workshop > header { max-width: 430px; } .review { order: -1; } }
-  @media (max-width:350px) { .page { padding: 18px 12px 24px; } .dock { margin: 24px -12px -24px; } dialog .actions { grid-template-columns: 1fr; } .place-row { grid-template-columns: 42px minmax(0,1fr) 48px; } .place-row .amt { grid-column: 2; grid-row: 2; text-align: left; } }
+  @media (max-width:350px) { .page { padding: 18px 12px 24px; } .dock { margin: 24px -12px -24px; } dialog .actions { grid-template-columns: 1fr; } .place-row { grid-template-columns: auto minmax(0,1fr) 48px; } .place-row .amt { grid-column: 2; grid-row: 2; text-align: left; } }
   @media (prefers-reduced-motion:reduce) { *, *::before, *::after { transition: none !important; animation: none !important; } }
 </style>
 <main class="workshop">
-  <header><div class="revision">Review v1 · Tournament payouts &amp; Start</div><h1>Pick payouts, then start.</h1><p class="intro">The tournament adds one step, <b>Payout schedule</b>, between Game settings and Distribution preview. The new step comes in three layouts (A / B / C, bar at the bottom). Everything else reuses the approved cash-game screens. In-memory only; reload resets everything.</p></header>
+  <header><div class="revision">Approved · Payout step C · Prize ladder</div><h1>Pick payouts, then start.</h1><p class="intro">Approved: the <b>Payout schedule</b> step in layout <b>C · Prize ladder</b>, with the suggested preset preselected once and then changed only by the host. A and B stay switchable as archived alternatives. Everything else reuses the approved cash-game screens. In-memory only; reload resets everything.</p></header>
   <div class="layout">
     <section id="app" aria-label="Phone prototype"></section>
     <aside class="review"><details id="tools"><summary>Prototype controls &amp; scenarios</summary><div class="review-controls">
-      <label>Payout step layout<select id="variant"><option value="A">A · Preset chips</option><option value="B">B · Preset cards</option><option value="C">C · Prize ladder</option></select></label>
+      <label>Payout step layout<select id="variant"><option value="C">C · Prize ladder (approved)</option><option value="A">A · Preset chips (archived)</option><option value="B">B · Preset cards (archived)</option></select></label>
       <label>App text<select id="scale"><option value="1">100%</option><option value="1.5">150%</option><option value="2">200%</option></select></label>
       <button data-tool="reset">Reset this scenario</button>
       <button data-tool="restart">Simulate app restart (drafts stay, nothing replays)</button>
@@ -288,7 +288,7 @@
 // Nothing here is production code, the production solver, or production money arithmetic.
 const params = new URLSearchParams(location.search);
 const variants = { A: 'Preset chips', B: 'Preset cards', C: 'Prize ladder' };
-let variant = variants[params.get('variant')] ? params.get('variant') : 'A';
+let variant = variants[params.get('variant')] ? params.get('variant') : 'C';
 let scale = ['1','1.5','2'].includes(params.get('scale')) ? params.get('scale') : '1';
 if (params.get('shot')) document.body.classList.add('shot');
 const app = document.querySelector('#app'), modal = document.querySelector('#modal');
@@ -560,8 +560,8 @@ function payoutC(g, c) {
     : `<div class="ladder-hero"><span>Prize pool</span><span class="amount">${eur(p0)}</span><span class="small">${g.players.length} × ${eur(buyin(g))} · rebuys add to it</span></div>`;
   const rungs = g.payout.shares.map((raw,i) => {
     const v = c.rows[i].v || 0;
-    return `<li class="rung"><div class="rung-top"><span class="place ${i===0?'p1':''}" aria-hidden="true">${ord(i+1)}</span><strong class="rung-amt ${amts?'':'none'}" id="amt-${i}">${amts ? eur(amts[i]) : '—'}</strong>${shareInput(g,c,i,raw)}${i===last && last>0 ? ib(`Remove ${ord(i+1)} place`,'remove-place','trash') : '<span></span>'}</div>
-      <div class="rung-bar" aria-hidden="true"><span style="width:${Math.min(100, v/100)}%"></span></div><span class="error" id="err-${i}" aria-live="polite">${esc(rowError(g,c,i))}</span></li>`;
+    return `<li class="rung"><div class="rung-top"><span class="place ${i===0?'p1':''}" aria-hidden="true">${ord(i+1)}</span><strong class="rung-amt ${amts?'':'none'}" id="amt-${i}">${amts ? eur(amts[i]) : '—'}</strong>${i===last && last>0 ? ib(`Remove ${ord(i+1)} place`,'remove-place','trash') : '<span></span>'}</div>
+      <div class="rung-share"><div class="rung-bar" aria-hidden="true"><span style="width:${Math.min(100, v/100)}%"></span></div>${shareInput(g,c,i,raw)}</div><span class="error" id="err-${i}" aria-live="polite">${esc(rowError(g,c,i))}</span></li>`;
   }).join('');
   return `${hero}<button type="button" class="preset-select" data-action="preset-sheet" aria-haspopup="dialog"><span><small>Preset</small><strong>${cur ? cur.name : 'Custom'}</strong>${sug && sug!==cur ? `<small>Suggested for ${plural(g.players.length,'player')}: ${sug.name}</small>` : sug===cur ? '<small>Suggested</small>' : ''}</span>${ico('down')}</button>
     ${presetMessage(g, c)}<ol class="rungs" aria-label="Paid places">${rungs}</ol><div class="places-foot">${addPlace(g)}${totalLine(g, c)}</div>${equalHint(c)}`;
@@ -699,7 +699,7 @@ function focusHeading() { app.querySelector('h2')?.focus({ preventScroll:true })
 function announce(t) { document.querySelector('#announcement').textContent = t; }
 function updateURL() {
   const u = new URLSearchParams();
-  u.set('walk', scenario); if (variant !== 'A') u.set('variant', variant); if (scale !== '1') u.set('scale', scale); if (params.get('shot')) u.set('shot', '1');
+  u.set('walk', scenario); if (variant !== 'C') u.set('variant', variant); if (scale !== '1') u.set('scale', scale); if (params.get('shot')) u.set('shot', '1');
   history.replaceState(null, '', `?${u}`);
 }
 function go(st) {
