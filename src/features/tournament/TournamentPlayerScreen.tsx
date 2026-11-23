@@ -40,6 +40,8 @@ export function TournamentPlayerScreen({ gameId, participantId = '' }: { gameId:
         onBack={() => router.back()}
         summaryExtra={view.result ? <TournamentResultCard result={view.result} /> : null}
         sectionsExtra={backIn ? <BackInButton name={view.name} onPress={() => setBackInOpen(true)} /> : null}
+        // Tournaments have no chip counts; the rebuy button comes with tournament rebuys (ticket 27).
+        playing={{ statusText: null, count: false, rebuy: false }}
         // Cash games only.
         onCountFinalChips={() => undefined}
         onCorrectResult={() => undefined}

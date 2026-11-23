@@ -53,8 +53,23 @@ export interface PlayerPageProps {
   summaryExtra?: ReactNode;
   /** Slot for extra sections after Buy-ins (tournament: "Back in the game…"). */
   sectionsExtra?: ReactNode;
+  /**
+   * What the page offers a player without a result. Default: the cash-game status line with Count
+   * final chips and + Rebuy. Tournaments have no chip counts: they pass their own status line (or
+   * none) and whether a rebuy is on offer.
+   */
+  playing?: PlayingOptions;
   /** Development fixtures: a popup open on load. */
   initialDialog?: PlayerPageDialog;
+}
+
+export interface PlayingOptions {
+  /** Line under the name; `null` shows none. */
+  statusText: string | null;
+  /** Count final chips / Resume count. */
+  count: boolean;
+  /** + Rebuy. */
+  rebuy: boolean;
 }
 
 const OUTCOME = { gain: 'Won', loss: 'Lost', even: 'Break-even' } as const;
@@ -78,6 +93,7 @@ export function PlayerPage({
   onReturnToPlay,
   summaryExtra,
   sectionsExtra,
+  playing,
   initialDialog,
 }: PlayerPageProps) {
   const [dialog, setDialog] = useState<PlayerPageDialog | null>(initialDialog ?? null);
@@ -85,6 +101,13 @@ export function PlayerPage({
   const busy = useRef(false);
   const editable = data.phase === 'inProgress';
   const { result } = data;
+  const statusText = playing
+    ? playing.statusText
+    : data.countDraft
+      ? 'Count started, not confirmed yet.'
+      : 'Still playing.';
+  const showCount = playing?.count ?? true;
+  const showRebuy = playing?.rebuy ?? true;
 
   const run = async (operation: () => Promise<ConfirmOutcome>) => {
     if (busy.current) return;
@@ -114,9 +137,9 @@ export function PlayerPage({
           }
           title={data.name}
         >
-          {result ? null : (
+          {result || !statusText ? null : (
             <Text variant="supporting" tone="supporting">
-              {data.countDraft ? 'Count started, not confirmed yet.' : 'Still playing.'}
+              {statusText}
             </Text>
           )}
         </ScreenHeader>
@@ -132,19 +155,23 @@ export function PlayerPage({
         ) : (
           <>
             {summaryExtra}
-            {editable ? (
+            {editable && (showCount || showRebuy) ? (
               <View style={styles.actions}>
-                <View style={styles.action}>
-                  <Button
-                    label={data.countDraft ? 'Resume count' : 'Count final chips'}
-                    variant="primary"
-                    fullWidth
-                    onPress={onCountFinalChips}
-                  />
-                </View>
-                <View style={styles.action}>
-                  <Button label="Rebuy" icon="plus" fullWidth accessibilityLabel={`Rebuy for ${data.name}`} onPress={onRebuy} />
-                </View>
+                {showCount ? (
+                  <View style={styles.action}>
+                    <Button
+                      label={data.countDraft ? 'Resume count' : 'Count final chips'}
+                      variant="primary"
+                      fullWidth
+                      onPress={onCountFinalChips}
+                    />
+                  </View>
+                ) : null}
+                {showRebuy ? (
+                  <View style={styles.action}>
+                    <Button label="Rebuy" icon="plus" fullWidth accessibilityLabel={`Rebuy for ${data.name}`} onPress={onRebuy} />
+                  </View>
+                ) : null}
               </View>
             ) : null}
           </>
