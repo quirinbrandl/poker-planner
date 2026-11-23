@@ -2,8 +2,8 @@ import { router, useLocalSearchParams } from 'expo-router';
 import { useState } from 'react';
 
 import { GameActionsSheet } from '@/features/game/GameActionsSheet';
-import { formatShortDateTime, modeLabel } from '@/features/shared/format';
-import { countHref, playHref, resultsHref } from '@/features/shared/routes';
+import { workspaceContext } from '@/features/game/useWorkspace';
+import { countHref, paymentsHref, playHref, resultsHref } from '@/features/shared/routes';
 import { useCashPlayer, useGame } from '@/state';
 import { Screen } from '@/ui';
 
@@ -11,30 +11,39 @@ import { PlayerPage } from './PlayerPage';
 
 const NOT_YET = Promise.resolve({ kind: 'rejected' } as const);
 
-/** The cash player page, connected to game management. Opened from Results with `?from=results`. */
+const BACK = {
+  play: { label: 'Back to Play', href: playHref },
+  results: { label: 'Back to Results', href: resultsHref },
+  payments: { label: 'Back to Payments', href: paymentsHref },
+} as const;
+
+/**
+ * The cash player page, connected to game management. Opened from Results with `?from=results`,
+ * from Payments with `?from=payments` (otherwise from Play). Completed: read-only.
+ */
 export function CashPlayerScreen({ gameId, participantId = '' }: { gameId: string; participantId?: string }) {
   const { from } = useLocalSearchParams<{ from?: string }>();
   const game = useGame(gameId);
   const player = useCashPlayer(gameId, participantId);
   const [actionsOpen, setActionsOpen] = useState(false);
-  const fromResults = from === 'results';
+  const origin = BACK[from === 'results' || from === 'payments' ? from : 'play'];
 
   if (!game || !player) return <Screen />;
 
   const back = () => {
     if (router.canGoBack()) router.back();
-    else router.replace(fromResults ? resultsHref(gameId) : playHref(gameId));
+    else router.replace(origin.href(gameId));
   };
 
   return (
     <>
       <PlayerPage
         data={{
-          phase: 'inProgress',
-          context: `${modeLabel(game.mode)} · ${formatShortDateTime(game.createdAt)}`,
+          phase: player.phase,
+          context: workspaceContext(game),
           playerId: player.playerId,
           name: player.name,
-          backLabel: fromResults ? 'Back to Results' : 'Back to Play',
+          backLabel: origin.label,
           result: player.result,
           countDraft: player.countDraft,
           buyInsTotalText: player.buyInsTotalText,

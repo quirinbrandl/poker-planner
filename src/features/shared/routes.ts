@@ -19,18 +19,23 @@ export function planningStepHref(gameId: string, step: StepId): Href {
   return `/game/${gameId}/planning/${STEP_SEGMENT[step]}` as Href;
 }
 
-/** The workspace tabs of a started game: Play, Results, Game details, Payments. */
+/** Where a workspace was opened from: `history` makes its back control lead to History. */
+export type WorkspaceFrom = 'history';
+
+const fromQuery = (from?: WorkspaceFrom) => (from ? `?from=${from}` : '');
+
+/** The workspace tabs of a started game: Play, Results, Game details, Payments (Completed). */
 export function playHref(gameId: string): Href {
   return `/game/${gameId}/play` as Href;
 }
-export function resultsHref(gameId: string): Href {
-  return `/game/${gameId}/results` as Href;
+export function resultsHref(gameId: string, from?: WorkspaceFrom): Href {
+  return `/game/${gameId}/results${fromQuery(from)}` as Href;
 }
-export function detailsHref(gameId: string): Href {
-  return `/game/${gameId}/details` as Href;
+export function detailsHref(gameId: string, from?: WorkspaceFrom): Href {
+  return `/game/${gameId}/details${fromQuery(from)}` as Href;
 }
-export function paymentsHref(gameId: string): Href {
-  return `/game/${gameId}/payments` as Href;
+export function paymentsHref(gameId: string, from?: WorkspaceFrom): Href {
+  return `/game/${gameId}/payments${fromQuery(from)}` as Href;
 }
 
 /** One player's page: every record of that player. */
@@ -71,9 +76,11 @@ export function locationHref(location: WorkingLocation): Href {
     case 'play':
       return playHref(location.gameId);
     case 'results':
-      return resultsHref(location.gameId);
+      return resultsHref(location.gameId, location.from);
     case 'details':
-      return detailsHref(location.gameId);
+      return detailsHref(location.gameId, location.from);
+    case 'payments':
+      return paymentsHref(location.gameId, location.from);
     case 'history':
       return '/history' as Href;
     case 'savedPlayers':
