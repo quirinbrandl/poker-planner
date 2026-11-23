@@ -84,11 +84,12 @@ failed Continue). Once shown, keep it updating while the host corrects it.
 
 | Operation | Result |
 | --- | --- |
-| `games.list(): GameCard[]` | In progress first, then Planning, each newest-created first. Completed games are not listed (History comes later). |
+| `games.list(): GameCard[]` | In progress first, then Planning, each newest-created first. Completed games are not listed (they are on History). |
+| `games.history(): HistoryGameView[]` | Completed games, most recently finished first (`useHistory`; its length is the Games row's "3 games"). See [Completion](#completion-calculate-payments-payments-reopen-and-history). |
 | `games.get(gameId): GameCard \| null` | |
 | `games.create(mode)` | `accepted { gameId, location }`. Choosing the mode creates the autosaved game and opens Players. |
-| `games.open(gameId)` | `accepted { location }` (Planning: its last visited step; In progress: Play) \| `rejected gameNotFound`. Records the working location. Opening a tournament onto Payout schedule preselects like the wizard does. |
-| `games.delete(gameId)` | `accepted` \| `rejected gameNotFound`. Permanent; confirm in the screen first. Touches only that game. |
+| `games.open(gameId)` | `accepted { location }` (Planning: its last visited step; In progress: Play, a reopened game Results; Completed: `{ kind: 'payments', gameId, from: 'history' }`) \| `rejected gameNotFound`. Records the working location. Opening a tournament onto Payout schedule preselects like the wizard does. |
+| `games.delete(gameId)` | `accepted` \| `rejected gameNotFound`. Permanent; confirm in the screen first. Touches only that game; a location in it falls back to History (Completed) or Games. |
 
 ```ts
 interface GameCard {
@@ -96,6 +97,8 @@ interface GameCard {
   createdAt: string;                 // ISO 8601; format it for the card
   participantNames: string[];        // captured names, joining order (In progress: everyone who joined)
   startedAt: string | null;          // In progress / Completed: ISO 8601 of Start
+  finishedAt: string | null;         // Completed: ISO 8601 of Calculate Payments
+  reopened: boolean;                 // In progress after Reopen, until Payments are calculated again
   lastStep: StepId | null; lastStepTitle: string | null;   // Planning only
 }
 ```
@@ -376,7 +379,8 @@ by Return to Planning and counted in its confirmation.
 
 ### Cash-game final chip counts, results and accounting status
 
-Reads (memoized; `null` unless the game is an In progress cash game with that participant):
+Reads (memoized; `null` unless the game is a started cash game with that participant; a Completed
+game reads read-only with `phase: 'completed'` and its allocated cents, see Completion):
 `play.getResults(gameId): CashResultsView` (`useCashResults`),
 `play.getCountEditor(gameId, participantId, { showErrors? }): CountEditorView` (`useCountEditor`;
 also `null` once the participant has a result), `play.getCashPlayer(gameId, participantId):
@@ -422,6 +426,59 @@ CashPlayerView` (`useCashPlayer`). The screen types re-export the plain data typ
   stack. `undo`, `returnToPlay`, `addedLater`, `corrected` and `correctionDraft` are filled by the
   correction work; `actions.countFinalChips` is true until a result exists.
 
+### Completion: Calculate Payments, Payments, Reopen and History
+
+| Operation | Result |
+| --- | --- |
+| `play.calculatePayments(gameId, { confirmed? })` | `needsConfirmation { confirmation: CalculatePaymentsConfirmation }` until `confirmed` \| `accepted { location: { kind: 'payments', gameId } }` \| `rejected gameNotFound \| notInProgress \| gameCompleted \| notReady` (`notReady`: the one reason, e.g. "Count everyone first." / "Find the missing chips first."). |
+| `play.reopen(gameId, { confirmed? })` | `needsConfirmation { confirmation: { kind: 'reopen', mode } }` until `confirmed` \| `accepted { location: { kind: 'results', gameId } }` \| `rejected gameNotFound \| notCompleted`. |
+| `play.getPayments(gameId): PaymentsView \| null` | Completed only (`usePayments`). |
+| `games.history(): HistoryGameView[]` | Completed games, newest finished first (`useHistory`). |
+
+```ts
+interface CalculatePaymentsConfirmation { kind: 'calculatePayments'; readyLine: 'All 6 counted · 1,600 chip units'; facts: CalculateFact[] /* tournament */ }
+interface PaymentsView {
+  gameId; mode: 'cash' | 'tournament'; finishedAt: string;   // ISO 8601; the screen adds the context line
+  summary: { kind: 'payments'; countText: '3 payments'; totalText: 'EUR 21.00 in total';
+             payments: { id; fromName: 'Bob'; toName: 'Clara'; amountText: 'EUR 8.00' }[] }
+         | { kind: 'noPayments' };                             // No payments needed · Everyone broke even.
+  balances: { participantId; name; placeLabel: null | '1st'; placeHighlight;
+              lines: ['Final result EUR 33.00', 'Buy-ins EUR 20.00']; balanceText: '+EUR 13.00';
+              direction: 'gain' | 'loss' | 'even' }[];         // joining order (cash)
+}
+interface HistoryGameView {
+  gameId; mode; participantNames: string[];                   // captured names, never live saved players
+  createdAt: string; finishedAt: string;                       // ISO 8601; the card formats "23 Nov 2026 · 19:30–23:41"
+  facts: { label?: string; value: string }[];                  // Buy-ins EUR 160.00 · 3 payments (or No payments needed) · Top Alice +EUR 13.00
+}
+```
+
+- Completion is explicit: only a confirmed `calculatePayments` completes a game, and it validates
+  again at confirm time (cash: every player has a confirmed result and counted units equal the
+  cumulative issued units exactly; the reason is the one `getResults` shows). Accepted, one commit
+  allocates every exact result to whole cents (`allocateCashResults`: floors, then remaining cents
+  by largest discarded remainder, joining order breaking ties), stores each participant's final
+  result, contributions and balance (`final − contributions`, summing to zero) and the fewest direct
+  payments (`settlePayments`), with the finishing time, as `GameDocument.completion`, and makes the
+  game Completed. Show "✓ Game finished" and its Payments. Payments are instructions only; nothing
+  records that money changed hands.
+- Each mode supplies its final money results (`completion/modes.ts`: cash = allocated chip value;
+  tournament completion, a later task, = payout by finishing place) plus its Balances lines and
+  History facts; everything else is shared.
+- Completed is read-only. Every play operation that is not a `get…` read answers
+  `rejected gameCompleted` ("This game is completed. To change something, reopen it from ⋯.") —
+  centrally in `play/index.ts`, also for operations added later, provided they take the game id as
+  their first argument; a write to a Completed game through the play runtime never applies. Planning
+  edits answer `setupLocked`, Return to Planning `gameCompleted` (reopen first). Reads stay:
+  `getResults` / `getCashPlayer` give `phase: 'completed'`, the allocated cents (`+EUR 2.50`, chip
+  value `EUR 12.51`) instead of exact amounts, `calculatePayments.available: false` and
+  `actions.countFinalChips: false`; `getCountEditor` and `getView` give `null`.
+- Reopen keeps every record (setup, results, buy-ins), withdraws the stored settlement and finishing
+  time (nothing stale is kept), sets `PlayRecord.reopenedAt` and makes the game In progress again:
+  `getResults().reopened` and `GameCard.reopened` are true until Payments are calculated again; the
+  game leaves History and opens on Results from Games. Show "✓ Game reopened". Calculating again
+  without changes gives identical Payments.
+
 ## Saved players
 
 | Operation | Result |
@@ -456,12 +513,15 @@ fine). Template rows follow the same rules as a game's chip set.
 
 `location.get(): WorkingLocation` is where to reopen the app:
 `{ kind: 'games' | 'history' | 'savedPlayers' | 'templates' }`, `{ kind: 'planning', gameId, step }`
-or `{ kind: 'play' | 'results' | 'details', gameId }` (`locationHref` maps it to a route). It falls
-back to Games when the game is gone and to the game's current workspace when its phase changed
-(Planning: its last step; In progress: Play). Reading it never applies anything. Call
-`location.set({ kind: ... })` when the host navigates to Games, History, Saved players, Chip set
-templates or a started game's tab (`rejected gameNotFound | wrongPhase`); wizard operations, Start,
-Return to Planning and `games.open` record their locations.
+or `{ kind: 'play' | 'results' | 'details' | 'payments', gameId, from?: 'history' }` (`payments`:
+Completed only; `from: 'history'` when the game was opened from History, so back leads there;
+`locationHref` maps it to a route with `?from=history`). It falls back to History (opened from
+there) or Games when the game is gone and to the game's current workspace when its phase changed
+(Planning: its last step; In progress: Play, Payments → Results, `from` dropped; Completed: Play →
+Payments). Reading it never applies anything. Call `location.set({ kind: ... })` when the host
+navigates to Games, History, Saved players, Chip set templates or a started game's tab
+(`rejected gameNotFound | wrongPhase`); wizard operations, Start, Return to Planning, Calculate
+Payments, Reopen and `games.open` record their locations.
 Editors and pickers are not locations: after restart the host lands on the screen they came from.
 
 ## Examples
