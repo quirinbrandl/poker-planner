@@ -123,13 +123,13 @@ export function TournamentResults({
             variant="primary"
             fullWidth
             unavailable={calculate.kind === 'blocked'}
-            accessibilityHint={calculate.kind === 'blocked' ? 'Record eliminations until one player is left.' : undefined}
+            accessibilityHint={calculate.kind === 'blocked' ? calculate.message : undefined}
             onUnavailablePress={() => setBlockedOpen(true)}
             onPress={onCalculatePayments}
           />
           {calculate.kind === 'blocked' ? (
             <Text variant="supporting" align="center">
-              Record eliminations until one player is left.
+              {calculate.message}
             </Text>
           ) : null}
           {data.reopened ? (
@@ -147,7 +147,7 @@ export function TournamentResults({
       >
         <Text>
           {calculate.kind === 'blocked'
-            ? `${calculate.stillPlayingText} still playing. Record eliminations until one player is left.`
+            ? `${calculate.stillPlayingText} still playing. ${calculate.message}`
             : ''}
         </Text>
       </Dialog>
