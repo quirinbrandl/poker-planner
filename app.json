@@ -1,0 +1,46 @@
+{
+  "expo": {
+    "name": "Poker Planner",
+    "slug": "poker-planner",
+    "version": "0.1.0",
+    "orientation": "portrait",
+    "icon": "./assets/images/icon.png",
+    "scheme": "pokerplanner",
+    "userInterfaceStyle": "dark",
+    "backgroundColor": "#111920",
+    "ios": {
+      "supportsTablet": false,
+      "bundleIdentifier": "com.quirinbrandl.pokerplanner"
+    },
+    "android": {
+      "package": "com.quirinbrandl.pokerplanner",
+      "allowBackup": false,
+      "adaptiveIcon": {
+        "backgroundColor": "#111920",
+        "foregroundImage": "./assets/images/android-icon-foreground.png",
+        "monochromeImage": "./assets/images/android-icon-monochrome.png"
+      },
+      "predictiveBackGestureEnabled": false
+    },
+    "web": {
+      "output": "single",
+      "favicon": "./assets/images/favicon.png"
+    },
+    "plugins": [
+      "expo-router",
+      [
+        "expo-splash-screen",
+        {
+          "backgroundColor": "#111920",
+          "image": "./assets/images/splash-icon.png",
+          "imageWidth": 76
+        }
+      ],
+      "expo-sqlite"
+    ],
+    "experiments": {
+      "typedRoutes": true,
+      "reactCompiler": true
+    }
+  }
+}
