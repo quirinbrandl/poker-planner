@@ -177,6 +177,44 @@ describe('tournament late entry', () => {
   });
 });
 
+describe('tournament Return to Planning', () => {
+  it('keeps every player with their buy-in, late arrivals included, and clears rebuys, eliminations and stacks', async () => {
+    const gameId = await tournament();
+    await lateEntry(gameId, await savedPlayer('Nora'));
+    await rebuy(gameId, 'Bob');
+    await out(gameId, 'Felix', 'Nora');
+    const asked = expectStatus(await app.play.returnToPlanning(gameId), 'needsConfirmation');
+    expect(asked.confirmation.keeps.text).toBe('7 players · buy-ins · settings · payout schedule');
+    expectStatus(await app.play.returnToPlanning(gameId, { confirmed: true }), 'accepted');
+    app = await harness.restart(app);
+
+    const plan = app.planning.getView(gameId)!;
+    expect(plan.players.participants.map((p) => p.name)).toEqual([...SIX, 'Nora']);
+    expect(plan.settings).toMatchObject({ buyIn: { text: '20' }, reserve: { mode: 'automatic' } });
+    expect(plan.payoutSchedule.places.map((p) => p.share.text)).toEqual(['70', '30']);
+    expect(app.play.getView(gameId)).toBeNull();
+
+    // Starting again: one buy-in per player, no rebuys or eliminations, late entry open.
+    await startPlannedGame(app, gameId);
+    app = await harness.restart(app);
+    expect(tPlay(gameId).prizePool).toMatchObject({ amountText: 'EUR 140.00', detail: '7 buy-ins' });
+    expect(tPlay(gameId).lateEntry).toEqual({ status: 'open' });
+    expect(tResults(gameId).finishers).toEqual([]);
+    expect(app.play.getView(gameId)!.totals.stacks).toBe(7);
+  });
+
+  it('is rejected for a Completed tournament until it is reopened', async () => {
+    const gameId = await tournament(['Cleo', 'Dan']);
+    await out(gameId, 'Dan');
+    await calculate(gameId);
+    const refused = await expectUnchanged(gameId, () => app.play.returnToPlanning(gameId, { confirmed: true }));
+    expect(refused).toMatchObject({ status: 'rejected' });
+    expectStatus(await app.play.reopen(gameId, { confirmed: true }), 'accepted');
+    expectStatus(await app.play.returnToPlanning(gameId, { confirmed: true }), 'accepted');
+    expect(app.games.get(gameId)).toMatchObject({ phase: 'planning' });
+  });
+});
+
 describe('tournament rebuys', () => {
   it('lets a player still in rebuy without limit; each raises the pool and payouts but adds no player or place', async () => {
     const gameId = await tournament();
