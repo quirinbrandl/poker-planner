@@ -1,15 +1,9 @@
 import { useLocalSearchParams } from 'expo-router';
 
-import { Text } from '@/ui';
+import { PayoutsStep } from './payouts/PayoutsStep';
 
-import { PlanningStepFrame } from './PlanningStepFrame';
-
-/** Placeholder until this wizard step is built. */
+/** Tournament Planning: Payout schedule (C · Prize ladder). */
 export default function PayoutsStepScreen() {
   const { gameId } = useLocalSearchParams<{ gameId: string }>();
-  return (
-    <PlanningStepFrame gameId={gameId} step="payouts">
-      <Text tone="supporting">This step is not built yet.</Text>
-    </PlanningStepFrame>
-  );
+  return <PayoutsStep gameId={gameId} />;
 }

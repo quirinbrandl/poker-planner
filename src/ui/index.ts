@@ -23,6 +23,7 @@ export { StepperField, type StepperFieldProps } from './controls/Stepper';
 export { RadioRow, RadioGroup, type RadioRowProps, type RadioGroupProps } from './controls/RadioRow';
 export { CheckboxRow, type CheckboxRowProps } from './controls/CheckboxRow';
 export { SegmentedTabs, type SegmentedTabsProps, type TabItem } from './controls/SegmentedTabs';
+export { SelectButton, type SelectButtonProps } from './controls/SelectButton';
 export {
   StepLink,
   StepList,
@@ -36,11 +37,14 @@ export {
 export { Dialog, type DialogProps, type DialogAction } from './overlays/Dialog';
 export { focusView } from './overlays/focus';
 export { BottomSheet, type BottomSheetProps, type SheetAction } from './overlays/BottomSheet';
+export { ChoiceSheet, type ChoiceSheetProps, type SheetChoice } from './overlays/ChoiceSheet';
 export { ToastProvider, useToast, TOAST_DURATION_MS, type ToastApi, type ToastTone } from './overlays/Toast';
 
 export { Badge, BadgeRow, type BadgeProps } from './status/Badge';
+export { PlaceBadge, type PlaceBadgeProps } from './status/PlaceBadge';
 export { Avatar, type AvatarProps } from './status/Avatar';
 export { ProgressBar, type ProgressBarProps } from './status/ProgressBar';
+export { ShareBar, type ShareBarProps } from './status/ShareBar';
 export { StatusCard, type StatusCardProps } from './status/StatusCard';
 export { MetricTile, MetricStrip, type MetricTileProps } from './status/MetricTile';
 export { InlineNotice, type InlineNoticeProps, type NoticeTone } from './status/InlineNotice';
