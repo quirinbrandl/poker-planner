@@ -1,0 +1,831 @@
+<!doctype html>
+<html lang="en">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="icon" href="data:,">
+<title>Tournament payouts & Start · Review v1</title>
+<style>
+  * { box-sizing: border-box; }
+  :root { color-scheme: dark; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; background: #0b1117; color: #f1f4f5; --accent: #c9b5ff; --on-accent: #2b1e45; --tint: #322b45; --warn: #e2b857; }
+  body { margin: 0; padding: 24px 16px 110px; }
+  button, input, select { font: inherit; }
+  button, summary, label.choice { -webkit-tap-highlight-color: transparent; }
+  button { min-height: 48px; min-width: 48px; padding: 10px 14px; border: 1px solid #7c90a0; border-radius: 14px; background: #1e2a34; color: #f1f4f5; line-height: 1.35; cursor: pointer; }
+  button:active { filter: brightness(.88); }
+  button[aria-disabled="true"] { color: #b3c0ca; background: #26313b; border-color: #4f5f6c; border-style: dashed; cursor: default; }
+  :focus-visible { outline: 3px solid var(--accent); outline-offset: 3px; }
+  select { min-height: 48px; max-width: 100%; border: 1px solid #7c90a0; border-radius: 12px; background: #111920; color: #f1f4f5; padding: 12px; }
+  label { display: grid; gap: 6px; }
+  h1, h2, h3, p { margin-top: 0; }
+  p { line-height: 1.5; }
+  a { color: var(--accent); }
+  .workshop { max-width: 1000px; margin: auto; }
+  .workshop > header { max-width: 800px; margin: 0 auto 24px; }
+  .workshop h1 { font-size: 28px; letter-spacing: -.04em; margin-bottom: 8px; }
+  .revision { display: inline-block; padding: 6px 12px; border: 1px solid var(--accent); border-radius: 12px; color: var(--accent); font-size: 14px; margin-bottom: 12px; }
+  .intro { color: #b3c0ca; font-size: 14px; }
+  .layout { display: grid; grid-template-columns: minmax(0,430px) minmax(0,1fr); gap: 28px; align-items: start; }
+  #app, dialog { --scale: 1; font-size: calc(16px * var(--scale)); line-height: 1.5; overflow-wrap: anywhere; }
+  #app { min-width: 0; min-height: 800px; background: #111920; border: 1px solid #364653; border-radius: 26px; box-shadow: 0 20px 70px #0004; overflow: clip; }
+  .page { padding: 20px 18px 28px; }
+  #app h2 { font-size: 2.35em; letter-spacing: -.045em; line-height: 1.08; margin-bottom: 12px; }
+  #app h3 { font-size: 1.1em; letter-spacing: -.02em; margin-bottom: 8px; }
+  .topline { display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 8px; margin-bottom: 10px; }
+  .row-heading { display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 6px 10px; }
+  #app .row-heading h3 { margin: 0; }
+  .context, .small { color: #b3c0ca; font-size: .78em; }
+  .context { margin-bottom: 8px; }
+  .quiet { background: transparent; border-color: transparent; }
+  .primary { background: var(--accent); color: var(--on-accent); border-color: var(--accent); border-radius: 100px; font-weight: 700; }
+  .primary[aria-disabled="true"] { background: #3a3550; color: #9d93b8; border-color: #4f4868; border-style: solid; }
+  .danger { background: #3d2427; color: #ffb3aa; border-color: #ffb3aa; }
+  .full { width: 100%; }
+  .badge { display: inline-block; padding: 3px 9px; border: 1px solid #7c90a0; border-radius: 100px; font-size: .71em; margin: 0 4px 6px 0; }
+  .badge.ok { background: #20372b; color: #b8dfbd; border-color: #b8dfbd; }
+  .badge.info { background: var(--tint); color: var(--accent); border-color: var(--accent); }
+  .badge.err { background: #3d2427; color: #ffb3aa; border-color: #ffb3aa; }
+  .step-button { margin: 0 0 14px; padding: 8px 0; text-align: left; font-size: .8em; text-decoration: underline; text-underline-offset: 4px; }
+  .card { background: #1e2a34; border: 1px solid #364653; border-radius: 22px; padding: 16px; margin: 14px 0; min-width: 0; }
+  .nav { display: grid; grid-template-columns: 1fr 1fr 1.4fr; gap: 4px; margin: 12px 0 22px; padding: 4px; border: 1px solid #364653; border-radius: 17px; }
+  .nav button { padding: 9px 5px; background: transparent; border-color: transparent; font-size: .78em; }
+  .nav [aria-current="page"] { background: var(--tint); color: var(--accent); border-color: var(--accent); }
+  .actions { display: flex; flex-wrap: wrap; gap: 8px; }
+  .actions .primary { flex: 1; }
+  .dock { margin: 24px -18px -28px; padding: 16px 18px 18px; border-top: 1px solid #364653; background: #1e2a34; }
+  .dock p { font-size: .75em; color: #b3c0ca; margin-bottom: 10px; }
+  .stack { display: grid; gap: 8px; }
+  .ico { width: 1.2em; height: 1.2em; flex-shrink: 0; fill: none; stroke: currentColor; stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round; vertical-align: middle; }
+  .with-icon { display: inline-flex; align-items: center; justify-content: center; gap: 8px; }
+  .icon-button { display: inline-grid; place-items: center; padding: 10px; }
+  .toast { margin: 0 0 14px; padding: 9px 14px; border-radius: 100px; background: #20372b; color: #b8dfbd; font-size: .85em; font-weight: 650; width: max-content; max-width: 100%; }
+  .sr-only { position: absolute; width: 1px; height: 1px; padding: 0; overflow: hidden; clip-path: inset(50%); white-space: nowrap; }
+  [hidden] { display: none !important; }
+  /* Fields (approved Planning treatment) */
+  .field-group { background: #1e2a34; border: 1px solid #364653; border-radius: 22px; padding: 0 18px; margin: 16px 0; }
+  .field { display: block; min-width: 0; margin: 20px 0; }
+  .field-title { display: flex; align-items: center; gap: 8px; font-size: .9em; font-weight: 650; margin-bottom: 8px; }
+  .field-title .ico { color: #b3c0ca; }
+  .input-wrap { display: flex; align-items: center; border: 1px solid #7c90a0; border-radius: 16px; overflow: hidden; background: #111920; min-width: 0; }
+  .input-wrap:focus-within { outline: 3px solid var(--accent); outline-offset: 2px; }
+  .input-wrap:has([aria-invalid="true"]) { border: 2px solid #ffb3aa; }
+  input[type="text"] { min-height: 52px; min-width: 0; width: 100%; padding: 10px 12px; background: transparent; border: 0; color: #f1f4f5; font-size: 1.1em; font-variant-numeric: tabular-nums; }
+  .input-wrap input:focus { outline: none; }
+  .input-wrap > span { padding: 0 12px 0 0; font-size: .8em; color: #b3c0ca; flex-shrink: 0; }
+  .hint { display: block; font-size: .78em; color: #b3c0ca; margin-top: 7px; }
+  .error { display: block; color: #ffb3aa; font-size: .8em; margin-top: 6px; }
+  .error:empty, .hint:empty { display: none; }
+  fieldset { border: 0; min-width: 0; margin: 20px 0; padding: 0; }
+  legend { font-size: .9em; font-weight: 650; margin-bottom: 10px; padding: 0; }
+  .choice { display: flex; align-items: flex-start; gap: 10px; min-height: 54px; padding: 14px; margin-bottom: 8px; border: 1px solid #7c90a0; background: #1e2a34; border-radius: 18px; cursor: pointer; }
+  .choice:has(:checked) { border-color: var(--accent); box-shadow: inset 0 0 0 1px var(--accent); background: var(--tint); }
+  .choice input { width: 20px; height: 20px; margin: .2em 0 0; flex-shrink: 0; accent-color: var(--accent); }
+  .choice strong { display: block; font-size: .9em; }
+  .choice small { display: block; color: #b3c0ca; font-size: .76em; margin-top: 3px; }
+  /* Players / chip set stubs */
+  .roster { list-style: none; padding: 0; margin: 12px 0; }
+  .player { display: flex; align-items: center; gap: 10px; border-bottom: 1px solid #364653; padding: 6px 0; }
+  .player-name { flex: 1; min-width: 0; font-weight: 600; }
+  .initial { width: 40px; height: 40px; flex-shrink: 0; border-radius: 50%; display: grid; place-items: center; font-size: .8em; background: var(--tint); color: var(--accent); }
+  .chip-symbol { width: 28px; height: 28px; flex-shrink: 0; display: block; }
+  .bank-strip { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 10px; }
+  .bank-pill { display: inline-flex; align-items: center; gap: 8px; padding: 6px 10px 6px 6px; border-radius: 100px; background: #111920; border: 1px solid #364653; font-size: .82em; font-variant-numeric: tabular-nums; }
+  /* Prize pool line on the payout step */
+  .pool { display: flex; align-items: baseline; flex-wrap: wrap; gap: 2px 10px; padding: 14px 16px; margin: 4px 0 18px; border: 1px solid #364653; border-radius: 18px; background: #18232c; }
+  .pool > span:first-child { font-size: .72em; text-transform: uppercase; letter-spacing: .07em; color: #b3c0ca; width: 100%; }
+  .pool strong { font-size: 1.6em; letter-spacing: -.04em; font-variant-numeric: tabular-nums; }
+  .pool .small { width: 100%; }
+  .pool.missing strong { color: #b3c0ca; }
+  .pool .link { padding: 4px 0; min-height: 44px; color: var(--accent); background: none; border: 0; text-decoration: underline; text-underline-offset: 3px; font-size: .8em; }
+  /* A · preset chips */
+  .preset-chips { display: flex; flex-wrap: wrap; gap: 8px; }
+  .preset-chip { border-radius: 100px; padding: 8px 14px; display: inline-grid; justify-items: center; line-height: 1.2; }
+  .preset-chip small { display: block; font-size: .68em; color: var(--accent); font-weight: 650; margin-top: 2px; }
+  .preset-chip[aria-pressed="true"] { background: var(--tint); color: var(--accent); border-color: var(--accent); box-shadow: inset 0 0 0 1px var(--accent); font-weight: 650; }
+  .preset-chip[aria-disabled="true"] small { color: #8d9aa5; }
+  /* Place rows (shared editor) */
+  .places { list-style: none; margin: 0; padding: 0; }
+  .place-row { display: grid; grid-template-columns: 46px minmax(0,1fr) minmax(5.5em,auto) 48px; align-items: center; gap: 8px; padding: 8px 0; border-bottom: 1px solid #2e3c48; }
+  .place-row .input-wrap { max-width: 9em; }
+  .place-row input[type="text"] { min-height: 48px; font-size: 1.05em; }
+  .place-row .error { grid-column: 2 / -1; margin-top: 0; }
+  .place { display: inline-grid; place-items: center; width: 42px; height: 42px; border-radius: 50%; background: #111920; border: 1px solid #637084; font-size: .78em; font-weight: 750; font-variant-numeric: tabular-nums; }
+  .place.p1 { border-color: var(--accent); color: var(--accent); }
+  .amt { text-align: right; font-weight: 700; font-variant-numeric: tabular-nums; white-space: nowrap; }
+  .amt.none { color: #7c90a0; font-weight: 500; }
+  .places-foot { display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 8px; margin-top: 10px; }
+  .total { margin: 0; font-weight: 700; font-variant-numeric: tabular-nums; }
+  .total.ok { color: #b8dfbd; }
+  .total.open { color: var(--warn); }
+  .total.bad { color: #ffb3aa; }
+  .places-msg { display: flex; flex-wrap: wrap; align-items: center; gap: 4px 10px; color: #ffb3aa; font-size: .85em; margin: 0 0 8px; padding: 10px 0; border-bottom: 1px solid #2e3c48; }
+  .places-msg button { min-height: 44px; padding: 6px 12px; font-size: .9em; color: var(--accent); border-color: var(--accent); background: var(--tint); border-radius: 100px; }
+  .rule-hint { font-size: .76em; color: #b3c0ca; margin: 12px 0 0; }
+  /* B · preset cards */
+  .preset-card { display: block; padding: 14px; margin-bottom: 10px; border: 1px solid #4f5f6c; border-radius: 20px; background: #1e2a34; }
+  .pc-row { display: grid; grid-template-columns: 22px minmax(0,1fr); gap: 4px 12px; cursor: pointer; }
+  .preset-card:has(.pc-row :checked) { border-color: var(--accent); box-shadow: inset 0 0 0 1px var(--accent); background: linear-gradient(180deg, #2c2740, #1e2a34); }
+  .preset-card:has(:disabled) { cursor: default; opacity: .62; }
+  .preset-card input { width: 20px; height: 20px; margin: .15em 0 0; accent-color: var(--accent); }
+  .preset-card .pc-head { display: flex; justify-content: space-between; align-items: baseline; flex-wrap: wrap; gap: 4px 8px; }
+  .preset-card .pc-head strong { font-size: 1em; }
+  .preset-card .split { font-variant-numeric: tabular-nums; color: #b3c0ca; font-size: .85em; }
+  .preset-card .tag { font-size: .7em; font-weight: 700; color: var(--accent); border: 1px solid var(--accent); border-radius: 100px; padding: 1px 8px; background: var(--tint); }
+  .preset-card .pc-body { display: block; min-width: 0; }
+  .preset-card .pc-amts { display: flex; flex-wrap: wrap; gap: 2px 12px; font-size: .82em; font-variant-numeric: tabular-nums; margin-top: 6px; }
+  .preset-card .pc-amts span { color: #b3c0ca; }
+  .preset-card .pc-amts b { color: #f1f4f5; font-weight: 650; }
+  .split-bar { display: flex; gap: 2px; height: 8px; border-radius: 100px; overflow: hidden; margin-top: 8px; background: #111920; }
+  .split-bar span { display: block; height: 100%; background: var(--accent); }
+  .custom-editor { margin-top: 10px; padding-top: 6px; border-top: 1px solid #3a4856; }
+  /* C · prize ladder */
+  .ladder-hero { padding: 20px 18px; border: 1px solid #85749e; border-radius: 24px; background: radial-gradient(130% 100% at 100% 0,#3a304a,#19272b 90%); margin: 4px 0 16px; }
+  .ladder-hero .amount { display: block; font-size: 2.6em; line-height: 1.05; font-weight: 780; letter-spacing: -.055em; font-variant-numeric: tabular-nums; margin: 6px 0 6px; }
+  .ladder-hero .amount.none { color: #b3c0ca; font-size: 1.6em; }
+  .ladder-hero > span:first-child { font-size: .72em; text-transform: uppercase; letter-spacing: .07em; color: #d9cff2; }
+  .preset-select { display: flex; align-items: center; justify-content: space-between; width: 100%; text-align: left; border-radius: 18px; padding: 10px 14px; margin-bottom: 14px; }
+  .preset-select small { display: block; color: #b3c0ca; font-size: .75em; }
+  .preset-select strong { font-size: 1.05em; }
+  .rungs { list-style: none; margin: 0; padding: 0; display: grid; gap: 10px; }
+  .rung { padding: 12px 14px 14px; border: 1px solid #364653; border-radius: 20px; background: #1e2a34; }
+  .rung-top { display: grid; grid-template-columns: 42px minmax(0,1fr) minmax(0,4.8em) 44px; gap: 8px; align-items: center; }
+  .rung-amt { font-size: 1.3em; font-weight: 760; letter-spacing: -.035em; font-variant-numeric: tabular-nums; white-space: nowrap; }
+  .rung-amt.none { color: #7c90a0; font-size: 1.1em; font-weight: 500; }
+  .rung .input-wrap input[type="text"] { min-height: 46px; font-size: 1em; padding: 8px 4px 8px 10px; }
+  .rung .input-wrap > span { padding-right: 8px; }
+  .rung-bar { height: 10px; border-radius: 100px; background: #111920; margin-top: 10px; overflow: hidden; }
+  .rung-bar span { display: block; height: 100%; border-radius: 100px; background: linear-gradient(90deg, #8f78d8, var(--accent)); }
+  .rung .error { margin-top: 6px; }
+  .rung:has([aria-invalid="true"]) { border-color: #6b4447; }
+  /* Distribution preview (approved) */
+  .stack-showcase { position: relative; border-radius: 24px; border: 1px solid #3f5263; background: radial-gradient(120% 90% at 50% 0%, #293847 0%, #141e27 58%, #0c1319 100%); box-shadow: inset 0 1px 0 #ffffff18, 0 14px 34px #0006; padding: 18px 16px 16px; margin: 10px 0 14px; overflow: hidden; }
+  .stack-hero-bar { display: flex; justify-content: space-between; align-items: flex-end; gap: 12px; flex-wrap: wrap; padding-bottom: 14px; border-bottom: 1px solid #2b3a47; margin-bottom: 14px; }
+  .stack-hero-label { font-size: .74em; letter-spacing: .08em; text-transform: uppercase; color: #b3c0ca; }
+  .stack-hero-units { font-size: 2.3em; font-weight: 800; letter-spacing: -.04em; line-height: 1; font-variant-numeric: tabular-nums; }
+  .stack-hero-units small { font-size: .38em; font-weight: 600; color: #b3c0ca; margin-left: 4px; }
+  .towers-stage { display: grid; grid-template-columns: repeat(auto-fit, minmax(70px, 1fr)); gap: 10px 8px; align-items: end; padding: 8px 4px 4px; }
+  .tower-col { display: grid; justify-items: center; text-align: center; gap: 6px; min-width: 0; }
+  .tower-svg { display: block; width: 100%; max-width: 88px; height: auto; overflow: visible; filter: drop-shadow(0 8px 12px #0008); }
+  .tower-count { font-size: 1.25em; font-weight: 800; letter-spacing: -.03em; font-variant-numeric: tabular-nums; line-height: 1.1; }
+  .tower-denom { font-size: .72em; color: #b3c0ca; line-height: 1.2; }
+  .metric-strip { display: grid; grid-template-columns: repeat(auto-fit, minmax(100px, 1fr)); gap: 8px; margin: 12px 0; }
+  .metric-tile { padding: 11px 12px; border-radius: 16px; background: #18232c; border: 1px solid #31414f; min-width: 0; }
+  .metric-tile dt { font-size: .7em; text-transform: uppercase; letter-spacing: .06em; color: #b3c0ca; }
+  .metric-tile dd { margin: 3px 0 0; font-size: 1.02em; font-weight: 750; font-variant-numeric: tabular-nums; }
+  .metric-tile small { display: block; font-size: .7em; color: #b3c0ca; margin-top: 2px; }
+  .mini-places { list-style: none; margin: 8px 0 0; padding: 0; }
+  .mini-places li { display: grid; grid-template-columns: 3em minmax(0,1fr) auto; gap: 8px; align-items: baseline; padding: 8px 0; border-top: 1px solid #2e3c48; font-variant-numeric: tabular-nums; }
+  .mini-places li span:nth-child(2) { color: #b3c0ca; }
+  .mini-places li strong { text-align: right; }
+  .failure-card { border-color: #6b4447; }
+  .blocker { display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 8px 12px; padding: 10px 0; border-top: 1px solid #364653; }
+  .blocker:first-of-type { border-top: 0; }
+  .blocker strong { display: block; }
+  /* Dialogs */
+  dialog { border: 1px solid #7c90a0; border-radius: 24px; padding: 20px; background: #15212b; color: #f1f4f5; width: min(400px,calc(100vw - 28px)); max-height: calc(100dvh - 32px); overflow-y: auto; }
+  dialog::backdrop { background: #000b; }
+  dialog h2 { font-size: 1.5em; line-height: 1.15; letter-spacing: -.03em; margin-bottom: 12px; }
+  dialog .actions { display: grid; grid-template-columns: auto minmax(0,1fr); margin-top: 16px; }
+  .facts.stacked .metric { display: block; }
+  .facts.stacked .metric > strong { display: block; text-align: left; margin-top: 2px; }
+  dialog.sheet { margin: auto auto 12px; }
+  .facts { margin: 4px 0 6px; }
+  .metric { display: flex; justify-content: space-between; flex-wrap: wrap; gap: 4px 12px; padding: 9px 0; border-bottom: 1px solid #46515f; }
+  .metric > span { color: #b3c0ca; }
+  .metric > strong { font-variant-numeric: tabular-nums; text-align: right; }
+  .facts .metric:last-child { border-bottom: 0; }
+  .step-link { display: block; width: 100%; text-align: left; margin: 0 0 8px; }
+  .step-link small { display: block; color: #b3c0ca; font-size: .8em; }
+  .sheet-list { display: grid; gap: 8px; margin: 8px 0 4px; }
+  .sheet-item { display: flex; justify-content: space-between; align-items: center; gap: 10px; text-align: left; border-radius: 16px; }
+  .sheet-item small { display: block; color: #b3c0ca; font-size: .78em; }
+  .sheet-item[aria-pressed="true"] { border-color: var(--accent); background: var(--tint); }
+  .sheet-item .tag { font-size: .7em; font-weight: 700; color: var(--accent); }
+  .menu-item { display: grid; grid-template-columns: 24px minmax(0,1fr); gap: 4px 12px; align-items: center; text-align: left; padding: 12px 14px; border-radius: 18px; }
+  .menu-item small { grid-column: 2; color: #b3c0ca; font-size: .8em; }
+  .menu-item.danger { background: #1e2a34; border-color: #6b4447; }
+  .menu-item.danger strong, .menu-item.danger .ico { color: #ffb3aa; }
+  /* In progress */
+  .game-terms { display: grid; grid-template-columns: repeat(3,minmax(0,1fr)); border: 1px solid #637084; border-radius: 22px; background: linear-gradient(135deg,#29313f,#1a2530); margin: 4px 0 18px; padding: 16px 0; }
+  .term { padding: 0 12px; border-left: 1px solid #46515f; min-width: 0; }
+  .term:first-child { border: 0; }
+  .term > span { display: block; font-size: .72em; color: #c4ced6; margin-bottom: 6px; }
+  .term strong { display: block; font-size: 1.4em; line-height: 1.1; letter-spacing: -.04em; font-variant-numeric: tabular-nums; }
+  .term small { display: block; color: #b3c0ca; font-size: .67em; margin-top: 5px; }
+  .stub { color: #b3c0ca; border-style: dashed; text-align: center; font-size: .85em; }
+  .locked-line { display: flex; gap: 10px; align-items: flex-start; color: #b3c0ca; font-size: .88em; margin: 18px 0 0; }
+  /* Games */
+  .brand { font-size: .72em; font-weight: 750; letter-spacing: .12em; color: #b3c0ca; margin-bottom: 14px; }
+  .game-card { display: block; width: 100%; text-align: left; background: #1e2a34; border: 1px solid #364653; border-radius: 22px; padding: 16px 18px; margin: 0 0 12px; }
+  .game-card.active { border-color: #85749e; background: radial-gradient(130% 100% at 100% 0,#3a304a,#1e2a34 80%); }
+  .game-card strong { display: block; font-size: 1.1em; line-height: 1.3; margin: 4px 0 6px; }
+  .game-card .small { display: block; }
+  .game-card .go { display: block; margin-top: 4px; font-size: .8em; }
+  .sec { display: flex; justify-content: space-between; align-items: center; gap: 8px; margin: 24px 0 10px; }
+  #app .sec h3 { margin: 0; }
+  /* Review chrome */
+  .review { background: #111920; border: 1px solid #364653; border-radius: 20px; padding: 0 16px 16px; min-width: 0; font-size: 14px; color: #b3c0ca; }
+  summary { cursor: pointer; min-height: 48px; padding: 14px 0; color: #f1f4f5; font-weight: 650; }
+  .review-controls { display: grid; gap: 12px; }
+  .review button { text-align: left; }
+  .walks { display: grid; gap: 8px; }
+  pre { white-space: pre-wrap; overflow-wrap: anywhere; font-size: 12px; max-height: 460px; overflow-y: auto; padding: 12px; background: #0b1117; color: #b8dfbd; border-radius: 12px; }
+  .switcher { position: fixed; z-index: 8; bottom: 16px; left: 50%; transform: translateX(-50%); display: flex; align-items: center; gap: 4px; max-width: calc(100vw - 20px); padding: 5px; background: #ede4ff; color: #2b1e45; border: 1px solid #c9b5ff; border-radius: 100px; box-shadow: 0 8px 28px #0008; }
+  .switcher button { background: #2b1e45; color: #fff; border: 0; border-radius: 100px; padding: 8px; }
+  .switcher span { font-size: 13px; min-width: 0; padding: 0 8px; text-align: center; }
+  /* Large text */
+  [data-large="true"] .place-row { grid-template-columns: 46px minmax(0,1fr) 48px; }
+  [data-large="true"] .place-row .amt { grid-column: 2; grid-row: 2; text-align: left; }
+  [data-large="true"] .place-row .error { grid-row: 3; }
+  [data-large="true"] .rung-top { grid-template-columns: 46px minmax(0,1fr) 48px; }
+  [data-large="true"] .rung-top .input-wrap { grid-column: 2; grid-row: 2; }
+  [data-large="true"] .game-terms, [data-large="true"] .nav { grid-template-columns: 1fr; }
+  [data-large="true"] .term { border-left: 0; border-top: 1px solid #46515f; padding: 10px 16px; }
+  [data-large="true"] .term:first-child { border-top: 0; }
+  [data-large="true"] .actions { flex-direction: column; }
+  [data-large="true"] dialog .actions, dialog[data-large="true"] .actions { grid-template-columns: 1fr; }
+  /* Capture mode: phone surface only */
+  body.shot { padding: 0; background: #111920; }
+  body.shot .workshop > header, body.shot .review, body.shot .switcher { display: none; }
+  body.shot .layout { display: block; }
+  body.shot #app { border: 0; border-radius: 0; box-shadow: none; min-height: 100vh; }
+  @media (max-width:760px) { body { padding: 16px 8px 110px; } .layout { grid-template-columns: minmax(0,430px); justify-content: center; } .workshop > header { max-width: 430px; } .review { order: -1; } }
+  @media (max-width:350px) { .page { padding: 18px 12px 24px; } .dock { margin: 24px -12px -24px; } dialog .actions { grid-template-columns: 1fr; } .place-row { grid-template-columns: 42px minmax(0,1fr) 48px; } .place-row .amt { grid-column: 2; grid-row: 2; text-align: left; } }
+  @media (prefers-reduced-motion:reduce) { *, *::before, *::after { transition: none !important; animation: none !important; } }
+</style>
+<main class="workshop">
+  <header><div class="revision">Review v1 · Tournament payouts &amp; Start</div><h1>Pick payouts, then start.</h1><p class="intro">The tournament adds one step, <b>Payout schedule</b>, between Game settings and Distribution preview. The new step comes in three layouts (A / B / C, bar at the bottom). Everything else reuses the approved cash-game screens. In-memory only; reload resets everything.</p></header>
+  <div class="layout">
+    <section id="app" aria-label="Phone prototype"></section>
+    <aside class="review"><details id="tools"><summary>Prototype controls &amp; scenarios</summary><div class="review-controls">
+      <label>Payout step layout<select id="variant"><option value="A">A · Preset chips</option><option value="B">B · Preset cards</option><option value="C">C · Prize ladder</option></select></label>
+      <label>App text<select id="scale"><option value="1">100%</option><option value="1.5">150%</option><option value="2">200%</option></select></label>
+      <button data-tool="reset">Reset this scenario</button>
+      <button data-tool="restart">Simulate app restart (drafts stay, nothing replays)</button>
+      <button data-tool="rebuy">In progress: simulate a rebuy (+1 buy-in)</button>
+      <p id="fixture-note"></p>
+      <details open><summary>Jump into a scenario</summary><div class="walks">
+        <button data-walk="fresh">1 · First visit: suggested Top 2 preselected</button>
+        <button data-walk="custom">2 · Custom: 9 players, 5 paid places</button>
+        <button data-walk="shrunk">3 · Roster shrank below the paid places</button>
+        <button data-walk="invalid">4 · Invalid custom percentages, resumed</button>
+        <button data-walk="cents">5 · EUR 20.01 at 50 / 30 / 20 (cents)</button>
+        <button data-walk="nobuyin">6 · No buy-in yet</button>
+        <button data-walk="preview">7 · Preview → Start tournament?</button>
+        <button data-walk="blocked">8 · Preview blocked by payouts</button>
+        <button data-walk="started">9 · Locked Game details after Start</button>
+        <button data-walk="mode">10 · Switch to cash and back</button>
+      </div></details>
+      <details><summary>Live plan inspector</summary><pre id="inspector"></pre></details>
+      <p>Players, Chip set and Game settings are simplified stand-ins for the approved screens. The distribution is a fixed fixture (200-unit stack, blinds 1 / 2); it is not the solver. Tournament Play is designed in the next ticket and is only stubbed here.</p>
+    </div></details></aside>
+  </div>
+</main>
+<div class="switcher" aria-label="Payout step layout comparison"><button data-tool="previous" aria-label="Previous layout">←</button><span id="variant-label"></span><button data-tool="next" aria-label="Next layout">→</button></div>
+<div class="sr-only" id="announcement" role="status" aria-live="polite"></div>
+<dialog id="modal" aria-labelledby="modal-title"></dialog>
+<script>
+// THROWAWAY UI for "Design tournament payout setup and starting". All state is in memory.
+// Nothing here is production code, the production solver, or production money arithmetic.
+const params = new URLSearchParams(location.search);
+const variants = { A: 'Preset chips', B: 'Preset cards', C: 'Prize ladder' };
+let variant = variants[params.get('variant')] ? params.get('variant') : 'A';
+let scale = ['1','1.5','2'].includes(params.get('scale')) ? params.get('scale') : '1';
+if (params.get('shot')) document.body.classList.add('shot');
+const app = document.querySelector('#app'), modal = document.querySelector('#modal');
+
+const PRESETS = [
+  { id:'wta', name:'Winner takes all', shares:['100'] },
+  { id:'top2', name:'Top 2', shares:['70','30'] },
+  { id:'top3', name:'Top 3', shares:['50','30','20'] },
+  { id:'top4', name:'Top 4', shares:['50','25','15','10'] },
+  { id:'top5', name:'Top 5', shares:['40','25','20','10','5'] },
+];
+const NAMES = ['Alice','Bob','Clara','David','Emma','Felix','Greta','Hugo','Ida','Jonas'];
+const DENOMS = [
+  { value:1, color:'Grey', fill:'#a9b0b8', edge:'#7d858e', ink:'#2a3138' },
+  { value:5, color:'Red', fill:'#d35959', edge:'#a63d3d', ink:'#fff4e8' },
+  { value:25, color:'Blue', fill:'#4c84c6', edge:'#33639c', ink:'#f4f7ff' },
+  { value:100, color:'Green', fill:'#3f9a72', edge:'#2b7454', ink:'#f4fff8' },
+];
+const MIX = [15,2,3,1], CASE = [200,150,100,50], STACK = 200;
+const STEPS = { mode:'Choose mode', players:'Players', chips:'Chip set', settings:'Game settings', payout:'Payout schedule', preview:'Distribution preview' };
+
+const sum = a => a.reduce((x,y) => x+y, 0);
+const esc = s => String(s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const plural = (n,one,many=one+'s') => `${n} ${n===1?one:many}`;
+const ord = n => n + (n%100>=11&&n%100<=13 ? 'th' : ['th','st','nd','rd'][n%10] || 'th');
+const eur = c => `EUR ${(Math.floor(c/100)).toLocaleString('en')}.${String(c%100).padStart(2,'0')}`;
+const pctText = v => `${Math.floor(v/100)}${v%100 ? '.' + String(v%100).padStart(2,'0').replace(/0$/,'') : ''}%`;
+const icons = {
+  back: '<path d="m15 18-6-6 6-6"/>',
+  more: '<circle cx="5" cy="12" r="1.3"/><circle cx="12" cy="12" r="1.3"/><circle cx="19" cy="12" r="1.3"/>',
+  next: '<path d="m9 18 6-6-6-6"/>',
+  wallet: '<rect x="3" y="6" width="18" height="13" rx="2.5"/><path d="M3 10h18M16 14.5h2"/>',
+  layers: '<path d="M12 3 3 8l9 5 9-5-9-5Z"/><path d="m3 12.5 9 5 9-5"/><path d="m3 16.5 9 5 9-5"/>',
+  shield: '<path d="M12 3 5 6v5c0 4.4 3 8 7 10 4-2 7-5.6 7-10V6l-7-3Z"/>',
+  box: '<rect x="3" y="4" width="18" height="5" rx="1.5"/><path d="M5 9v10h14V9M10 13h4"/>',
+  plus: '<path d="M12 5v14M5 12h14"/>',
+  trash: '<path d="M4 7h16"/><path d="M10 11v6M14 11v6"/><path d="M6 7l1 13h10l1-13"/><path d="M9 7V4h6v3"/>',
+  edit: '<path d="M4 20h4L19 9l-4-4L4 16v4Z"/><path d="m13.5 6.5 4 4"/>',
+  play: '<path d="M7 5v14l12-7L7 5Z"/>',
+  lock: '<rect x="5" y="11" width="14" height="10" rx="2"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/>',
+  alert: '<path d="M12 4 2.5 20h19L12 4Z"/><path d="M12 10v4M12 17.2v.1"/>',
+  check: '<path d="m5 12.5 4.5 4.5L19 7.5"/>',
+  down: '<path d="m6 9 6 6 6-6"/>',
+  reset: '<path d="M9 14 4 9l5-5"/><path d="M4 9h10.5a5.5 5.5 0 0 1 0 11H11"/>',
+  user: '<circle cx="12" cy="8" r="3.5"/><path d="M5 20c.8-3.8 3.5-6 7-6s6.2 2.2 7 6"/>',
+};
+const ico = name => `<svg class="ico" viewBox="0 0 24 24" aria-hidden="true">${icons[name]}</svg>`;
+function b(label, action, cls='', extra='', icon='') {
+  const content = icon ? (action==='continue'||action==='to-preview' ? `<span>${label}</span>${ico(icon)}` : `${ico(icon)}<span>${label}</span>`) : label;
+  return `<button type="button" data-action="${action}" class="${cls}${icon?' with-icon':''}" ${extra}>${content}</button>`;
+}
+const ib = (label, action, icon, extra='') => `<button type="button" data-action="${action}" class="quiet icon-button" aria-label="${esc(label)}" title="${esc(label)}" ${extra}>${ico(icon)}</button>`;
+
+// ----- Money and percentage parsing (fixture-only; production uses exact cents) -----
+function parseMoney(raw) {
+  const t = raw.trim();
+  if (!/^\d+(?:[.,]\d{1,2})?$/.test(t)) return null;
+  const [u, f=''] = t.replace(',', '.').split('.');
+  const c = Number(u)*100 + Number(f.padEnd(2,'0'));
+  return c >= 1 ? c : null;
+}
+function parsePct(raw) {
+  const t = raw.trim();
+  if (!t) return { err:'Enter a percentage.' };
+  if (/^\d+[.,]\d{3,}$/.test(t)) return { err:'Use at most 2 decimals, like 12.5.' };
+  if (!/^\d+(?:[.,]\d{1,2})?$/.test(t)) return { err:'Enter a number, like 30 or 12.5.' };
+  const [u, f=''] = t.replace(',', '.').split('.');
+  const v = Number(u)*100 + Number(f.padEnd(2,'0'));
+  if (v <= 0) return { err:'Must be more than 0%.' };
+  if (v > 10000) return { err:'Can’t be more than 100%.' };
+  return { v };
+}
+const suggestion = n => n < 2 ? null : n === 2 ? PRESETS[0] : n <= 6 ? PRESETS[1] : PRESETS[2];
+const presetOf = p => p && !p.custom ? PRESETS.find(x => x.shares.join() === p.shares.join()) : null;
+function check(g) {
+  const n = g.players.length, shares = g.payout ? g.payout.shares : [];
+  const rows = shares.map(parsePct);
+  rows.forEach((r,i) => { if (!r.err && i > 0 && rows[i-1].v != null && r.v > rows[i-1].v) r.err = `Can’t be more than ${ord(i)} place (${pctText(rows[i-1].v)}).`; });
+  const filled = rows.every(r => r.v != null), total = sum(rows.map(r => r.v || 0));
+  const placesErr = shares.length > n ? `${plural(shares.length,'paid place')}, but only ${plural(n,'player')}.` : '';
+  const ok = !!g.payout && shares.length > 0 && rows.every(r => !r.err) && total === 10000 && !placesErr;
+  return { rows, filled, total, placesErr, ok };
+}
+function summaryError(g) {
+  if (!g.payout) return 'Not filled in';
+  const c = check(g);
+  if (c.placesErr) return c.placesErr;
+  const bad = c.rows.findIndex(r => r.err);
+  if (bad >= 0) return `${ord(bad+1)} place: ${c.rows[bad].err}`;
+  if (c.total !== 10000) return `Total is ${pctText(c.total)}, needs 100%.`;
+  return '';
+}
+const buyin = g => parseMoney(g.buyin);
+const pool = g => buyin(g) == null ? null : buyin(g) * (g.players.length + (g.rebuys || 0));
+// Floor each exact share to cents, then hand leftover cents out from 1st place downward.
+function prizes(poolCents, values) {
+  const out = values.map(v => Math.floor(poolCents * v / 10000));
+  let left = poolCents - sum(out);
+  for (let i = 0; left > 0; i = (i+1) % out.length, left--) out[i]++;
+  return out;
+}
+function steps(g) { return ['mode','players','chips','settings', ...(g.mode==='tournament'?['payout']:[]), 'preview']; }
+function stepStatus(g, st) {
+  if (!g.visited.includes(st)) return 'Not filled in';
+  if (st === 'players') return g.players.length < 2 ? 'Needs attention' : 'Complete';
+  if (st === 'settings') return buyin(g) == null ? 'Needs attention' : 'Complete';
+  if (st === 'payout') return check(g).ok ? 'Complete' : 'Needs attention';
+  return 'Complete';
+}
+function blockers(g) {
+  const list = [];
+  if (g.players.length < 2) list.push({ step:'players', title:'Players', detail:'Add at least 2 players.', label:'Edit players' });
+  if (buyin(g) == null) list.push({ step:'settings', title:'Game settings', detail:'Buy-in is missing.', label:'Edit settings' });
+  if (g.mode === 'tournament') {
+    if (!g.payout || !g.visited.includes('payout')) list.push({ step:'payout', title:'Payout schedule', detail:'Not filled in yet.', label:'Choose payouts' });
+    else if (!check(g).ok) list.push({ step:'payout', title:'Payout schedule', detail:summaryError(g), label:'Fix payouts' });
+  }
+  return list;
+}
+
+// ----- Scenarios -----
+const SCENARIOS = {
+  fresh: { note:'6 players, EUR 20 buy-in, first time on Payout schedule. The suggested Top 2 is preselected and saved as the plan’s schedule; from here on only the host changes it.', players:6, buyin:'20', payout:null, step:'payout' },
+  custom: { note:'9 players, EUR 10 buy-in, a custom 5-place schedule (45 / 25 / 15 / 10 / 5). The suggestion tag sits on Top 3 but the custom schedule stays.', players:9, buyin:'10', payout:{ shares:['45','25','15','10','5'], custom:true }, step:'payout' },
+  shrunk: { note:'Top 4 was picked for 5 players; then Emma and Felix dropped out. The schedule is kept, flagged, and the host fixes it (one tap on the suggested preset, or remove a place).', players:3, buyin:'20', payout:{ shares:['50','25','15','10'], custom:false }, step:'payout' },
+  invalid: { note:'A custom schedule left half-done: 3rd is higher than 2nd and the total is 95%. The raw values survived leaving and restarting; Continue was already tried, so errors show.', players:6, buyin:'20', payout:{ shares:['50','20','25'], custom:true }, step:'payout', failed:true },
+  cents: { note:'3 × EUR 6.67 = EUR 20.01 at 50 / 30 / 20: floors give 10.00 / 6.00 / 4.00, and the leftover cent goes to 1st → EUR 10.01 / 6.00 / 4.00.', players:3, buyin:'6.67', payout:{ shares:['50','30','20'], custom:false }, step:'payout' },
+  nobuyin: { note:'No buy-in yet. Percentages can still be set; prize amounts wait for the buy-in.', players:6, buyin:'', payout:{ shares:['70','30'], custom:false }, step:'payout' },
+  preview: { note:'Everything valid. Preview adds one Payouts card under the approved metric strip; Start tournament? lists the prize pool and the locked percentages.', players:6, buyin:'20', payout:{ shares:['70','30'], custom:false }, step:'preview' },
+  blocked: { note:'Payout schedule totals 95%. The preview shows the approved Setup incomplete card with a direct Fix payouts button; Start stays disabled.', players:6, buyin:'20', payout:{ shares:['50','30','15'], custom:true }, step:'preview' },
+  started: { note:'Started with Top 2. Game details shows the locked schedule. Use “simulate a rebuy” to see amounts grow while percentages stay.', players:6, buyin:'20', payout:{ shares:['70','30'], custom:false }, step:'preview', started:true },
+  mode: { note:'A tournament with Top 3 picked. Switch to Cash game: the Payout step disappears, the schedule is kept dormant, and switching back restores it.', players:7, buyin:'20', payout:{ shares:['50','30','20'], custom:false }, step:'mode' },
+};
+let scenario = SCENARIOS[params.get('walk')] ? params.get('walk') : 'fresh';
+let s, view;
+function reset() {
+  closeDialog();
+  const f = SCENARIOS[scenario];
+  const g = { id:'t1', mode:'tournament', phase:'Planning', created:'23 Nov 2026 · 19:30', players:NAMES.slice(0,f.players), buyin:f.buyin, depth:'100', pref:'fewer', coverage:'4',
+    payout:f.payout ? { shares:[...f.payout.shares], custom:f.payout.custom } : null, step:f.step, visited:['mode','players','chips','settings', ...(f.payout?['payout']:[]), ...(f.step==='preview'?['preview']:[])],
+    touched:{}, failed:!!f.failed, returnToPreview:false, rebuys:0, presetMsg:'' };
+  if (f.step === 'payout') visit(g, 'payout');
+  s = { games:[g], toast:null };
+  view = { page:'wizard', game:'t1', tab:null };
+  if (f.started) { start(g); view = { page:'details', game:'t1' }; s.toast = null; }
+  document.querySelector('#fixture-note').textContent = f.note;
+  updateURL(); render();
+}
+const game = () => s.games.find(x => x.id === view.game);
+function visit(g, st) {
+  g.step = st;
+  if (!g.visited.includes(st)) g.visited.push(st);
+  if (st === 'payout' && !g.payout) { const p = suggestion(g.players.length); if (p) g.payout = { shares:[...p.shares], custom:false }; }
+}
+function start(g) {
+  g.phase = 'In progress';
+  g.locked = { shares:[...g.payout.shares], name:presetOf(g.payout)?.name || 'Custom', players:g.players.length };
+  g.returnToPreview = false;
+}
+
+// ----- Shared chrome -----
+function planningHead(g) {
+  const st = steps(g), i = st.indexOf(g.step);
+  return `<div class="topline">${b('Games','games','quiet','', 'back')}${ib('Game actions','menu','more')}</div>
+    <div><span class="badge">${g.mode==='tournament'?'Tournament':'Cash game'}</span><span class="badge info">Planning</span></div>
+    <p class="context">${g.created} · ${plural(g.players.length,'player')}</p>
+    ${g.step==='mode' ? '' : b(`Step ${i+1} of ${st.length} · Setup steps`,'steps','quiet step-button')}
+    <h2 tabindex="-1">${STEPS[g.step]}</h2>${s.toast?`<p class="toast">✓ ${esc(s.toast)}</p>`:''}`;
+}
+function dock(g) {
+  const back = g.step === 'mode' ? b('Games','games','','', 'back') : b('Back','back','','', 'back');
+  const next = g.returnToPreview && g.step !== 'preview' ? b('Return to preview','to-preview','primary','id="continue"','next') : b('Continue','continue','primary','id="continue"','next');
+  return `<footer class="dock"><p>Draft · Retained in this demo</p><div class="actions">${back}${next}</div></footer>`;
+}
+
+// ----- Planning steps -----
+function modeStep(g) {
+  return `<fieldset><legend class="sr-only">Game mode</legend>
+    <label class="choice"><input type="radio" name="mode" value="cash" ${g.mode==='cash'?'checked':''}><span><strong>Cash game</strong><small>Final chips determine results.</small></span></label>
+    <label class="choice"><input type="radio" name="mode" value="tournament" ${g.mode==='tournament'?'checked':''}><span><strong>Tournament</strong><small>Finishing places determine payouts.</small></span></label></fieldset>${dock(g)}`;
+}
+function playersStep(g) {
+  const rows = g.players.map(n => `<li class="player"><span class="initial" aria-hidden="true">${esc(n[0])}</span><span class="player-name">${esc(n)}</span>${ib(`Remove ${n} from this game`,'ask-remove','trash',`data-name="${esc(n)}"`)}</li>`).join('');
+  const more = NAMES.find(n => !g.players.includes(n));
+  return `<ul class="roster" aria-label="Players in this game">${rows}</ul>${more ? b(`Add ${more}`,'add-player','full','', 'plus') : ''}<p class="small" style="margin-top:10px">Simplified stand-in for the approved Players step.</p>${dock(g)}`;
+}
+function chipsStep(g) {
+  return `<div class="card"><h3>Example chip set</h3><p class="small">4 denominations · copied for this game</p><div class="bank-strip">${DENOMS.map((d,i)=>`<span class="bank-pill">${chip(d)}<strong>×${CASE[i]}</strong><span class="small">(${d.value})</span></span>`).join('')}</div></div><p class="small">Stand-in for the approved Chip set step.</p>${dock(g)}`;
+}
+function field(id, title, value, unit, hint, icon, mode='numeric') {
+  return `<div class="field"><label class="field-title" for="f-${id}">${ico(icon)}<span>${title}</span></label><span class="input-wrap"><input id="f-${id}" type="text" inputmode="${mode}" autocomplete="off" value="${esc(value)}" data-field="${id}" aria-describedby="h-${id} e-${id}" aria-invalid="false"><span aria-hidden="true">${unit}</span></span><span class="hint" id="h-${id}">${hint}</span><span class="error" id="e-${id}" aria-live="polite"></span></div>`;
+}
+function settingsStep(g) {
+  const auto = Math.ceil(g.players.length / 2);
+  return `<div class="field-group">${field('buyin','Buy-in per player',g.buyin,'EUR', g.mode==='tournament' ? 'Goes into the prize pool. Rebuys cost the same.' : '', 'wallet','decimal')}${field('depth','Starting stack',g.depth,'BB','Recommended: 100 BB.','layers')}</div>
+    <fieldset><legend>Distribution preference</legend><label class="choice"><input type="radio" name="pref" value="fewer" ${g.pref==='fewer'?'checked':''}><span><strong>Fewer chips</strong></span></label><label class="choice"><input type="radio" name="pref" value="more" ${g.pref==='more'?'checked':''}><span><strong>More chips</strong></span></label></fieldset>
+    <div class="field-group">${field('coverage','Blind-payment coverage',g.coverage,'payments','Payments of each blind without needing change.','shield')}${field('reserve','Chip reserve',String(auto),'stacks',`For rebuys and late arrivals. Automatic for ${g.players.length} players.`,'box')}</div>${dock(g)}`;
+}
+
+// ----- Payout schedule: shared pieces -----
+function poolLine(g) {
+  const p = pool(g), n = g.players.length;
+  if (p == null) return `<div class="pool missing"><span>Prize pool</span><strong>—</strong><span class="small">Add a buy-in to see prize amounts.</span>${b('Edit game settings','visit','link','data-step="settings"')}</div>`;
+  return `<div class="pool"><span>Prize pool</span><strong>${eur(p)}</strong><span class="small">${n} × ${eur(buyin(g))} · rebuys add to it</span></div>`;
+}
+function presetMessage(g, c) {
+  if (!c.placesErr) return '';
+  const sug = suggestion(g.players.length);
+  return `<p class="places-msg" id="places-msg" role="alert" tabindex="-1">${ico('alert')}<span>${esc(c.placesErr)}</span>${sug ? b(`Use ${sug.name}`,'preset','',`data-id="${sug.id}"`) : ''}</p>`;
+}
+function rowError(g, c, i) { return (g.touched[i] || g.failed) ? c.rows[i].err || '' : ''; }
+function totalLine(g, c) {
+  if (!g.payout) return '';
+  if (c.total === 10000 && c.filled) return `<p class="total ok" id="total">${ico('check')} Total 100%</p>`;
+  const cls = g.failed ? 'bad' : 'open';
+  if (!c.filled) return `<p class="total ${cls}" id="total">Total ${pctText(c.total)} so far</p>`;
+  const diff = Math.abs(10000 - c.total);
+  return `<p class="total ${cls}" id="total">Total ${pctText(c.total)} · ${pctText(diff)} ${c.total < 10000 ? 'left' : 'too much'}</p>`;
+}
+function amountsFor(g, c) { const p = pool(g); return c.ok && p != null ? prizes(p, c.rows.map(r => r.v)) : null; }
+function shareInput(g, c, i, raw) {
+  const err = rowError(g, c, i);
+  return `<span class="input-wrap"><input id="share-${i}" type="text" inputmode="decimal" autocomplete="off" value="${esc(raw)}" data-share="${i}" aria-label="${ord(i+1)} place share" aria-describedby="err-${i}" aria-invalid="${err?'true':'false'}"><span aria-hidden="true">%</span></span>`;
+}
+function addPlace(g) {
+  const n = g.players.length, at = g.payout.shares.length >= n;
+  return `${b('Add place','add-place','quiet',`style="color:var(--accent)" ${at?`aria-disabled="true" ${g.payout.shares.length===n?'aria-describedby="place-limit"':''}`:''}`,'plus')}${g.payout.shares.length===n?`<span class="small" id="place-limit" style="width:100%">Can’t pay more places than players (${n}).</span>`:''}`;
+}
+function placeRows(g, c) {
+  const amts = amountsFor(g, c), last = g.payout.shares.length - 1;
+  return `${presetMessage(g, c)}<ol class="places" aria-label="Paid places">${g.payout.shares.map((raw,i) => `<li class="place-row"><span class="place ${i===0?'p1':''}" aria-hidden="true">${ord(i+1)}</span>${shareInput(g,c,i,raw)}<span class="amt ${amts?'':'none'}" id="amt-${i}">${amts ? eur(amts[i]) : '—'}</span>${i===last && last>0 ? ib(`Remove ${ord(i+1)} place`,'remove-place','trash') : '<span></span>'}<span class="error" id="err-${i}" aria-live="polite">${esc(rowError(g,c,i))}</span></li>`).join('')}</ol>
+    <div class="places-foot">${addPlace(g)}${totalLine(g, c)}</div>${equalHint(c)}`;
+}
+function equalHint(c) {
+  return c.rows.some((r,i) => i>0 && r.v!=null && r.v===c.rows[i-1].v) ? '<p class="rule-hint">Equal shares are fine. Places still come from the elimination order.</p>' : '';
+}
+function noPlayers() { return `<div class="card"><h3>Add players first</h3><p class="small">A tournament needs at least 2 players before payouts can be suggested.</p>${b('Edit players','visit','full','data-step="players"')}</div>`; }
+
+// A · Preset chips above an editable place list
+function payoutA(g, c) {
+  const cur = presetOf(g.payout), sug = suggestion(g.players.length), n = g.players.length;
+  const chipsHtml = PRESETS.map(p => {
+    const tooMany = p.shares.length > n;
+    return `<button type="button" class="preset-chip" data-action="preset" data-id="${p.id}" aria-pressed="${cur===p}" ${tooMany&&cur!==p?'aria-disabled="true"':''}>${p.name}${sug===p?'<small>Suggested</small>':''}</button>`;
+  }).join('') + `<button type="button" class="preset-chip" data-action="custom-chip" aria-pressed="${!cur}">Custom</button>`;
+  return `${poolLine(g)}<fieldset style="margin-top:0"><legend>Preset</legend><div class="preset-chips">${chipsHtml}</div><span class="error" id="preset-msg">${esc(g.presetMsg)}</span></fieldset>
+    <div class="card" style="padding-top:8px">${placeRows(g, c)}</div>`;
+}
+// B · One card per preset with its split and amounts; Custom expands the editor
+function payoutB(g, c) {
+  const cur = presetOf(g.payout), sug = suggestion(g.players.length), n = g.players.length, p0 = pool(g);
+  const cards = PRESETS.map(p => {
+    const tooMany = p.shares.length > n, sel = cur === p;
+    const vals = p.shares.map(x => Number(x)*100), am = p0 != null ? prizes(p0, vals) : null;
+    return `<label class="preset-card pc-row"><input type="radio" name="preset" value="${p.id}" ${sel?'checked':''} ${tooMany&&!sel?'disabled':''}><span class="pc-body"><span class="pc-head"><strong>${p.name}</strong>${sug===p?'<span class="tag">Suggested</span>':''}<span class="split">${p.shares.join(' / ')}%</span></span>
+      <span class="split-bar" aria-hidden="true">${vals.map(v=>`<span style="width:${v/100}%"></span>`).join('')}</span>
+      ${tooMany ? `<span class="pc-amts"><span>${sel ? `<b style="color:#ffb3aa">Only ${plural(n,'player')}</b>` : `Needs ${p.shares.length} players`}</span></span>` : am ? `<span class="pc-amts">${am.map((a,i)=>`<span>${ord(i+1)} <b>${eur(a)}</b></span>`).join('')}</span>` : ''}</span></label>`;
+  }).join('');
+  const custom = !cur;
+  return `${poolLine(g)}${c.placesErr && cur ? presetMessage(g, c) : ''}<fieldset style="margin-top:0"><legend class="sr-only">Payout schedule</legend>${cards}
+    <div class="preset-card"><label class="pc-row"><input type="radio" name="preset" value="custom" ${custom?'checked':''}><span class="pc-body"><span class="pc-head"><strong>Custom</strong><span class="split">${custom ? esc(g.payout.shares.map(x=>x||'?').join(' / '))+'%' : 'Your own places and %'}</span></span></span></label>
+      ${custom ? `<div class="custom-editor">${placeRows(g, c)}</div>` : ''}</div></fieldset>`;
+}
+// C · Prize ladder: big amounts and share bars; presets live in a sheet
+function payoutC(g, c) {
+  const cur = presetOf(g.payout), sug = suggestion(g.players.length), p0 = pool(g), amts = amountsFor(g, c), last = g.payout.shares.length - 1;
+  const hero = p0 == null
+    ? `<div class="ladder-hero"><span>Prize pool</span><span class="amount none">Add a buy-in</span>${b('Edit game settings','visit','','data-step="settings"')}</div>`
+    : `<div class="ladder-hero"><span>Prize pool</span><span class="amount">${eur(p0)}</span><span class="small">${g.players.length} × ${eur(buyin(g))} · rebuys add to it</span></div>`;
+  const rungs = g.payout.shares.map((raw,i) => {
+    const v = c.rows[i].v || 0;
+    return `<li class="rung"><div class="rung-top"><span class="place ${i===0?'p1':''}" aria-hidden="true">${ord(i+1)}</span><strong class="rung-amt ${amts?'':'none'}" id="amt-${i}">${amts ? eur(amts[i]) : '—'}</strong>${shareInput(g,c,i,raw)}${i===last && last>0 ? ib(`Remove ${ord(i+1)} place`,'remove-place','trash') : '<span></span>'}</div>
+      <div class="rung-bar" aria-hidden="true"><span style="width:${Math.min(100, v/100)}%"></span></div><span class="error" id="err-${i}" aria-live="polite">${esc(rowError(g,c,i))}</span></li>`;
+  }).join('');
+  return `${hero}<button type="button" class="preset-select" data-action="preset-sheet" aria-haspopup="dialog"><span><small>Preset</small><strong>${cur ? cur.name : 'Custom'}</strong>${sug && sug!==cur ? `<small>Suggested for ${plural(g.players.length,'player')}: ${sug.name}</small>` : sug===cur ? '<small>Suggested</small>' : ''}</span>${ico('down')}</button>
+    ${presetMessage(g, c)}<ol class="rungs" aria-label="Paid places">${rungs}</ol><div class="places-foot">${addPlace(g)}${totalLine(g, c)}</div>${equalHint(c)}`;
+}
+function payoutStep(g) {
+  if (!g.payout) return noPlayers() + dock(g);
+  const c = check(g);
+  return ({ A:payoutA, B:payoutB, C:payoutC })[variant](g, c) + dock(g);
+}
+
+// ----- Distribution preview (approved) with tournament payouts -----
+function chip(d) {
+  return `<svg class="chip-symbol" viewBox="0 0 72 72" aria-hidden="true"><circle cx="36" cy="36" r="34" fill="${d.fill}" stroke="#aab6c0" stroke-width="1.5"/><circle cx="36" cy="36" r="29" fill="none" stroke="${d.ink}" stroke-opacity=".85" stroke-width="6" stroke-dasharray="8 15"/><circle cx="36" cy="36" r="22" fill="${d.fill}" stroke="${d.ink}" stroke-opacity=".65"/><text x="36" y="37" text-anchor="middle" dominant-baseline="middle" fill="${d.ink}" font-size="${d.value>99?14:18}" font-weight="700">${d.value}</text></svg>`;
+}
+function tower(d, count) {
+  const drawn = Math.max(1, Math.min(20, count)), step = 5.4, rx = 33, ry = 11.5, h = 5.6, base = 166;
+  let discs = '';
+  for (let i = 0; i < drawn; i++) {
+    const cy = base - i*step, fifth = (i+1)%5===0 && i<drawn-1;
+    discs += `<path d="M ${50-rx} ${cy} A ${rx} ${ry} 0 0 0 ${50+rx} ${cy} L ${50+rx} ${cy+h} A ${rx} ${ry} 0 0 1 ${50-rx} ${cy+h} Z" fill="${d.edge}" stroke="#080d12" stroke-width=".7"/><path d="M 28 ${cy+2.2} v ${h-.8} M 50 ${cy+ry-.3} v ${h-.8} M 72 ${cy+2.2} v ${h-.8}" stroke="${d.ink}" stroke-opacity=".72" stroke-width="3.6"/><ellipse cx="50" cy="${cy}" rx="${rx}" ry="${ry}" fill="${d.fill}" stroke="${fifth?'#c9b5ff':'#ffffff44'}" stroke-width="${fifth?1.4:.7}"/>`;
+    if (i === drawn-1) discs += `<ellipse cx="50" cy="${cy}" rx="27" ry="9.2" fill="none" stroke="${d.ink}" stroke-opacity=".82" stroke-width="3.2" stroke-dasharray="6 9"/><ellipse cx="50" cy="${cy}" rx="20" ry="6.8" fill="${d.fill}" stroke="${d.ink}" stroke-opacity=".55" stroke-width=".9"/><text x="50" y="${cy+.8}" text-anchor="middle" dominant-baseline="middle" fill="${d.ink}" font-size="${d.value>99?9.5:12}" font-weight="800">${d.value}</text>`;
+  }
+  return `<svg class="tower-svg" viewBox="0 0 100 186" aria-hidden="true"><ellipse cx="50" cy="174" rx="38" ry="12" fill="#04080c" opacity=".75"/>${discs}</svg>`;
+}
+function payoutsCard(g, editable) {
+  const c = check(g), shares = editable ? g.payout.shares : g.locked.shares, vals = shares.map(x => parsePct(x).v);
+  const p0 = pool(g), am = p0 != null ? prizes(p0, vals) : null, name = editable ? (presetOf(g.payout)?.name || 'Custom') : g.locked.name;
+  return `<section class="card" aria-label="Payouts"><div class="row-heading"><h3>Payouts · ${name}</h3>${editable ? ib('Edit payout schedule','visit','edit','data-step="payout"') : `<span class="badge" style="margin:0">${ico('lock')} Locked</span>`}</div>
+    <ol class="mini-places">${vals.map((v,i)=>`<li><span>${ord(i+1)}</span><span>${pctText(v)}</span><strong>${am?eur(am[i]):'—'}</strong></li>`).join('')}</ol></section>`;
+}
+function previewStep(g) {
+  const bl = blockers(g), n = g.players.length, reserve = Math.ceil(n/2);
+  const bank = CASE.map((q,i) => q - MIX[i]*n);
+  if (bl.length) return `<section class="card failure-card" aria-label="Setup needs attention"><span class="badge err">${ico('alert')} Setup incomplete</span>${bl.map(x=>`<div class="blocker"><div><strong>${x.title}</strong><span class="small">${esc(x.detail)}</span></div>${b(x.label,'visit','primary',`data-step="${x.step}"`,'edit')}</div>`).join('')}</section>
+    <footer class="dock"><p id="start-status">Fix setup inputs before starting.</p><div class="actions">${b('Back','back','','', 'back')}${b('Start game','start','primary','aria-disabled="true" aria-describedby="start-status"','play')}</div></footer>`;
+  const tour = g.mode === 'tournament';
+  return `<section class="stack-showcase" aria-label="Starting stack overview"><div class="stack-hero-bar"><span class="stack-hero-label">1 starting stack</span><span class="stack-hero-units">${STACK}<small>chip units</small></span></div>
+      <div class="towers-stage" role="list" aria-label="One starting stack">${DENOMS.map((d,i)=>`<div class="tower-col" role="listitem" aria-label="${MIX[i]} chips of value ${d.value} (${d.color})">${tower(d, MIX[i])}<span class="tower-count">×${MIX[i]}</span><span class="tower-denom">${d.value} · ${d.color}</span></div>`).join('')}</div></section>
+    <dl class="metric-strip" aria-label="Game terms summary"><div class="metric-tile"><dt>Blinds</dt><dd>1 / 2</dd><small>100 BB depth</small></div>
+      ${tour ? `<div class="metric-tile"><dt>Prize pool</dt><dd>${eur(pool(g))}</dd><small>No chip money value</small></div>` : `<div class="metric-tile"><dt>Cash value</dt><dd>${eur(buyin(g))}</dd><small>${eur(Math.round(buyin(g)/STACK))} / unit</small></div>`}
+      <div class="metric-tile"><dt>Reserve</dt><dd>${plural(reserve,'stack')}</dd><small>Shared in bank</small></div></dl>
+    ${tour ? payoutsCard(g, true) : ''}
+    <section class="card" aria-label="Unissued bank"><div class="row-heading"><h3>Unissued bank (${sum(bank)} chips)</h3><span class="small">Covers ${plural(reserve,'reserved stack')}</span></div><div class="bank-strip">${DENOMS.map((d,i)=>`<span class="bank-pill">${chip(d)}<strong>×${bank[i]}</strong><span class="small">(${d.value})</span></span>`).join('')}</div></section>
+    <footer class="dock"><div class="actions">${b('Back','back','','', 'back')}${b(tour?'Start tournament':'Start cash game','start','primary','id="start"','play')}</div></footer>`;
+}
+function wizard() {
+  const g = game();
+  const body = ({ mode:modeStep, players:playersStep, chips:chipsStep, settings:settingsStep, payout:payoutStep, preview:previewStep })[g.step](g);
+  return `<div class="page">${planningHead(g)}${body}</div>`;
+}
+
+// ----- In progress (Play is designed in the next ticket) -----
+function workspaceHead(g, title) {
+  return `<div class="topline">${b('Games','games','quiet','', 'back')}${ib('Game actions','menu','more')}</div><p class="context">Tournament · ${g.created}</p><span class="badge info">In progress</span><h2 tabindex="-1">${title}</h2>
+    <nav class="nav" aria-label="Game workspace">${[['play','Play'],['results','Results'],['details','Game details']].map(([p,l])=>b(l,'tab','',`data-page="${p}" ${view.page===p?'aria-current="page"':''}`)).join('')}</nav>${s.toast?`<p class="toast">✓ ${esc(s.toast)}</p>`:''}`;
+}
+function playPage(g) {
+  return `<div class="page">${workspaceHead(g,'Play')}<section class="game-terms" aria-label="Locked game terms"><div class="term"><span>Blinds</span><strong>1 / 2</strong><small>chip units</small></div><div class="term"><span>Prize pool</span><strong>${eur(pool(g)).replace('EUR ','')}</strong><small>EUR</small></div><div class="term"><span>Paid</span><strong>${g.locked.shares.length}</strong><small>${g.locked.shares.length===1?'place':'places'}</small></div></section>
+    <h3>Playing · ${g.players.length}</h3><ul class="roster">${g.players.map(n=>`<li class="player"><span class="initial" aria-hidden="true">${esc(n[0])}</span><span class="player-name">${esc(n)}</span></li>`).join('')}</ul>
+    <div class="card stub">Eliminations, rebuys and late entry are designed in <b>Design tournament play, corrections, and Payments</b>.</div></div>`;
+}
+function resultsPage(g) { return `<div class="page">${workspaceHead(g,'Results')}<div class="card stub">Elimination order and Calculate Payments are designed in the next ticket.</div></div>`; }
+function detailsPage(g) {
+  return `<div class="page">${workspaceHead(g,'Game details')}${payoutsCard(g, false)}
+    <p class="small" style="margin-top:-4px">Prize pool ${eur(pool(g))}${g.rebuys?` · ${g.players.length} buy-ins + ${plural(g.rebuys,'rebuy')}`:''}. Rebuys raise every prize; the percentages stay.</p>
+    <div class="card"><h3>Starting stack · ${STACK} chip units</h3><div class="bank-strip">${DENOMS.map((d,i)=>`<span class="bank-pill">${chip(d)}<strong>×${MIX[i]}</strong><span class="small">(${d.value})</span></span>`).join('')}</div>
+      <div class="facts" style="margin-top:10px"><div class="metric"><span>Blinds</span><strong>1 / 2 chip units · 100 BB</strong></div><div class="metric"><span>Buy-in</span><strong>${eur(buyin(g))} · rebuys the same</strong></div><div class="metric"><span>Reserve</span><strong>${plural(Math.ceil(g.players.length/2),'stack')}</strong></div></div></div>
+    <p class="locked-line">${ico('lock')}<span>Setup is locked. To change it, use ⋯ → Return to Planning.</span></p></div>`;
+}
+function gamesPage() {
+  const g = s.games[0];
+  const card = !g ? '' : g.phase === 'Planning'
+    ? `<div class="sec"><h3>Planning</h3></div><button type="button" class="game-card" data-action="open"><span class="badge">Planning · ${g.mode==='tournament'?'Tournament':'Cash game'}</span><strong>${esc(g.players.join(', '))}</strong><span class="small">${g.created}</span><span class="go">Resume ${STEPS[g.step].toLowerCase()} →</span></button>`
+    : `<div class="sec"><h3>In progress</h3></div><button type="button" class="game-card active" data-action="open"><span class="badge info">In progress · Tournament</span><strong>${esc(g.players.join(', '))}</strong><span class="small">${g.created}</span><span class="go">Open Play →</span></button>`;
+  return `<div class="page"><p class="brand">POKER PLANNER</p><h2 tabindex="-1">Games</h2>${s.toast?`<p class="toast">✓ ${esc(s.toast)}</p>`:''}${b('New game','noop','primary full','', 'plus')}${card}</div>`;
+}
+
+// ----- Dialogs -----
+function openDialog(html, cls='') {
+  modal.className = cls; modal.innerHTML = html; modal.style.setProperty('--scale', scale); modal.dataset.large = scale > 1;
+  if (!modal.open) modal.showModal();
+  (modal.querySelector('[autofocus]') || modal.querySelector('button'))?.focus();
+}
+function closeDialog() { if (modal.open) modal.close(); }
+function dialogFor(kind, data={}) {
+  const g = game();
+  if (kind === 'steps') return openDialog(`<h2 id="modal-title">Setup steps</h2>${steps(g).map((st,i)=>`<button type="button" class="step-link" data-action="visit" data-step="${st}" ${g.visited.includes(st)?'':'disabled'}><strong>${i+1}. ${STEPS[st]}</strong><small>${st===g.step?'Current step · ':''}${st==='preview'?(blockers(g).length?'Blocked':'Ready'):stepStatus(g,st)}</small></button>`).join('')}${b('Close','close','full')}`);
+  if (kind === 'start') {
+    const c = check(g), vals = c.rows.map(r=>r.v), am = prizes(pool(g), vals);
+    return openDialog(`<h2 id="modal-title">Start tournament?</h2><p>Records initial stacks for ${plural(g.players.length,'player')} and locks setup and payouts.</p>
+      <div class="facts"><div class="metric"><span>Each starting stack</span><strong>${STACK} units (100 BB)</strong></div><div class="metric"><span>Blinds</span><strong>1 / 2 chip units</strong></div>
+      <div class="metric"><span>Prize pool</span><strong>${eur(pool(g))} (${g.players.length} × ${eur(buyin(g)).replace('EUR ','')})</strong></div>
+      <div class="metric"><span>Payouts</span><strong>${vals.map(pctText).join(' / ')}</strong></div>
+      <div class="metric"><span>Reserve</span><strong>${plural(Math.ceil(g.players.length/2),'stack')}</strong></div></div>
+      <div class="actions">${b('Cancel','close')}${b('Start tournament','confirm-start','primary','','play')}</div>`);
+  }
+  if (kind === 'menu') {
+    const items = g.phase === 'In progress'
+      ? `<button type="button" class="menu-item" data-action="ask-reset">${ico('reset')}<strong>Return to Planning…</strong><small>Clear handed-out stacks and edit setup again.</small></button>`
+      : '';
+    return openDialog(`<h2 id="modal-title">Game actions</h2><div class="stack" style="margin:12px 0">${items}<button type="button" class="menu-item danger" data-action="close">${ico('trash')}<strong>Delete game…</strong><small>Not part of this prototype.</small></button></div>${b('Close','close','full')}`, 'sheet');
+  }
+  if (kind === 'reset') return openDialog(`<h2 id="modal-title">Return to Planning?</h2><div class="facts stacked"><div class="metric"><span>Clears</span><strong>${g.rebuys?plural(g.rebuys,'rebuy')+' · ':''}all handed-out stacks</strong></div><div class="metric"><span>Keeps</span><strong>${plural(g.players.length,'player')} · buy-ins · settings · payout schedule</strong></div></div><p class="small">Collect all chips. You’ll hand out new stacks after Start.</p><div class="actions">${b('Cancel','close','','autofocus')}${b('Return to Planning','confirm-reset','danger')}</div>`);
+  if (kind === 'remove') return openDialog(`<h2 id="modal-title">Remove ${esc(data.name)}?</h2><p>Remove from this game. The saved player stays available.</p><div class="actions">${b('Cancel','close','','autofocus')}${b('Remove','remove','danger',`data-name="${esc(data.name)}"`)}</div>`);
+  if (kind === 'presets') {
+    const cur = presetOf(g.payout), sug = suggestion(g.players.length), n = g.players.length;
+    return openDialog(`<h2 id="modal-title">Preset</h2><div class="sheet-list">${PRESETS.map(p=>{const tooMany=p.shares.length>n;return `<button type="button" class="sheet-item" data-action="preset" data-id="${p.id}" aria-pressed="${cur===p}" ${tooMany?'aria-disabled="true"':''}><span><strong>${p.name}</strong><small>${tooMany?`Needs ${p.shares.length} players`:p.shares.join(' / ')+'%'}</small></span>${sug===p?'<span class="tag">Suggested</span>':cur===p?ico('check'):''}</button>`;}).join('')}</div>
+      <p class="small" style="margin:10px 0 4px">Or type your own percentages on the ladder.</p>${b('Close','close','full')}`, 'sheet');
+  }
+}
+
+// ----- Render -----
+function render() {
+  const g = game();
+  const pages = { wizard, games:gamesPage, play:()=>playPage(g), results:()=>resultsPage(g), details:()=>detailsPage(g) };
+  app.innerHTML = pages[view.page]();
+  app.style.setProperty('--scale', scale); app.dataset.large = scale > 1;
+  document.querySelector('#variant').value = variant;
+  document.querySelector('#scale').value = scale;
+  document.querySelector('#variant-label').textContent = `Payout step ${variant} · ${variants[variant]}`;
+  inspect();
+}
+function inspect() {
+  const g = game();
+  const c = g.payout ? check(g) : null;
+  document.querySelector('#inspector').textContent = [
+    `Phase: ${g.phase} · ${g.mode}`, `Location: ${view.page === 'wizard' ? STEPS[g.step] : view.page}`, `Players (${g.players.length}): ${g.players.join(', ')}`,
+    `Buy-in text: “${g.buyin}”`, `Payout shares (raw): ${g.payout ? g.payout.shares.map(x=>`“${x}”`).join(' / ') : 'none'}`,
+    `Schedule: ${g.payout ? (presetOf(g.payout)?.name || 'Custom') : '—'} · ${c ? (c.ok ? 'valid' : 'needs attention: ' + summaryError(g)) : 'not filled in'}`,
+    `Suggestion for ${g.players.length}: ${suggestion(g.players.length)?.name || '—'} (never applied automatically)`,
+    `Return to preview context: ${g.returnToPreview ? 'yes' : 'no'}`, g.locked ? `Locked at Start: ${g.locked.shares.join(' / ')}% · rebuys ${g.rebuys}` : 'Nothing issued, nothing locked',
+  ].join('\n');
+}
+function focusHeading() { app.querySelector('h2')?.focus({ preventScroll:true }); if (innerWidth < 761) app.scrollIntoView({ block:'start' }); else window.scrollTo({ top:0 }); }
+function announce(t) { document.querySelector('#announcement').textContent = t; }
+function updateURL() {
+  const u = new URLSearchParams();
+  u.set('walk', scenario); if (variant !== 'A') u.set('variant', variant); if (scale !== '1') u.set('scale', scale); if (params.get('shot')) u.set('shot', '1');
+  history.replaceState(null, '', `?${u}`);
+}
+function go(st) {
+  const g = game(); visit(g, st); g.failed = false; s.toast = null; view.page = 'wizard'; render(); focusHeading();
+}
+
+// ----- Actions -----
+function act(action, el) {
+  const g = game();
+  switch (action) {
+    case 'games': closeDialog(); s.toast = null; view.page = 'games'; render(); return focusHeading();
+    case 'open': view.page = g.phase === 'Planning' ? 'wizard' : 'play'; s.toast = null; render(); return focusHeading();
+    case 'steps': return dialogFor('steps');
+    case 'menu': return dialogFor('menu');
+    case 'close': return closeDialog();
+    case 'visit': {
+      closeDialog();
+      const target = el.dataset.step;
+      if (g.step === 'preview' && target !== 'preview') g.returnToPreview = true;
+      if (target === 'preview') g.returnToPreview = false;
+      return go(target);
+    }
+    case 'back': { const st = steps(g); return go(st[Math.max(0, st.indexOf(g.step)-1)]); }
+    case 'continue': case 'to-preview': {
+      if (g.step === 'payout' && !check(g).ok) {
+        g.failed = true; render();
+        const t = app.querySelector('#places-msg') || app.querySelector('[aria-invalid="true"]') || app.querySelector('#total') || app.querySelector('#share-0');
+        t?.focus(); announce(`Check the payout schedule: ${summaryError(g)}`); return;
+      }
+      if (g.step === 'players' && g.players.length < 2) { announce('Add at least 2 players.'); return; }
+      if (g.step === 'settings' && buyin(g) == null) { const f = app.querySelector('#f-buyin'); f.setAttribute('aria-invalid','true'); app.querySelector('#e-buyin').textContent = 'Enter an amount like 20 or 20.50.'; f.focus(); return; }
+      if (action === 'to-preview') { g.returnToPreview = false; return go('preview'); }
+      const st = steps(g); return go(st[st.indexOf(g.step)+1]);
+    }
+    case 'preset': {
+      const p = PRESETS.find(x => x.id === el.dataset.id);
+      if (el.getAttribute('aria-disabled') === 'true') { g.presetMsg = `${p.name} needs at least ${p.shares.length} players.`; render(); announce(g.presetMsg); return app.querySelector(`[data-id="${p.id}"]`)?.focus(); }
+      g.payout = { shares:[...p.shares], custom:false }; g.touched = {}; g.presetMsg = ''; closeDialog(); render(); announce(`${p.name} selected.`);
+      return (app.querySelector(`[data-action="preset"][data-id="${p.id}"]`) || app.querySelector('[data-action="preset-sheet"]') || app.querySelector('#share-0'))?.focus();
+    }
+    case 'custom-chip': g.payout.custom = true; g.presetMsg = ''; render(); return app.querySelector('#share-0')?.focus();
+    case 'preset-sheet': return dialogFor('presets');
+    case 'add-place': {
+      if (el.getAttribute('aria-disabled') === 'true') return announce(`Can’t pay more places than players (${g.players.length}).`);
+      g.payout.shares.push(''); g.payout.custom = true; render(); return app.querySelector(`#share-${g.payout.shares.length-1}`)?.focus();
+    }
+    case 'remove-place': { g.payout.shares.pop(); delete g.touched[g.payout.shares.length]; g.payout.custom = true; render(); announce('Place removed.'); return app.querySelector(`#share-${g.payout.shares.length-1}`)?.focus(); }
+    case 'add-player': { const n = NAMES.find(x => !g.players.includes(x)); g.players.push(n); render(); return announce(`${n} added.`); }
+    case 'ask-remove': return dialogFor('remove', { name:el.dataset.name });
+    case 'remove': { g.players = g.players.filter(n => n !== el.dataset.name); closeDialog(); render(); return announce(`${el.dataset.name} removed. The payout schedule is unchanged.`); }
+    case 'start':
+      if (el.getAttribute('aria-disabled') === 'true') return announce('Fix setup inputs before starting.');
+      if (g.mode === 'cash') return openDialog(`<h2 id="modal-title">Cash-game Start</h2><p>That is the approved cash-game flow and isn’t part of this prototype. Switch back to Tournament in Choose mode.</p>${b('Close','close','full')}`);
+      return dialogFor('start');
+    case 'confirm-start': closeDialog(); start(g); s.toast = 'Tournament started'; view.page = 'play'; render(); return focusHeading();
+    case 'tab': s.toast = null; view.page = el.dataset.page; render(); return focusHeading();
+    case 'ask-reset': return dialogFor('reset');
+    case 'confirm-reset': closeDialog(); g.phase = 'Planning'; g.locked = null; g.rebuys = 0; g.step = 'preview'; s.toast = 'Back in Planning'; view.page = 'wizard'; render(); return focusHeading();
+  }
+}
+document.addEventListener('click', e => {
+  const el = e.target.closest('[data-action]');
+  if (el && (app.contains(el) || modal.contains(el))) { e.preventDefault(); act(el.dataset.action, el); }
+});
+app.addEventListener('input', e => {
+  const g = game(), el = e.target;
+  if (el.dataset.share != null) {
+    const pos = el.selectionStart;
+    g.payout.shares[+el.dataset.share] = el.value; g.payout.custom = true; g.presetMsg = '';
+    render();
+    const again = app.querySelector(`#${el.id}`); again.focus(); again.setSelectionRange(pos, pos);
+  } else if (el.dataset.field === 'buyin') g.buyin = el.value;
+  else if (el.dataset.field) g[el.dataset.field] = el.value;
+  inspect();
+});
+app.addEventListener('focusout', e => {
+  const g = game(), el = e.target;
+  if (el.dataset.share != null) {
+    const i = +el.dataset.share; g.touched[i] = true;
+    const err = check(g).rows[i]?.err || '';
+    el.setAttribute('aria-invalid', err ? 'true' : 'false');
+    const out = app.querySelector(`#err-${i}`); if (out) out.textContent = err;
+  }
+  if (el.dataset.field === 'buyin') {
+    const bad = el.value.trim() && parseMoney(el.value) == null;
+    el.setAttribute('aria-invalid', bad ? 'true' : 'false');
+    app.querySelector('#e-buyin').textContent = bad ? 'Enter an amount like 20 or 20.50.' : '';
+  }
+});
+app.addEventListener('change', e => {
+  const g = game(), el = e.target;
+  if (el.name === 'mode') { g.mode = el.value; render(); announce(el.value === 'cash' ? 'Cash game. The payout schedule is kept for later.' : 'Tournament. Payout schedule step is back.'); return app.querySelector(`input[value="${el.value}"]`).focus(); }
+  if (el.name === 'pref') g.pref = el.value;
+  if (el.name === 'preset') {
+    if (el.value === 'custom') { g.payout.custom = true; render(); return app.querySelector('#share-0')?.focus(); }
+    const p = PRESETS.find(x => x.id === el.value); g.payout = { shares:[...p.shares], custom:false }; g.touched = {}; render(); app.querySelector(`input[value="${p.id}"]`)?.focus();
+  }
+});
+app.addEventListener('keydown', e => {
+  if (e.key === 'Enter' && e.target.dataset.share != null) {
+    e.preventDefault();
+    const next = app.querySelector(`#share-${+e.target.dataset.share + 1}`) || app.querySelector('#continue');
+    next?.focus();
+  }
+});
+modal.addEventListener('close', () => { if (!app.contains(document.activeElement)) app.querySelector('h2')?.focus({ preventScroll:true }); });
+function setVariant(v) { variant = v; updateURL(); render(); }
+function cycle(d) { const k = Object.keys(variants); setVariant(k[(k.indexOf(variant)+d+k.length)%k.length]); }
+document.addEventListener('click', e => {
+  const t = e.target.closest('[data-tool],[data-walk]'); if (!t) return;
+  if (t.dataset.walk) { scenario = t.dataset.walk; return reset(); }
+  const tool = t.dataset.tool;
+  if (tool === 'reset') reset();
+  if (tool === 'previous') cycle(-1);
+  if (tool === 'next') cycle(1);
+  if (tool === 'restart') { closeDialog(); s.toast = null; render(); announce('Restarted. The plan resumes where it was; nothing was confirmed.'); }
+  if (tool === 'rebuy') { const g = game(); if (g.phase === 'In progress') { g.rebuys++; render(); } }
+});
+document.querySelector('#variant').addEventListener('change', e => setVariant(e.target.value));
+document.querySelector('#scale').addEventListener('change', e => { scale = e.target.value; updateURL(); render(); });
+document.addEventListener('keydown', e => {
+  if (modal.open || e.target.closest('input,select,textarea')) return;
+  if (e.key === 'ArrowLeft') cycle(-1);
+  if (e.key === 'ArrowRight') cycle(1);
+});
+reset();
+// Capture helpers: ?open=start|steps|presets|reset opens that dialog after load.
+if (params.get('open')) { const o = params.get('open'); if (o === 'reset') { view.page = 'details'; render(); } dialogFor(o); }
+</script>
