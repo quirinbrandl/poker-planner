@@ -21,7 +21,7 @@ import {
   Badge,
 } from '@/ui';
 
-type Open = null | 'confirm' | 'destructive' | 'scope' | 'long' | 'sheet';
+type Open = null | 'confirm' | 'destructive' | 'scope' | 'long' | 'unavailable' | 'sheet';
 
 export default function OverlaysGallery() {
   const [open, setOpen] = useState<Open>(null);
@@ -37,6 +37,7 @@ export default function OverlaysGallery() {
         <Button label="Delete game…" variant="destructive" onPress={() => setOpen('destructive')} fullWidth />
         <Button label="Where should changes apply?" onPress={() => setOpen('scope')} fullWidth />
         <Button label="Long confirmation" onPress={() => setOpen('long')} fullWidth />
+        <Button label="Confirm not possible yet" onPress={() => setOpen('unavailable')} fullWidth />
       </Stack>
       <SectionHeading title="Bottom sheet" />
       <Button label="Game actions" icon="more" onPress={() => setOpen('sheet')} fullWidth />
@@ -120,6 +121,18 @@ export default function OverlaysGallery() {
             {`Recorded item ${i + 1}: this paragraph makes the dialog long enough to scroll at large text sizes.`}
           </Text>
         ))}
+      </Dialog>
+
+      <Dialog
+        visible={open === 'unavailable'}
+        title="Out in the same hand"
+        confirmLabel="Record eliminations"
+        confirmIcon="exit"
+        confirmUnavailable
+        onConfirm={close}
+        onCancel={close}
+      >
+        <Text variant="supporting">Tick at least two players.</Text>
       </Dialog>
 
       <BottomSheet

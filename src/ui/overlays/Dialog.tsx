@@ -27,6 +27,8 @@ export interface DialogProps {
   /** Confirm is shown but cannot run (e.g. Calculating…). */
   confirmLoading?: boolean;
   confirmLoadingLabel?: string;
+  /** Confirm is shown but cannot run yet (focusable, reports disabled, never calls `onConfirm`). */
+  confirmUnavailable?: boolean;
   /** Cancel / dismiss. Called for the Cancel button, the Android back button and a backdrop tap. */
   onCancel: () => void;
   cancelLabel?: string;
@@ -56,6 +58,7 @@ export function Dialog({
   confirmIcon,
   confirmLoading,
   confirmLoadingLabel,
+  confirmUnavailable,
   onCancel,
   cancelLabel = 'Cancel',
   destructive,
@@ -103,6 +106,7 @@ export function Dialog({
         variant={destructive ? 'destructive' : 'primary'}
         loading={confirmLoading}
         loadingLabel={confirmLoadingLabel}
+        unavailable={confirmUnavailable}
         fullWidth
       />
     </View>
