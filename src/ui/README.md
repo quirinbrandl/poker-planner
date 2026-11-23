@@ -33,7 +33,7 @@ Rules of use:
 **`Text`** — the only text primitive. `variant` (a `type` key, default `body`), `tone` (`main`, `supporting`, `primary`, `onPrimary`, `error`, `warning`, `confirmed`, `even`), `tabular`, `strong`, `strike`, `align`. Heading variants get the header role.
 `<Text variant="supporting">EUR 20.00 contribution · 1 rebuy</Text>`
 
-**`Icon`** — 24-grid stroke icons: `back`, `forward`, `chevronLeft/Right/Up/Down`, `arrowUp/Down`, `external`, `more`, `plus`, `minus`, `removeCircle`, `close`, `check`, `edit`, `trash`, `warning`, `error`, `info`, `clock`, `players`, `user`, `userPlus`, `templates`, `chip`, `play`, `lock`, `undo`, `reopen`, `wallet`, `shield`, `reserve`, `list`, `calculator`, `exit`, `home`, `count`. Decorative unless `accessibilityLabel` is set. Props `name`, `size` (22), `color`.
+**`Icon`** — 24-grid stroke icons: `back`, `forward`, `chevronLeft/Right/Up/Down`, `arrowUp/Down`, `external`, `more`, `plus`, `minus`, `removeCircle`, `close`, `check`, `edit`, `trash`, `warning`, `error`, `info`, `clock`, `players`, `user`, `userPlus`, `templates`, `chip`, `play`, `lock`, `undo`, `reopen`, `wallet`, `shield`, `reserve`, `list`, `calculator`, `exit`, `home`, `count`, `trophy`, `search`. Decorative unless `accessibilityLabel` is set. Props `name`, `size` (22), `color`.
 `<Icon name="clock" />`
 
 ## Layout
@@ -78,7 +78,7 @@ Rules of use:
 **`StepperField`** — − / large quantity / +. Same text props as `TextField`; `onDecrement` / `onIncrement` are yours (no number rules inside), `decrementLabel` / `incrementLabel`, `decrementUnavailable`.
 `<StepperField label="Quantity (chips)" value={raw} onChangeText={setRaw} onDecrement={dec} onIncrement={inc} />`
 
-**`RadioRow`** / **`RadioGroup`** — whole-row single choice with visible indicator, border and tint; exposes checked state. `label`, `description`, `selected`, `onPress`, `unavailable`, `children` (extra content such as a chip preview). `RadioGroup` gives the set its visible `label` (`hideLabel` keeps it for screen readers only, when the title already names the choice).
+**`RadioRow`** / **`RadioGroup`** — whole-row single choice with visible indicator, border and tint; exposes checked state. `label`, `description`, `selected`, `onPress`, `unavailable`, `children` (extra content such as a chip preview), `icon` (decorative tile at the right edge, the New game mode cards). `RadioGroup` gives the set its visible `label` (`hideLabel` keeps it for screen readers only, when the title already names the choice).
 `<RadioGroup label="Distribution preference"><RadioRow label="Fewer chips" selected={p === 'fewer'} onPress={…} />…</RadioGroup>`
 
 **`CheckboxRow`** — whole-row multiple choice (the saved-player picker): visible box with tick, border and tint; exposes checked state. `label`, `description` (e.g. the reason it is unavailable), `checked`, `onPress`, `unavailable` (focusable, reports disabled, never toggles), `ref`.

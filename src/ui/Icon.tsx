@@ -58,6 +58,8 @@ const icons = {
   exit: [p('M14 4h4a2 2 0 0 1 2 2v12a2 2 0 0 1-2 2h-4'), p('M9 8l-4 4 4 4'), p('M5 12h10')],
   home: [p('m3 11 9-8 9 8M6 9v12h12V9M10 21v-7h4v7')],
   count: [{ kind: 'rect', x: 4, y: 4, width: 16, height: 16, rx: 3 }, p('M8 9h8M8 13h8M8 17h4')],
+  trophy: [p('M8 4h8v5a4 4 0 0 1-8 0V4Z'), p('M8 6H5a3 3 0 0 0 3 4M16 6h3a3 3 0 0 1-3 4'), p('M12 13v4M8.5 20h7M9.5 17h5v3h-5z')],
+  search: [c(11, 11, 6.5), p('m16 16 4.5 4.5')],
 } satisfies Record<string, Shape[]>;
 
 export type IconName = keyof typeof icons;

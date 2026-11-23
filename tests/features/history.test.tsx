@@ -29,13 +29,13 @@ it('lists finished games with their summary and opens one', async () => {
   expect(onOpenGame).toHaveBeenCalledWith('h3');
 });
 
-it('shows the empty state with Back to Games', async () => {
+it('shows the empty state; the top bar leads back to Games', async () => {
   const onBack = jest.fn();
   await renderUi(<HistoryView data={HISTORY_FIXTURES.empty} onBack={onBack} onOpenGame={jest.fn()} />);
   expect(screen.getByText('No finished games yet')).toBeTruthy();
-  expect(screen.getByText('A game shows up here once you calculate its Payments.')).toBeTruthy();
   const buttons = screen.getAllByRole('button', { name: 'Back to Games' });
-  await fireEvent.press(buttons[buttons.length - 1]);
+  expect(buttons).toHaveLength(1);
+  await fireEvent.press(buttons[0]);
   expect(onBack).toHaveBeenCalled();
 });
 

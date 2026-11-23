@@ -32,7 +32,7 @@ it('offers New game on an empty Games screen; choosing a mode creates a plan tha
   expect(await screen.findByText('No games yet.')).toBeTruthy();
 
   await fireEvent.press(screen.getByRole('button', { name: 'New game' }));
-  expect(await screen.findByText('Choose mode')).toBeTruthy();
+  expect(await screen.findByRole('radio', { name: 'Tournament' })).toBeTruthy();
 
   // Continue without a choice creates nothing.
   await fireEvent.press(screen.getByRole('button', { name: 'Continue' }));
