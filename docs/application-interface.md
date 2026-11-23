@@ -31,7 +31,8 @@ const plan = usePlanningView(gameId);     // PlanningView | null
 ```
 
 Hooks: `useGames`, `usePlanningView(gameId)`, `useDistributionPreview(gameId)`,
-`usePlayView(gameId)`, `usePlayerPicker(gameId)`, `useSavedPlayers`, `useTemplates`,
+`usePlayView(gameId)`, `useCashResults(gameId)`, `useCountEditor(gameId, participantId, showErrors?)`,
+`useCashPlayer(gameId, participantId)`, `usePlayerPicker(gameId)`, `useSavedPlayers`, `useTemplates`,
 `useWorkingLocation`, `usePersistenceStatus`. For any other read, call the method
 on `app` inside the component; reads are cheap, memoized and return the same object until
 something relevant changes.
@@ -372,6 +373,54 @@ Only facts are stored: the bank (chip set − issuances, + returns later), contr
 consumption (rebuys + late entries) and totals are derived in `play/ledger.ts`. The Planning draft
 stays untouched while In progress. Later record types become further fields of `play`, are cleared
 by Return to Planning and counted in its confirmation.
+
+### Cash-game final chip counts, results and accounting status
+
+Reads (memoized; `null` unless the game is an In progress cash game with that participant):
+`play.getResults(gameId): CashResultsView` (`useCashResults`),
+`play.getCountEditor(gameId, participantId, { showErrors? }): CountEditorView` (`useCountEditor`;
+also `null` once the participant has a result), `play.getCashPlayer(gameId, participantId):
+CashPlayerView` (`useCashPlayer`). The screen types re-export the plain data types (`QuantityEntry`,
+`CountTotals`, `ResultConfirmationData`, `BlockedMixData`, `ResultsStatus`, `ResultsPlayerRow`,
+`BuyInRecord`, `PlayerResult`, …); containers only add the context line and Back labels.
+
+| Operation | Result |
+| --- | --- |
+| `play.setCountText(gameId, participantId, denominationValue, text)` | `accepted` \| `rejected gameNotFound \| notInProgress \| notCashGame \| participantNotFound \| resultExists \| denominationNotFound`. Saves the raw text exactly as typed; moves no chips. A draft whose every text is empty is removed (the player is uncounted again). |
+| `play.setRemainingCountToZero(gameId, participantId)` | as above. Fills blank quantities with `0`; entered or invalid text stays. |
+| `play.discardCountDraft(gameId, participantId)` | as above. Removes the draft. |
+| `play.reviewCount(gameId, participantId)` (synchronous, changes nothing) | `needsConfirmation { confirmation: ResultConfirmationData }` \| `needsCorrection { firstDenominationValue, problem }` (read the editor with `showErrors: true`) \| `blocked { blocked: BlockedMixData }` ("More chips than the game has") \| `rejected` (access codes, `resultExists`). |
+| `play.confirmResult(gameId, participantId, { counts })` | `accepted` \| `blocked { blocked }` \| `rejected …access \| resultExists \| countIncomplete \| countChanged`. Pass the counts of the confirmation the popup showed (`confirmation.mix[].count`). |
+
+- One draft per participant (`PlayRecord.countDrafts`: raw text per denomination), kept across
+  leaving the editor and restart. Empty is "not entered", never zero; quantities are digits only
+  (outer spaces ignored), at most 999,999. Errors after a failed review: "Enter a quantity,
+  including zero." / "Use a whole number, digits only." / "Enter a smaller number."; editor
+  problem "Count incomplete. Your entries are kept. Fix the marked quantities." The review flag is
+  screen state (`showErrors`), not stored.
+- Confirm recomputes the review: it is rejected with `countChanged` ("The count changed. Review it
+  again.") if the draft no longer gives `counts`. Accepted, it records the participant's one
+  `ResultRecord` (the counted mix), removes the draft and returns the mix to the bank in one commit.
+  The reserve target and its consumption are unchanged; the game stays In progress.
+- A count may return at most the chips currently out at the table per denomination (chip set −
+  bank), not the player's own stacks: table winnings are fine. Otherwise `blocked`, e.g.
+  "That’s 1 White chip more than the game has. Check the quantities you entered." (several
+  denominations joined with "and"; a chip without a unique colour is named "100-unit").
+- Amounts are exact until Payments: chip value = units × `terms.cashRate` (`formatExactEur`),
+  win / loss = chip value − all contributions (`formatSignedExactEur`, direction
+  `gain | loss | even`).
+- `CashResultsView.status`: `toCount` ("N still to count", uncounted names in joining order,
+  counted / total), then once everyone has a result `missing` / `tooMany` ("1 chip unit missing",
+  "EUR 0.10 · 1,199 of 1,200 counted. Recount, or correct a result.") or `addsUp` ("All 6 counted ·
+  1,200 chip units"). Drafts never count; counted units are compared with cumulative issuance
+  (`accounting.issuedUnits`), never the chip set or bank. `calculatePayments` is available only when
+  everything adds up, else its one reason ("Count everyone first." / "Find the missing chips
+  first." / "Fix the extra chips first."). Rows: `uncounted` / `countDraft` / `result` (no
+  "Result confirmed" tag; `correctionDraft` is reserved for corrections).
+- `CashPlayerView.buyIns` lists every issuance of the participant from `play.issuances` with its
+  actual mix: the first stack as "Buy-in", then "Rebuy 1", …; `coverageText` for a reduced-coverage
+  stack. `undo`, `returnToPlay`, `addedLater`, `corrected` and `correctionDraft` are filled by the
+  correction work; `actions.countFinalChips` is true until a result exists.
 
 ## Saved players
 

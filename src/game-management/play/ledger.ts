@@ -73,3 +73,25 @@ export function reserveConsumed(play: PlayRecord): number {
 export function reserveUnconsumed(play: PlayRecord): number {
   return Math.max(0, play.terms.reserve.target - reserveConsumed(play));
 }
+
+/**
+ * Chips currently out at the table, per denomination: configured chip set − bank. A new final
+ * result may return at most this many of each denomination (table-wide, not the player's own stacks).
+ */
+export function inPlayMix(play: PlayRecord): ChipMix {
+  const bank = bankMix(play);
+  return mixOf(
+    play,
+    play.terms.chipSet.map((d, i) => d.quantity - bank[i].count),
+  );
+}
+
+/** Chip units of every issuance so far: cumulative issued value, never the bank or the chip set. */
+export function cumulativeIssuedUnits(play: PlayRecord): number {
+  return play.issuances.reduce((sum, i) => sum + mixValue(i.mix), 0);
+}
+
+/** Chip units of every confirmed final result. */
+export function countedUnits(play: PlayRecord): number {
+  return (play.results ?? []).reduce((sum, r) => sum + mixValue(r.mix), 0);
+}
