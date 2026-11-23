@@ -3,7 +3,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <link rel="icon" href="data:,">
-<title>Cash-game Payments · Prototype review v1</title>
+<title>Cash-game Payments · Approved (Review v1)</title>
 <style>
   * { box-sizing: border-box; }
   :root { color-scheme: dark; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; background: #0b1117; color: #f1f4f5; --accent: #c9b5ff; --tint: #322b45; }
@@ -184,7 +184,7 @@
   @media (prefers-reduced-motion:reduce) { *, *::before, *::after { transition: none !important; animation: none !important; } }
 </style>
 <main class="workshop">
-  <header><div class="revision">Review v1 · Payments, reopening, history, delete</div><h1>Finish, settle, look back.</h1><p class="intro">The Payments screen comes in three layouts: switch with the bar at the bottom. Everything else (finishing, History, Reopen, Return to Planning, Delete) is one proposal. In-memory only; reload resets everything.</p></header>
+  <header><div class="revision">Approved · Payments layout A, lifecycle popups, History</div><h1>Finish, settle, look back.</h1><p class="intro">Approved: Payments layout <b>A · Payment list</b>, the finishing / Reopen / Return to Planning / Delete popups and History as shown, and no “Result confirmed” tag on player rows. B and C stay switchable as archived alternatives. In-memory only; reload resets everything.</p></header>
   <div class="layout">
     <section id="app" aria-label="Phone prototype"></section>
     <aside class="review"><details id="tools"><summary>Prototype controls &amp; scenarios</summary><div class="review-controls">
@@ -388,7 +388,7 @@ function row(g,p,i){
   const value=g.phase==='Completed'?g.settlement.balances[i]:null;
   const shown=value!=null?cents(value,true):net!=null?money(net,20000,true):'';
   const t=value!=null?tone(value):net!=null?tone(net):'';
-  return `<div class="player-row"><button type="button" class="player-main" data-action="player" data-id="${p.id}"><span><strong>${esc(p.name)}</strong><span class="small">${cents(contrib(g,p))} contribution${p.rebuys?` · ${plural(p.rebuys,'rebuy')}`:''}</span>${p.units==null?'<span class="badge">Uncounted</span>':'<span class="badge ok">Result confirmed</span>'}</span>${shown?`<span class="net ${t}"><strong>${shown}</strong><small>${outcomeWord(value!=null?value:net)}</small></span>`:''}</button></div>`;
+  return `<div class="player-row"><button type="button" class="player-main" data-action="player" data-id="${p.id}"><span><strong>${esc(p.name)}</strong><span class="small">${cents(contrib(g,p))} contribution${p.rebuys?` · ${plural(p.rebuys,'rebuy')}`:''}</span>${p.units==null?'<span class="badge">Uncounted</span>':''}</span>${shown?`<span class="net ${t}"><strong>${shown}</strong><small>${outcomeWord(value!=null?value:net)}</small></span>`:''}</button></div>`;
 }
 function playPage(g){
   const active=g.players.filter(p=>p.units==null);

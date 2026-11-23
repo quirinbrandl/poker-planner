@@ -1,8 +1,16 @@
-# Cash-game Payments, reopening, history and delete · Review v1
+# Cash-game Payments, reopening, history and delete · Approved
 
-**Throwaway UI prototype. Not approved yet.** It asks: how does a host finish a cash game, read who pays whom, look back at finished games, and Reopen / Return to Planning / Delete without mixing those up or trusting stale Payments?
+**Throwaway UI prototype. The human approved it after Review v1.** It asks: how does a host finish a cash game, read who pays whom, look back at finished games, and Reopen / Return to Planning / Delete without mixing those up or trusting stale Payments?
 
 Decision ticket: [Design Payments, reopening, history, and destructive actions](https://github.com/quirinbrandl/poker-planner/issues/38). It continues the approved [results prototype](https://github.com/quirinbrandl/poker-planner/tree/64553733318a53b37abcb5f0b4c8e2714b964056/docs/prototypes/cash-game-results) (count editor, result confirmation, player page, results status card). Those screens are only stubbed here. No production code, functional specification or implementation-ticket criteria are changed by this branch.
+
+## Resolution
+
+- **Payments layout A · Payment list** is chosen. B (by player) and C (money flow) stay switchable as archived alternatives, not MVP choices.
+- The **Calculate Payments?**, **Game actions**, **Reopen**, **Return to Planning**, **Delete** and **History** proposals below are approved as shown (“2: fine”).
+- **No “Result confirmed” tag on player rows**, in Play, Results or Completed. The signed Won / Lost amount already shows that a result exists. Rows keep a tag only for open work: **Uncounted**, **Count draft**, or **Correction draft**. This was raised during review and approved (“yeah that sounds good”).
+
+Approved captures: `previews/approved-*.png`. The `review-v1-*` captures are the review history; they still show the dropped tag.
 
 ## Run
 
@@ -24,7 +32,7 @@ URL parameters:
 
 All data is in memory; reload resets it.
 
-## The question with options: Payments layout
+## Payments layout options (A chosen)
 
 Same data, three structures:
 
@@ -32,11 +40,11 @@ Same data, three structures:
 - **B · By player**: one card per player in joining order, with their balance and their own lines (“PAY Clara EUR 8.00”, “GET from David EUR 7.00”, “Nothing to pay or get.”). Each payment appears on both people's cards.
 - **C · Money flow**: a two-column diagram, PAYS on the left and GETS on the right, ribbons labelled with the amount. Clean at 3 payments, hard to trace at 10 (`fixture=big`). SVG text does not grow with app text size.
 
-## One proposal for everything else
+## Everything else (approved as proposed)
 
 - **Calculate Payments** stays on Results (approved). Enabled only when everything adds up; otherwise disabled with one reason, and tapping it shows “Can’t calculate Payments yet” and moves focus to the status card. Opens **Calculate Payments?**: “✓ All 6 counted · 1,600 chip units” and “This finishes the game. Results become read-only; you can reopen it later.” **Cancel / Calculate Payments**. While calculating, the button reads “Calculating…”. Success opens **Completed → Payments** with a “✓ Game finished” toast.
 - **Payments page** (Completed): context line with created and finished time, Completed badge, tabs **Payments / Results / Game details**, one line “Who pays whom. The app doesn’t track payments.” No algorithm badges, no paid ticks, no editing. All-zero balances show **No payments needed · Everyone broke even.**
-- **Completed Results / player page / Game details** are the approved screens, read-only, with allocated cents. Game details ends with “Read-only. To change something, reopen the game from ⋯.” In progress it says “Setup is locked. To change it, use ⋯ → Return to Planning.”
+- **Completed Results / player page / Game details** are the approved screens, read-only, with allocated cents, and no “Result confirmed” row tag. Game details ends with “Read-only. To change something, reopen the game from ⋯.” In progress it says “Setup is locked. To change it, use ⋯ → Return to Planning.”
 - **Game actions (⋯)** is a bottom sheet with one line per item. Completed: **Reopen game…**, **Delete game…**. In progress: **Return to Planning…**, **Delete game…**. Planning: **Delete game…**. Return to Planning is not offered on a Completed game; reopen first.
 - **Reopen this game?** “Results and buy-ins stay. These Payments stop being final. Calculate them again when you’re done.” **Cancel / Reopen game**. Goes to In progress → Results with “✓ Game reopened”; the old Payments are gone, not shown as stale. Under Calculate Payments: “Reopened · calculate Payments again when you’re done.” The game leaves History and shows on Games as “Reopened · calculate Payments again →”.
 - **Return to Planning?** (destructive, Cancel focused) “Clears: 2 rebuys · 6 results · all handed-out stacks”, “Keeps: 6 players · buy-ins · settings”, “Collect all chips. You’ll hand out new stacks after Start.” **Cancel / Return to Planning**. Goes to the Planning Distribution preview (stub) with “✓ Back in Planning”.
