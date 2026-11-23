@@ -482,8 +482,10 @@ interface IssueFeedback { title: 'Rebuy issued for Ben' | 'Nora joined';
 
 `play.getPlayScreen(gameId): PlayScreenView | null` (cash only; `usePlayScreen`),
 `play.getBankReserve(gameId): BankReserveScreenView | null` (`useBankReserve`),
-`play.getGameDetails(gameId): GameDetailsScreenView | null` (In progress, both modes;
-`useGameDetails`), `play.getAddPlayer(gameId): AddPlayerScreenView | null` (`useAddPlayer`). Each is
+`play.getGameDetails(gameId): GameDetailsScreenView | null` (In progress or Completed, both modes,
+`null` in Planning; `phase`, `createdAt` and `finishedAt` (ISO 8601, `null` while In progress): the
+Completed tab shows the facts locked at Start, the final payouts and the finishing time, and no
+bank link; `useGameDetails`), `play.getAddPlayer(gameId): AddPlayerScreenView | null` (`useAddPlayer`). Each is
 exactly the screen's data in `src/features/{play,entry,details}/types.ts` minus what the workspace
 adds (context line, back label, formatted dates). Play rows read the shared records: a count draft
 gives **Resume** / "Count draft"; a confirmed result moves the player to Finished playing with the
@@ -506,18 +508,26 @@ internal). Places, the sole remaining winner, every payout and whether late entr
 derived from it, the roster, all contributions (the prize pool) and the locked schedule (leftover
 cents to 1st first). For N players the first one out is Nth. Eliminations move no chips, need no
 chip count, never change contributions or the schedule, and never complete the game. Late entry is
-open only while no elimination is recorded (`isLateEntryOpen` in `play/ledger.ts` for the later
-late-entry operation).
+open only while no elimination is recorded: `proposeEntry` / `addLatePlayer` answer
+`rejected eliminationsRecorded` ("Late entry is closed while an elimination is recorded.") while any
+elimination remains; undoing every elimination opens it again, rebuys never close it. A late arrival
+gets a fully qualifying stack only, consumes the shared reserve target without enlarging it and
+never changes paid places or percentages. A player still in rebuys through the shared
+`proposeRebuy` / `issueRebuy` (no time cutoff, no per-player limit; reduced coverage needs the
+explicit acceptance); an eliminated player is `rejected eliminated` until **Back in the game**.
+Every rebuy and late entry raises the prize pool and every payout and adds no place; their popups
+carry `extraFacts: [{ label: 'Prize pool', value: 'EUR 140.00 → EUR 160.00' }]`.
 
-Reads (`null` unless an In progress tournament; hooks `useTournamentPlay`, `useTournamentResults`,
+Reads (`getTournamentPlay` and `describeOrderDraft`: `null` unless an In progress tournament;
+`getTournamentResults` and `getTournamentPlayer` also read a Completed tournament, read-only; hooks `useTournamentPlay`, `useTournamentResults`,
 `useTournamentPlayer`, `useOrderEditor`). Each is the screen's data from
 `src/features/tournament/types.ts` without the workspace frame or context line, which the container adds:
 
 | Read | Returns |
 | --- | --- |
 | `play.getTournamentPlay(gameId)` | `TournamentPlayView`: terms, prize-pool rungs with holders, `stillIn` (players with the `EliminationPreview` the Out popup shows: place, payout, `closesLateEntry`, the winner with two left; `nextPlaceLabels` for the same hand) or `null` with a `winner`, `lateEntry: { status: 'open' } \| { status: 'closed', eliminationsText, message }`, unpaid finishers, `reserveText`. |
-| `play.getTournamentResults(gameId)` | `TournamentResultsView`: `status` (`incomplete` with ring and names, or `winner`), `openPlaces`, `finishers` best first, `canEditOrder`, `calculate: { kind: 'ready' } \| { kind: 'blocked', stillPlayingText, message: 'Record eliminations until one player is left.' }`. |
-| `play.getTournamentPlayer(gameId, participantId)` | `TournamentPlayerView`: `status: 'stillIn' \| 'out' \| 'winner'`, `buyIns` (shaped like the player page's `BuyInRecord`), `buyInsTotalText`, `result: TournamentPlayerResult \| null` (place, payout, balance), `backIn: BackInData \| null` (eliminated players only). |
+| `play.getTournamentResults(gameId)` | `TournamentResultsView`: `status` (`incomplete` with ring and names, or `winner`), `openPlaces`, `finishers` best first, `canEditOrder` (never when Completed), `calculate: { kind: 'ready' } \| { kind: 'blocked', stillPlayingText, message: 'Record eliminations until one player is left.' } \| { kind: 'readOnly' }` (Completed), `phase`, `reopened` (In progress after Reopen, until Payments are calculated again). |
+| `play.getTournamentPlayer(gameId, participantId)` | `TournamentPlayerView`: `status: 'stillIn' \| 'out' \| 'winner'`, `buyIns` (shaped like the player page's `BuyInRecord`), `buyInsTotalText`, `result: TournamentPlayerResult \| null` (place, payout, balance), `backIn: BackInData \| null` (eliminated players of an In progress tournament only), `phase: 'inProgress' \| 'completed'`. |
 | `play.describeOrderDraft(draft)` | `OrderEditorView` for any draft: rows with places, payouts, `was 5th` / `missed` markers and move labels; `missed` candidates and slots (or `null` with fewer than two left); `changes` against the saved order. Changes nothing. |
 
 Operations:
@@ -575,12 +585,24 @@ interface HistoryGameView {
   game Completed. Show "✓ Game finished" and its Payments. Payments are instructions only; nothing
   records that money changed hands.
 - Each mode supplies its final money results (`completion/modes.ts`: cash = allocated chip value;
-  tournament completion, a later task, = payout by finishing place) plus its Balances lines and
-  History facts; everything else is shared.
+  tournament = payout by finishing place) plus its Balances lines and History facts; everything
+  else is shared.
+- Tournaments are ready only with a complete finishing order: exactly N − 1 distinct eliminations
+  and one derived winner (else `notReady` "Record eliminations until one player is left."). Chip
+  counts and a chip-to-money rate are never used. The whole prize pool (every buy-in, late entry
+  and rebuy) is allocated to places: each share floored to cents, leftover cents from 1st place
+  down (EUR 20.01 at 50 / 30 / 20 → 10.01 / 6.00 / 4.00; EUR 15.03 → 7.52 / 4.51 / 3.00, where
+  cash-style largest remainder would give 7.51 / 4.51 / 3.01); unpaid places get 0 and the payouts
+  sum to all contributions. Balance = payout − contributions. Each stored `SettledPlayer` keeps its
+  `place`. Calculate Payments? reads `readyLine: 'Alice wins · all 5 eliminations recorded'`,
+  `facts: [{ 'Prize pool', 'EUR 140.00' }, { '1st · Alice', 'EUR 98.00' }, { '2nd · Clara', 'EUR 42.00' }]`.
+  Balances (joining order) carry `placeLabel: '1st'`, `placeHighlight` for the winner and
+  `lines: ['Payout EUR 98.00' | 'No payout', 'Buy-ins EUR 20.00']`; the History card reads
+  `Prize pool EUR 140.00 · 5 payments (or No payments needed) · Winner Alice`.
 - Completed is read-only. Every play operation that is not a `get…` read answers
   `rejected gameCompleted` ("This game is completed. To change something, reopen it from ⋯.") —
-  centrally in `play/index.ts`, also for operations added later, provided they take the game id as
-  their first argument; a write to a Completed game through the play runtime never applies. Planning
+  centrally in `play/index.ts`, also for operations added later, provided they take the game id (or
+  a draft carrying `gameId`, like `saveOrder`) as their first argument; a write to a Completed game through the play runtime never applies. Planning
   edits answer `setupLocked`, Return to Planning `gameCompleted` (reopen first). Reads stay:
   `getResults` / `getCashPlayer` give `phase: 'completed'`, the allocated cents (`+EUR 2.50`, chip
   value `EUR 12.51`) instead of exact amounts, `calculatePayments.available: false` and
