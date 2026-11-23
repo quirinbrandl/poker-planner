@@ -1,5 +1,6 @@
-import { router, useLocalSearchParams } from 'expo-router';
-import { useMemo, useState } from 'react';
+import { router, useFocusEffect, useLocalSearchParams } from 'expo-router';
+import { useCallback, useMemo, useState } from 'react';
+import { BackHandler } from 'react-native';
 
 import type { BlockedMixData, ConfirmOutcome } from '@/features/count/types';
 import { GameActionsSheet } from '@/features/game/GameActionsSheet';
@@ -37,14 +38,25 @@ export default function FixScreen() {
   const rebuy = useRebuyPopup(gameId);
   const [actionsOpen, setActionsOpen] = useState(false);
 
-  if (!game || !fix) return <Screen />;
-
-  const toPlay = () => router.replace(playHref(gameId));
-  const leave = () => {
+  const done = fix?.step === 'done';
+  const leave = useCallback(() => {
     // A finished fix is forgotten when the host leaves it; an unfinished one stays for Play.
-    if (fix.step === 'done') void app.play.finishFix(gameId);
-    toPlay();
-  };
+    if (done) void app.play.finishFix(gameId);
+    router.replace(playHref(gameId));
+  }, [app, gameId, done]);
+
+  // Android back does what the visible Back to Play does, not return to the count editor below.
+  useFocusEffect(
+    useCallback(() => {
+      const subscription = BackHandler.addEventListener('hardwareBackPress', () => {
+        leave();
+        return true;
+      });
+      return () => subscription.remove();
+    }, [leave]),
+  );
+
+  if (!game || !fix) return <Screen />;
 
   const outcome = (result: StepResult, accepted: string): ConfirmOutcome => {
     if (result.status === 'accepted') {
