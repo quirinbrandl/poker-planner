@@ -3,6 +3,7 @@ export * from './theme';
 export { Text, type TextProps, type TextTone } from './Text';
 export { Icon, iconNames, type IconName, type IconProps } from './Icon';
 export { useReduceMotion, usePressFeedback } from './motion';
+export type { ViewRef, TextInputRef, ScrollViewRef } from './refs';
 
 export { Screen, type ScreenProps } from './layout/Screen';
 export { TopBar, type TopBarProps } from './layout/TopBar';
@@ -20,6 +21,7 @@ export { IconButton, type IconButtonProps } from './controls/IconButton';
 export { TextField, type TextFieldProps, type FieldKeyboard } from './controls/TextField';
 export { StepperField, type StepperFieldProps } from './controls/Stepper';
 export { RadioRow, RadioGroup, type RadioRowProps, type RadioGroupProps } from './controls/RadioRow';
+export { CheckboxRow, type CheckboxRowProps } from './controls/CheckboxRow';
 export { SegmentedTabs, type SegmentedTabsProps, type TabItem } from './controls/SegmentedTabs';
 export {
   StepLink,
@@ -32,6 +34,7 @@ export {
 } from './controls/StepLink';
 
 export { Dialog, type DialogProps, type DialogAction } from './overlays/Dialog';
+export { focusView } from './overlays/focus';
 export { BottomSheet, type BottomSheetProps, type SheetAction } from './overlays/BottomSheet';
 export { ToastProvider, useToast, TOAST_DURATION_MS, type ToastApi, type ToastTone } from './overlays/Toast';
 
