@@ -78,7 +78,8 @@ it('step 3 asks for the new rebuy; done lists the three operations', async () =>
   for (const line of ['Bob’s old rebuy 2 undone', 'Alice’s count saved', 'Bob got a new rebuy']) {
     expect(screen.getByLabelText(`Done: ${line}`)).toBeTruthy();
   }
-  await fireEvent.press(screen.getByRole('button', { name: 'Back to Play' }));
+  // The top bar's back says the same; the button under the list is the last one.
+  await fireEvent.press(screen.getAllByRole('button', { name: 'Back to Play' }).at(-1)!);
   expect(onFinish).toHaveBeenCalledTimes(1);
 });
 
