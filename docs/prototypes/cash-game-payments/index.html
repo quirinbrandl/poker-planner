@@ -1,0 +1,608 @@
+<!doctype html>
+<html lang="en">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="icon" href="data:,">
+<title>Cash-game Payments · Prototype review v1</title>
+<style>
+  * { box-sizing: border-box; }
+  :root { color-scheme: dark; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; background: #0b1117; color: #f1f4f5; --accent: #c9b5ff; --tint: #322b45; }
+  body { margin: 0; padding: 24px 16px 110px; }
+  button, input, select { font: inherit; }
+  button { min-height: 48px; min-width: 48px; padding: 10px 14px; border: 1px solid #7c90a0; border-radius: 14px; background: #1e2a34; color: #f1f4f5; line-height: 1.35; cursor: pointer; }
+  button:active { filter: brightness(.88); }
+  button[aria-disabled="true"] { border-style: dashed; color: #b3c0ca; }
+  :focus-visible { outline: 3px solid var(--accent); outline-offset: 3px; }
+  select { min-height: 48px; max-width: 100%; border: 1px solid #7c90a0; border-radius: 12px; background: #111920; color: #f1f4f5; padding: 12px; }
+  label { display: grid; gap: 6px; }
+  h1, h2, h3, p { margin-top: 0; }
+  p { line-height: 1.5; }
+  a { color: var(--accent); }
+  .workshop { max-width: 1000px; margin: auto; }
+  .workshop > header { max-width: 800px; margin: 0 auto 24px; }
+  .workshop h1 { font-size: 28px; letter-spacing: -.04em; margin-bottom: 8px; }
+  .revision { display: inline-block; padding: 6px 12px; border: 1px solid var(--accent); border-radius: 12px; color: var(--accent); font-size: 14px; margin-bottom: 12px; }
+  .intro { color: #b3c0ca; font-size: 14px; }
+  .layout { display: grid; grid-template-columns: minmax(0,430px) minmax(0,1fr); gap: 28px; align-items: start; }
+  #app, dialog { --scale: 1; font-size: calc(16px * var(--scale)); line-height: 1.5; overflow-wrap: anywhere; }
+  #app { min-width: 0; min-height: 800px; background: #111920; border: 1px solid #364653; border-radius: 26px; box-shadow: 0 20px 70px #0004; }
+  .page { padding: 20px 18px 28px; }
+  #app h2 { font-size: 2.35em; letter-spacing: -.045em; line-height: 1.08; margin-bottom: 12px; }
+  #app h3 { font-size: 1.1em; letter-spacing: -.02em; margin-bottom: 8px; }
+  .between, .topline { display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 8px; }
+  .topline { margin-bottom: 10px; }
+  .context, .small { color: #b3c0ca; font-size: .78em; }
+  .context { margin-bottom: 8px; }
+  .quiet { background: transparent; border-color: transparent; }
+  .primary { background: var(--accent); color: #2b1e45; border-color: var(--accent); border-radius: 100px; font-weight: 700; }
+  .danger { background: #3d2427; color: #ffb3aa; border-color: #ffb3aa; }
+  .full { width: 100%; }
+  .nav { display: grid; grid-template-columns: 1fr 1fr 1.4fr; gap: 4px; margin: 12px 0 22px; padding: 4px; border: 1px solid #364653; border-radius: 17px; }
+  .nav button { padding: 9px 5px; background: transparent; border-color: transparent; font-size: .78em; }
+  .nav [aria-current="page"] { background: var(--tint); color: var(--accent); border-color: var(--accent); }
+  .actions { display: flex; flex-wrap: wrap; gap: 8px; margin: 18px 0 0; }
+  .actions > button { flex: 1; }
+  .card { background: #1e2a34; border: 1px solid #364653; border-radius: 22px; padding: 16px; margin: 14px 0; min-width: 0; }
+  .badge { display: inline-block; padding: 3px 9px; border: 1px solid #7c90a0; border-radius: 100px; font-size: .71em; margin: 0 4px 6px 0; }
+  .badge.ok { background: #20372b; color: #b8dfbd; border-color: #b8dfbd; }
+  .badge.info { background: var(--tint); color: var(--accent); border-color: var(--accent); }
+  .game-terms { display: grid; grid-template-columns: repeat(3,minmax(0,1fr)); border: 1px solid #637084; border-radius: 22px; background: linear-gradient(135deg,#29313f,#1a2530); margin: 4px 0 18px; padding: 18px 0; }
+  .term { padding: 0 12px; border-left: 1px solid #46515f; min-width: 0; }
+  .term:first-child { border: 0; }
+  .term > span { display: block; font-size: .72em; color: #c4ced6; margin-bottom: 8px; }
+  .term strong { display: block; font-size: 1.65em; line-height: 1.1; letter-spacing: -.045em; font-variant-numeric: tabular-nums; }
+  .term:first-child strong { color: var(--accent); }
+  .term small { display: block; color: #b3c0ca; font-size: .67em; margin-top: 6px; }
+  .player-row { display: flex; align-items: center; flex-wrap: wrap; gap: 8px; padding: 8px 0; border-bottom: 1px solid #364653; }
+  .player-main { flex: 1; min-width: 0; text-align: left; border: 0; padding: 8px 4px; background: transparent; display: grid; grid-template-columns: minmax(0,1fr) auto; gap: 10px; align-items: center; }
+  .player-main strong, .player-main .small { display: block; }
+  .net { text-align: right; font-variant-numeric: tabular-nums; }
+  .net strong { font-size: 1.35em; letter-spacing: -.04em; }
+  .net small { display: block; color: #b3c0ca; font-size: .72em; }
+  .gain { color: #b8dfbd; } .loss { color: #ffb3aa; } .even { color: #e3d9fc; }
+  .hero { padding: 22px 18px; border: 1px solid #85749e; border-radius: 24px; background: radial-gradient(130% 100% at 100% 0,#3a304a,#19272b 90%); margin: 12px 0 20px; }
+  .hero .amount { display: block; font-size: 2.8em; line-height: 1.1; font-weight: 780; letter-spacing: -.055em; margin: 8px 0 18px; }
+  .metric { display: flex; justify-content: space-between; flex-wrap: wrap; gap: 8px 12px; padding: 9px 0; border-bottom: 1px solid #46515f; }
+  .metric > span { color: #b3c0ca; }
+  .metric > strong { font-variant-numeric: tabular-nums; text-align: right; }
+  .section-title { margin-top: 26px; }
+  .chip { width: 38px; height: 38px; flex-shrink: 0; }
+  .pills { display: flex; flex-wrap: wrap; gap: 7px; }
+  .pill { display: flex; align-items: center; gap: 7px; background: #111920; border: 1px solid #46515f; border-radius: 100px; padding: 7px 10px 7px 6px; font-size: .8em; }
+  .pills.compact .pill { padding: 4px 9px 4px 4px; }
+  .pills.compact .chip { width: 28px; height: 28px; }
+  dialog { border: 1px solid #7c90a0; border-radius: 24px; padding: 20px; background: #15212b; color: #f1f4f5; width: min(400px,calc(100vw - 28px)); max-height: calc(100dvh - 32px); overflow-y: auto; }
+  dialog::backdrop { background: #000b; }
+  dialog h2 { font-size: 1.5em; line-height: 1.15; letter-spacing: -.03em; margin-bottom: 12px; }
+  dialog .actions { display: grid; grid-template-columns: minmax(0,.8fr) minmax(0,1.2fr); }
+  .review { background: #111920; border: 1px solid #364653; border-radius: 20px; padding: 0 16px 16px; min-width: 0; font-size: 14px; color: #b3c0ca; }
+  summary { cursor: pointer; min-height: 48px; padding: 14px 0; color: #f1f4f5; font-weight: 650; }
+  .review-controls { display: grid; gap: 12px; }
+  .review button { text-align: left; }
+  .review p { margin-bottom: 8px; }
+  .walks { display: grid; gap: 8px; }
+  pre { white-space: pre-wrap; overflow-wrap: anywhere; font-size: 12px; max-height: 460px; overflow-y: auto; padding: 12px; background: #0b1117; color: #b8dfbd; border-radius: 12px; }
+  .switcher { position: fixed; z-index: 8; bottom: 16px; left: 50%; transform: translateX(-50%); display: flex; align-items: center; gap: 4px; max-width: calc(100vw - 20px); padding: 5px; background: #ede4ff; color: #2b1e45; border: 1px solid #c9b5ff; border-radius: 100px; box-shadow: 0 8px 28px #0008; }
+  .switcher button { background: #2b1e45; color: #fff; border: 0; border-radius: 100px; padding: 8px; }
+  .switcher span { font-size: 13px; min-width: 0; padding: 0 8px; text-align: center; }
+  .toast { margin: 0 0 14px; padding: 9px 14px; border-radius: 100px; background: #20372b; color: #b8dfbd; font-size: .85em; font-weight: 650; width: max-content; max-width: 100%; }
+  .toast.error { width: auto; border-radius: 16px; background: #3d2427; color: #ffb3aa; font-weight: 400; }
+  .toast.error strong { display: block; }
+  .sec { display: flex; justify-content: space-between; align-items: center; gap: 8px; margin: 26px 0 10px; }
+  #app .sec h3 { margin: 0; }
+  .buyin { padding: 14px 0; border-bottom: 1px solid #364653; }
+  .buyin-head { display: flex; justify-content: space-between; align-items: center; gap: 8px; flex-wrap: wrap; margin-bottom: 10px; }
+  .status-card { text-align: center; padding: 24px 18px; border-radius: 24px; border: 1px solid #364653; background: #1e2a34; margin: 6px 0 18px; }
+  .status-card .icon { width: 64px; height: 64px; margin: 0 auto 12px; border-radius: 50%; display: grid; place-items: center; font-size: 28px; font-weight: 750; }
+  .status-card.ok .icon { background: #20372b; color: #b8dfbd; border: 2px solid #b8dfbd; }
+  .status-card.bad .icon { background: #3d2427; color: #ffb3aa; border: 2px solid #ffb3aa; }
+  .status-card.wait .icon { background: var(--tint); color: var(--accent); border: 2px solid var(--accent); font-size: 20px; }
+  .status-card .big { display: block; font-size: 1.7em; font-weight: 750; letter-spacing: -.035em; line-height: 1.15; }
+  .status-card p { color: #b3c0ca; margin: 8px 0 0; font-size: .88em; }
+  .payments-note { text-align: center; margin-top: 8px; }
+  .sr-only { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); }
+  /* Review v1 · Games, History, Payments, game actions */
+  .brand { font-size: .72em; font-weight: 750; letter-spacing: .12em; color: #b3c0ca; margin-bottom: 14px; }
+  .game-card { display: block; width: 100%; text-align: left; background: #1e2a34; border: 1px solid #364653; border-radius: 22px; padding: 16px 18px; margin: 0 0 12px; }
+  .game-card.active { border-color: #85749e; background: radial-gradient(130% 100% at 100% 0,#3a304a,#1e2a34 80%); }
+  .game-card strong { display: block; font-size: 1.12em; line-height: 1.3; margin: 4px 0 6px; }
+  .game-card .small { display: block; }
+  .game-card .go { display: block; margin-top: 4px; color: #f1f4f5; font-size: .8em; }
+  .game-card .summary { display: flex; flex-wrap: wrap; gap: 4px 14px; margin-top: 10px; padding-top: 10px; border-top: 1px solid #364653; font-size: .8em; }
+  .game-card .summary span { color: #b3c0ca; }
+  .game-card .summary b { color: #f1f4f5; font-weight: 650; }
+  .rule { border: 0; border-top: 1px solid #364653; margin: 22px 0 8px; }
+  .link-row { display: flex; align-items: center; gap: 12px; width: 100%; text-align: left; background: transparent; border-color: transparent; padding: 10px 6px; }
+  .link-row .count { margin-left: auto; color: #b3c0ca; font-size: .8em; }
+  .ico { width: 20px; height: 20px; flex-shrink: 0; fill: none; stroke: currentColor; stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round; }
+  .empty { text-align: center; padding: 40px 10px 20px; }
+  .empty .ico { width: 44px; height: 44px; color: #7c90a0; margin-bottom: 12px; }
+  .empty p { color: #b3c0ca; }
+  .lead { color: #b3c0ca; margin: -4px 0 16px; font-size: .9em; }
+  .avatar { display: inline-grid; place-items: center; width: 40px; height: 40px; border-radius: 50%; background: #29313f; border: 1px solid #637084; font-weight: 700; flex-shrink: 0; }
+  /* A · Payment list */
+  .pay-hero { display: flex; align-items: baseline; flex-wrap: wrap; gap: 4px 12px; margin: 0 0 6px; }
+  .pay-hero strong { font-size: 2em; letter-spacing: -.05em; line-height: 1.1; }
+  .pay-hero span { color: #b3c0ca; font-size: .85em; }
+  .pay-list { list-style: none; margin: 8px 0 0; padding: 0; }
+  .pay-row { display: grid; grid-template-columns: minmax(64px,auto) minmax(0,1fr) minmax(64px,auto); align-items: center; gap: 6px; padding: 14px 12px; margin: 0 0 10px; background: #1e2a34; border: 1px solid #364653; border-radius: 20px; }
+  .who { display: grid; justify-items: center; gap: 4px; min-width: 0; text-align: center; }
+  .who strong { font-size: .9em; }
+  .pay-mid { display: grid; justify-items: center; gap: 2px; min-width: 0; }
+  .pay-mid strong { font-size: 1.35em; letter-spacing: -.035em; font-variant-numeric: tabular-nums; white-space: nowrap; }
+  .pay-mid small { color: #b3c0ca; font-size: .72em; }
+  .arrow { position: relative; width: 100%; height: 2px; background: var(--accent); margin: 4px 0; }
+  .arrow::after { content: ''; position: absolute; right: -2px; top: -6px; border: 7px solid transparent; border-left: 10px solid var(--accent); border-right: 0; }
+  /* B · By player */
+  .ledger { background: #1e2a34; border: 1px solid #364653; border-left-width: 4px; border-radius: 20px; padding: 14px 16px; margin: 0 0 10px; }
+  .ledger.owes { border-left-color: #ffb3aa; } .ledger.gets { border-left-color: #b8dfbd; } .ledger.even { border-left-color: #637084; }
+  .ledger-head { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; }
+  #app .ledger-head h3 { margin: 0; flex: 1; min-width: 0; font-size: 1.2em; }
+  .ledger-head strong { font-size: 1.25em; letter-spacing: -.03em; font-variant-numeric: tabular-nums; }
+  .ledger ul { list-style: none; margin: 10px 0 0; padding: 0; }
+  .ledger li { display: flex; flex-wrap: wrap; align-items: baseline; gap: 4px 8px; padding: 8px 0; border-top: 1px solid #364653; }
+  .ledger li strong { margin-left: auto; font-variant-numeric: tabular-nums; font-size: 1.1em; }
+  .verb { display: inline-block; min-width: 3.2em; font-size: .72em; font-weight: 750; letter-spacing: .06em; text-transform: uppercase; }
+  .owes .verb { color: #ffb3aa; } .gets .verb { color: #b8dfbd; }
+  .ledger .small { margin: 8px 0 0; }
+  /* C · Money flow */
+  .flow { margin: 4px 0 10px; padding: 14px 8px 10px; border: 1px solid #364653; border-radius: 22px; background: radial-gradient(120% 90% at 50% 0,#22303c,#141e27 70%); }
+  .flow svg { display: block; width: 100%; height: auto; }
+  .flow-total { display: flex; justify-content: space-between; flex-wrap: wrap; gap: 4px 12px; margin: 0 0 8px; }
+  .flow-total strong { font-size: 1.3em; letter-spacing: -.03em; }
+  /* Game actions sheet and confirmations */
+  dialog.sheet { margin: auto auto 12px; }
+  .menu { display: grid; gap: 8px; margin: 14px 0; }
+  .menu-item { display: grid; grid-template-columns: 24px minmax(0,1fr); gap: 4px 12px; align-items: center; text-align: left; padding: 12px 14px; border-radius: 18px; }
+  .menu-item strong { display: block; }
+  .menu-item small { grid-column: 2; color: #b3c0ca; font-size: .8em; }
+  .menu-item.danger strong, .menu-item.danger .ico { color: #ffb3aa; }
+  .menu-item.danger { background: #1e2a34; border-color: #6b4447; }
+  .menu-item.danger small { color: #d9b3ae; }
+  .facts { margin: 4px 0 14px; }
+  .facts .metric:last-child { border-bottom: 0; }
+  .facts.stacked .metric { display: block; }
+  .facts.stacked .metric > strong { display: block; text-align: left; margin-top: 2px; }
+  .ok-line { color: #b8dfbd; font-weight: 650; }
+  .game-id { display: grid; gap: 2px; padding: 12px 14px; margin: 0 0 14px; background: #111920; border: 1px solid #364653; border-radius: 16px; }
+  .game-id .badge { justify-self: start; }
+  .stub { color: #b3c0ca; border-style: dashed; text-align: center; }
+  .locked-line { display: flex; gap: 10px; align-items: flex-start; color: #b3c0ca; font-size: .88em; margin: 18px 0 0; }
+  [data-large="true"] .nav, [data-large="true"] .game-terms { grid-template-columns: 1fr; }
+  [data-large="true"] .game-terms { padding: 0 16px; }
+  [data-large="true"] .term { border-left: 0; border-top: 1px solid #46515f; padding: 14px 0; }
+  [data-large="true"] .term:first-child { border-top: 0; }
+  [data-large="true"] .player-main { grid-template-columns: 1fr; }
+  [data-large="true"] .net { text-align: left; }
+  [data-large="true"] .pay-row { grid-template-columns: 1fr; justify-items: start; }
+  [data-large="true"] .who { grid-auto-flow: column; justify-content: start; gap: 10px; }
+  [data-large="true"] .pay-mid { justify-items: start; padding-left: 50px; }
+  [data-large="true"] .arrow { display: none; }
+  [data-large="true"] dialog .actions, dialog[data-large="true"] .actions { grid-template-columns: 1fr; }
+  @media (max-width:760px) { body { padding: 16px 8px 110px; } .layout { grid-template-columns: minmax(0,430px); justify-content: center; } .workshop > header { max-width: 430px; } .review { order: -1; } }
+  @media (max-width:350px) { .page { padding: 18px 12px 24px; } dialog .actions { grid-template-columns: 1fr; } }
+  @media (prefers-reduced-motion:reduce) { *, *::before, *::after { transition: none !important; animation: none !important; } }
+</style>
+<main class="workshop">
+  <header><div class="revision">Review v1 · Payments, reopening, history, delete</div><h1>Finish, settle, look back.</h1><p class="intro">The Payments screen comes in three layouts: switch with the bar at the bottom. Everything else (finishing, History, Reopen, Return to Planning, Delete) is one proposal. In-memory only; reload resets everything.</p></header>
+  <div class="layout">
+    <section id="app" aria-label="Phone prototype"></section>
+    <aside class="review"><details id="tools"><summary>Prototype controls &amp; scenarios</summary><div class="review-controls">
+      <label>Payments layout<select id="variant"><option value="A">A · Payment list</option><option value="B">B · By player</option><option value="C">C · Money flow</option></select></label>
+      <label>Game fixture<select id="fixture"><option value="ready">6 players · 3 payments</option><option value="even">Everyone breaks even</option><option value="two">Alice &amp; Bob · 1 payment</option><option value="cents">EUR 10.01 buy-in · cents rounding</option><option value="big">12 players · bigger table</option><option value="short">1 chip unit missing · blocked</option></select></label>
+      <label>History<select id="history"><option value="saved">3 earlier games</option><option value="empty">No earlier games</option></select></label>
+      <label>App text<select id="scale"><option value="1">100%</option><option value="1.5">150%</option><option value="2">200%</option></select></label>
+      <button data-tool="reset">Reset this fixture</button>
+      <button data-tool="restart">Simulate app restart (nothing replays)</button>
+      <button data-tool="correct">After reopening: simulate a corrected count</button>
+      <p id="fixture-note"></p>
+      <details open><summary>Jump into a walkthrough</summary><div class="walks">
+        <button data-walk="finish">1 · Results → Calculate Payments</button>
+        <button data-walk="payments">2 · Payments (Completed)</button>
+        <button data-walk="even">3 · No payments needed</button>
+        <button data-walk="history">4 · History with saved games</button>
+        <button data-walk="history-empty">5 · Empty History</button>
+        <button data-walk="reopen">6 · Reopen → recalculate</button>
+        <button data-walk="reset">7 · Return to Planning</button>
+        <button data-walk="delete">8 · Delete a completed game</button>
+        <button data-walk="blocked">9 · Calculate blocked: 1 chip unit missing</button>
+        <button data-walk="details">10 · Read-only Game details</button>
+      </div></details>
+      <details><summary>Live game records inspector</summary><pre id="inspector"></pre></details>
+      <p>Fixture-only settlement code (exact minimum for ≤16 nonzero balances, largest-remainder cents). It is not the production solver. Results/count/correction screens are the approved ones from the results prototype and are only stubbed here.</p>
+    </div></details></aside>
+  </div>
+</main>
+<div class="switcher" aria-label="Prototype Payments layout comparison"><button data-tool="previous" aria-label="Previous Payments layout">←</button><span id="variant-label"></span><button data-tool="next" aria-label="Next Payments layout">→</button></div>
+<div class="sr-only" id="announcement" role="status" aria-live="polite"></div>
+<dialog id="modal" aria-labelledby="modal-title"></dialog>
+<script>
+// THROWAWAY UI: three Payments layouts plus one proposal for finishing, History, Reopen, Return to Planning and Delete.
+// All state is in memory. Nothing here is production code or the production settlement solver.
+const params = new URLSearchParams(location.search);
+const variants = { A: 'Payment list', B: 'By player', C: 'Money flow' };
+let variant = variants[params.get('variant')] ? params.get('variant') : 'A';
+let scale = ['1','1.5','2'].includes(params.get('scale')) ? params.get('scale') : '1';
+const denoms = [
+  { value: 1, color: 'White', fill: '#e9e8e4', ink: '#26323a' },
+  { value: 5, color: 'Red', fill: '#d35959', ink: '#fff4e8' },
+  { value: 25, color: 'Blue', fill: '#4c84c6', ink: '#f4f7ff' },
+  { value: 100, color: 'Black', fill: '#28323e', ink: '#ecedf0' },
+  { value: 500, color: 'Green', fill: '#4b9d79', ink: '#f4fff8' },
+];
+const initial = [15,2,3,1,0];
+const sum = a => a.reduce((x,y) => x+y,0);
+const esc = s => String(s).replace(/[&<>"']/g,c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const b = (label,action,cls='',extra='') => `<button type="button" data-action="${action}" class="${cls}" ${extra}>${esc(label)}</button>`;
+const metric = (label,value,cls='') => `<div class="metric"><span>${esc(label)}</span><strong class="${cls}">${esc(value)}</strong></div>`;
+const fmt = x => x.toLocaleString('en');
+const plural = (n,one,many=one+'s') => `${n} ${n===1?one:many}`;
+// Exact rational display (num/den euros). In progress values keep sub-cent digits; final cents come only from settle().
+function money(num,den=100,signed=false){
+  let a=BigInt(num), d=BigInt(den), sign=a<0n?'−':signed&&a>0n?'+':'';
+  if(a<0n)a=-a;
+  let whole=a/d, rem=a%d, digits='';
+  while(rem && digits.length<8){rem*=10n;digits+=String(rem/d);rem%=d;}
+  digits=digits.padEnd(2,'0');
+  return `${sign}EUR ${whole}.${digits}${rem?'…':''}`;
+}
+const cents = (c,signed=false) => money(c,100,signed);
+const icons = {
+  clock: '<circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/>',
+  people: '<circle cx="9" cy="8" r="3.2"/><path d="M3 19c.6-3.4 3-5 6-5s5.4 1.6 6 5"/><path d="M16 5.2a3 3 0 0 1 0 5.6M18 14.3c1.6.7 2.6 2.2 3 4.7"/>',
+  layers: '<path d="M12 3 3 8l9 5 9-5-9-5Z"/><path d="m3 12.5 9 5 9-5"/><path d="m3 16.5 9 5 9-5"/>',
+  reopen: '<path d="M4 12a8 8 0 1 0 2.6-5.9"/><path d="M4 4v5h5"/>',
+  reset: '<path d="M9 14 4 9l5-5"/><path d="M4 9h10.5a5.5 5.5 0 0 1 0 11H11"/>',
+  trash: '<path d="M4 7h16"/><path d="M10 11v6M14 11v6"/><path d="M6 7l1 13h10l1-13"/><path d="M9 7V4h6v3"/>',
+  lock: '<rect x="5" y="11" width="14" height="10" rx="2"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/>',
+};
+const ico = name => `<svg class="ico" viewBox="0 0 24 24" aria-hidden="true">${icons[name]}</svg>`;
+
+const fixtures = {
+  ready: { note: 'Everyone is counted and everything adds up (1,600 chip units). Balances +13 / −8 / +8 / −7 / −6 / 0 settle in 3 payments, the spec’s 8·7·6 vs 13·8 example.', price: 2000,
+    players: [['Alice',0,330],['Bob',1,320],['Clara',0,280],['David',1,330],['Emma',0,140],['Felix',0,200]] },
+  even: { note: 'Every final result equals that player’s buy-ins. Calculating still finishes the game, with No payments needed.', price: 2000,
+    players: [['Alice',0,200],['Bob',1,400],['Clara',0,200],['David',0,200],['Emma',0,200],['Felix',0,200]] },
+  two: { note: 'The spec example: Alice and Bob each put in EUR 20 and finish with EUR 30 / EUR 10 → Bob pays Alice EUR 10.', price: 2000,
+    players: [['Alice',0,300],['Bob',0,100]] },
+  cents: { note: 'EUR 10.01 for 200 chip units. In progress Results show exact values (+EUR 2.5025); Payments show the allocated cents (+EUR 2.50).', price: 1001,
+    players: [['Alice',0,250],['Bob',0,200],['Clara',0,150]] },
+  big: { note: '12 players, 3 rebuys, 11 nonzero balances: checks how each layout copes with a longer settlement.', price: 2000,
+    players: [['Alice',0,434],['Bob',2,400],['Clara',0,317],['David',0,115],['Emma',0,200],['Felix',0,58],['Greta',0,261],['Hugo',0,167],['Ida',0,328],['Jonas',1,200],['Kai',0,246],['Lena',0,274]] },
+  short: { note: 'Emma’s count is 1 White chip short. Calculate Payments stays blocked; tapping it only explains why.', price: 2000,
+    players: [['Alice',0,330],['Bob',1,320],['Clara',0,280],['David',1,330],['Emma',0,139],['Felix',0,200]] },
+};
+let fixture = fixtures[params.get('fixture')] ? params.get('fixture') : 'ready';
+let historyMode = params.get('history')==='empty' ? 'empty' : 'saved';
+let s, view, opener=null, busy=false;
+
+function makeCash(id,created,players,price=2000){
+  return { id, mode:'Cash game', created, completed:null, phase:'In progress', price, reopened:false, settlement:null, previous:null,
+    configured:[135,24,27,12,1], players: players.map(([name,rebuys,units],i)=>({ id:`${id}p${i}`, name, rebuys, units })) };
+}
+function reset(){
+  closeDialog(false); busy=false;
+  const f=fixtures[fixture];
+  const g1=makeCash('g1',{iso:'2026-11-23T19:30',day:'23 Nov',year:'2026',time:'19:30'},f.players,f.price);
+  const planning={ id:'g5', mode:'Cash game', phase:'Planning', created:{iso:'2026-11-25T19:30',day:'25 Nov',year:'2026',time:'19:30'}, step:'Game settings', price:2000,
+    players:['Maya','Jonas','Lena','Sam','Alex','Noor'].map((name,i)=>({id:`g5p${i}`,name,rebuys:0,units:null})) };
+  s={ games:[g1,planning], toast:null };
+  if(historyMode==='saved'){
+    const g2=makeCash('g2',{iso:'2026-11-16T19:30',day:'16 Nov',year:'2026',time:'19:30'},[['Maya',1,216],['Jonas',0,200],['Lena',0,384],['Sam',0,230],['Alex',0,200],['Noor',0,170]]);
+    finish(g2,{iso:'2026-11-16T23:52',day:'16 Nov',time:'23:52'});
+    const g4=makeCash('g4',{iso:'2026-11-02T19:00',day:'2 Nov',year:'2026',time:'19:00'},[['Chris',0,200],['Robin',0,200],['Maya',0,200],['Sam',0,200]]);
+    finish(g4,{iso:'2026-11-02T22:40',day:'2 Nov',time:'22:40'});
+    const g3={ id:'g3', mode:'Tournament', phase:'Completed', stub:true, created:{iso:'2026-11-09T20:00',day:'9 Nov',year:'2026',time:'20:00'}, completed:{iso:'2026-11-09T23:05',day:'9 Nov',time:'23:05'},
+      players:['Chris','Robin','Maya','Sam','Lena'].map((name,i)=>({id:`g3p${i}`,name})), pool:10000, paymentCount:2, winner:'Chris' };
+    s.games.push(g2,g3,g4);
+  }
+  view={ page:'results', game:'g1', from:'games', origin:'results', player:null };
+  document.querySelector('#fixture-note').textContent=fixtures[fixture].note;
+  updateURL(); render();
+}
+const game = (id=view.game) => s.games.find(g=>g.id===id);
+const contrib = (g,p) => (1+p.rebuys)*g.price;
+function accounting(g){
+  const counted=g.players.filter(p=>p.units!=null), issued=sum(g.players.map(p=>1+p.rebuys))*200, c=sum(counted.map(p=>p.units));
+  return { done:counted.length, total:g.players.length, counted:c, issued, difference:c-issued, missing:g.players.filter(p=>p.units==null).map(p=>p.name) };
+}
+// Largest remainder cents, then exact minimum direct payments for ≤16 nonzero balances (prototype stand-in for the real solver).
+function settle(g){
+  const exact=g.players.map(p=>p.units*g.price), results=exact.map(x=>Math.floor(x/200));
+  const contribs=g.players.map(p=>contrib(g,p));
+  const left=sum(contribs)-sum(results);
+  const order=g.players.map((_,i)=>i).sort((a,b)=>(exact[b]%200)-(exact[a]%200)||a-b);
+  for(let k=0;k<left;k++)results[order[k]]++;
+  const balances=results.map((r,i)=>r-contribs[i]);
+  const idx=balances.map((_,i)=>i).filter(i=>balances[i]);
+  return { results, contribs, balances, payments: idx.length<=16 ? exactPlan(idx,balances) : greedy(idx,balances) };
+}
+function exactPlan(idx,bal){
+  const n=idx.length, N=1<<n, sums=new Array(N).fill(0), dp=new Array(N).fill(0);
+  for(let m=1;m<N;m++){const low=m&-m;sums[m]=sums[m^low]+bal[idx[31-Math.clz32(low)]];}
+  for(let m=1;m<N;m++){let best=0;for(let i=0;i<n;i++)if(m>>i&1)best=Math.max(best,dp[m^(1<<i)]);dp[m]=best+(sums[m]===0?1:0);}
+  const order=[];let m=N-1;
+  while(m){const z=sums[m]===0?1:0;for(let i=0;i<n;i++)if(m>>i&1&&dp[m^(1<<i)]+z===dp[m]){order.push(i);m^=1<<i;break;}}
+  order.reverse();
+  const payments=[];let group=[],acc=0;
+  for(const i of order){group.push(idx[i]);acc+=bal[idx[i]];if(acc===0){payments.push(...greedy(group,bal));group=[];}}
+  return payments.sort((a,b)=>a.from-b.from||a.to-b.to);
+}
+function greedy(idx,bal){
+  const r=new Map(idx.map(i=>[i,bal[i]])), out=[];
+  for(;;){
+    const debt=[...r].filter(([,v])=>v<0).sort((a,b)=>a[1]-b[1]||a[0]-b[0])[0], cred=[...r].filter(([,v])=>v>0).sort((a,b)=>b[1]-a[1]||a[0]-b[0])[0];
+    if(!debt||!cred)return out;
+    const amount=Math.min(-debt[1],cred[1]);out.push({from:debt[0],to:cred[0],amount});
+    r.set(debt[0],debt[1]+amount);r.set(cred[0],cred[1]-amount);
+  }
+}
+function finish(g,at){g.settlement=settle(g);g.phase='Completed';g.completed=at;g.reopened=false;}
+
+// ----- shared pieces -----
+function chip(d){return `<svg class="chip" viewBox="0 0 72 72" aria-hidden="true"><circle cx="36" cy="36" r="33" fill="${d.fill}" stroke="#b3c0ca"/><circle cx="36" cy="36" r="27" fill="none" stroke="${d.ink}" stroke-width="6" stroke-dasharray="8 14"/><text x="36" y="42" text-anchor="middle" fill="${d.ink}" font-size="${d.value>99?15:20}" font-weight="700">${d.value}</text></svg>`;}
+function pills(mix,cls='',hideZero=false){return `<div class="pills ${cls}">${mix.map((q,i)=>hideZero&&!q?'':`<div class="pill">${chip(denoms[i])}<span aria-hidden="true">×${q}</span><span class="sr-only">${q} × ${denoms[i].value} ${denoms[i].color}</span></div>`).join('')}</div>`;}
+function mixFor(u){const mix=denoms.map(()=>0);for(let i=denoms.length-1;i>=0;i--){mix[i]=Math.floor(u/denoms[i].value);u-=mix[i]*denoms[i].value;}return mix;}
+const names = g => g.players.map(p=>p.name).join(', ');
+const when = g => `${g.created.day}, ${g.created.time}`;
+function phaseBadge(g){return g.phase==='Completed'?'<span class="badge ok">Completed</span>':g.phase==='Planning'?'<span class="badge">Planning</span>':'<span class="badge info">In progress</span>';}
+function toast(){const t=s.toast;if(!t)return '';return t.kind==='error'?`<div class="toast error" role="alert"><strong>${esc(t.title)}</strong>${esc(t.text)}</div>`:`<p class="toast">✓ ${esc(t.title)}</p>`;}
+function header(g,title,{nav=true,back}={}){
+  const backLabel=back||(view.from==='history'?'History':'Games');
+  const tabs=g.phase==='Completed'?[['payments','Payments'],['results','Results'],['details','Game details']]:[['play','Play'],['results','Results'],['details','Game details']];
+  return `<div class="topline">${b(`← ${backLabel}`,'back','quiet')}${b('⋯','menu','quiet','aria-label="Game actions"')}</div><p class="context">${g.mode} · ${when(g)}${g.phase==='Completed'?` · finished ${g.completed.time}`:''}</p>${phaseBadge(g)}<h2 tabindex="-1">${esc(title)}</h2>${nav?`<nav class="nav" aria-label="Game workspace">${tabs.map(([a,label])=>b(label,'tab','',`data-page="${a}" ${view.page===a?'aria-current="page"':''}`)).join('')}</nav>`:''}`;
+}
+function outcomeWord(v){return v>0?'Won':v<0?'Lost':'Break-even';}
+const tone = v => v>0?'gain':v<0?'loss':'even';
+
+// ----- Games and History -----
+function gameCard(g){
+  const go=g.phase==='Planning'?`Resume ${g.step.toLowerCase()} →`:g.reopened?'Reopened · calculate Payments again →':'Open Play →';
+  return `<button type="button" class="game-card ${g.phase==='In progress'?'active':''}" data-action="open" data-id="${g.id}"><span class="badge ${g.phase==='In progress'?'info':''}">${g.phase} · ${g.mode}</span><strong>${esc(names(g))}</strong><span class="small">${g.created.day} ${g.created.year} · ${g.created.time}</span><span class="go">${go}</span></button>`;
+}
+function gamesPage(){
+  const active=s.games.filter(g=>g.phase==='In progress'), planning=s.games.filter(g=>g.phase==='Planning'), done=s.games.filter(g=>g.phase==='Completed');
+  return `<div class="page"><p class="brand">POKER PLANNER</p><h2 tabindex="-1">Games</h2>${toast()}${b('+ New game','new','primary full')}
+    ${active.length?`<div class="sec"><h3>In progress</h3></div>${active.map(gameCard).join('')}`:''}
+    ${planning.length?`<div class="sec"><h3>Planning</h3><span class="small">${plural(planning.length,'draft')}</span></div>${planning.map(gameCard).join('')}`:''}
+    ${!active.length&&!planning.length?'<p class="small section-title">No unfinished games.</p>':''}
+    <hr class="rule"><button type="button" class="link-row" data-action="history">${ico('clock')}<span>History</span><span class="count">${done.length?plural(done.length,'game'):'Empty'}</span></button>
+    <button type="button" class="link-row" data-action="stub-link">${ico('people')}<span>Saved players</span></button>
+    <button type="button" class="link-row" data-action="stub-link">${ico('layers')}<span>Chip set templates</span></button></div>`;
+}
+function histSummary(g){
+  if(g.stub)return `<span>Prize pool <b>${cents(g.pool)}</b></span><span><b>${plural(g.paymentCount,'payment')}</b></span><span>Winner <b>${esc(g.winner)}</b></span>`;
+  const st=g.settlement, top=st.balances.reduce((m,v,i)=>v>st.balances[m]?i:m,0);
+  return `<span>Buy-ins <b>${cents(sum(st.contribs))}</b></span><span><b>${st.payments.length?plural(st.payments.length,'payment'):'No payments needed'}</b></span>${st.balances[top]>0?`<span>Top <b>${esc(g.players[top].name)} ${cents(st.balances[top],true)}</b></span>`:''}`;
+}
+function historyPage(){
+  const done=s.games.filter(g=>g.phase==='Completed').sort((a,b)=>b.completed.iso.localeCompare(a.completed.iso));
+  let html=`<div class="page"><div class="topline">${b('← Games','games','quiet')}</div><h2 tabindex="-1">History</h2>${toast()}`;
+  if(!done.length)return html+`<div class="empty">${ico('clock')}<h3>No finished games yet</h3><p>A game shows up here once you calculate its Payments.</p></div>${b('Back to Games','games','full')}</div>`;
+  return html+done.map(g=>`<button type="button" class="game-card" data-action="open" data-id="${g.id}"><span class="badge">${g.mode}</span><strong>${esc(names(g))}</strong><span class="small">${g.created.day} ${g.created.year} · ${g.created.time}–${g.completed.time}${g.completed.day!==g.created.day?` (${g.completed.day})`:''}</span><span class="summary">${histSummary(g)}</span></button>`).join('')+'</div>';
+}
+
+// ----- In progress workspace -----
+function row(g,p,i){
+  const net=p.units==null?null:p.units*g.price-contrib(g,p)*200;
+  const value=g.phase==='Completed'?g.settlement.balances[i]:null;
+  const shown=value!=null?cents(value,true):net!=null?money(net,20000,true):'';
+  const t=value!=null?tone(value):net!=null?tone(net):'';
+  return `<div class="player-row"><button type="button" class="player-main" data-action="player" data-id="${p.id}"><span><strong>${esc(p.name)}</strong><span class="small">${cents(contrib(g,p))} contribution${p.rebuys?` · ${plural(p.rebuys,'rebuy')}`:''}</span>${p.units==null?'<span class="badge">Uncounted</span>':'<span class="badge ok">Result confirmed</span>'}</span>${shown?`<span class="net ${t}"><strong>${shown}</strong><small>${outcomeWord(value!=null?value:net)}</small></span>`:''}</button></div>`;
+}
+function playPage(g){
+  const active=g.players.filter(p=>p.units==null);
+  return header(g,'Play')+`<section class="game-terms" aria-label="Locked game terms"><div class="term"><span>Blinds</span><strong>1 / 2</strong><small>chip units</small></div><div class="term"><span>Rebuy</span><strong>${(g.price/100).toFixed(2)}</strong><small>EUR</small></div><div class="term"><span>Stack</span><strong>200</strong><small>chip units</small></div></section>`+toast()+
+    `<h3>Playing · ${active.length}</h3>${active.length?active.map(p=>row(g,p,g.players.indexOf(p))).join(''):'<p class="small">Everyone is counted. Next: Results → Calculate Payments.</p>'}<h3 class="section-title">Finished playing · ${g.players.length-active.length}</h3>${g.players.filter(p=>p.units!=null).map(p=>row(g,p,g.players.indexOf(p))).join('')}`;
+}
+function statusCard(g){
+  const a=accounting(g);let cls,icon,big,text;
+  if(a.missing.length){cls='wait';icon=`${a.done}/${a.total}`;big=`${a.missing.length} still to count`;text=a.missing.join(', ');}
+  else if(a.difference){const d=Math.abs(a.difference);cls='bad';icon='!';big=`${plural(d,'chip unit')} ${a.difference<0?'missing':'too many'}`;text=`${money(d*g.price,20000)} · ${fmt(a.counted)} of ${fmt(a.issued)} counted. Recount, or correct a result.`;}
+  else{cls='ok';icon='✓';big='Everything adds up';text=`All ${a.total} counted · ${fmt(a.counted)} chip units`;}
+  return `<section class="status-card ${cls}" id="status" tabindex="-1" aria-label="Chip count status"><div class="icon" aria-hidden="true">${icon}</div><span class="big">${big}</span><p>${esc(text)}</p></section>`;
+}
+function blockReason(g){const a=accounting(g);return a.missing.length?'Count everyone first.':a.difference<0?'Find the missing chips first.':a.difference>0?'Fix the extra chips first.':'';}
+function resultsPage(g){
+  let html=header(g,'Results')+toast()+statusCard(g)+g.players.map((p,i)=>row(g,p,i)).join('');
+  if(g.phase==='Completed')return html;
+  const reason=blockReason(g);
+  html+=`<div class="section-title">${b('Calculate Payments…','calculate',reason?'full':'primary full',reason?'aria-disabled="true" aria-describedby="calc-note"':'')}</div>`;
+  if(reason)html+=`<p class="small payments-note" id="calc-note">${reason}</p>`;
+  else if(g.reopened)html+=`<p class="small payments-note">Reopened · calculate Payments again when you’re done.</p>`;
+  return html;
+}
+function detailsPage(g){
+  const lockText=g.phase==='Completed'?'Read-only. To change something, reopen the game from ⋯.':'Setup is locked. To change it, use ⋯ → Return to Planning.';
+  return header(g,'Game details')+toast()+`<section class="card facts">${metric('Created',`${g.created.day} ${g.created.year}, ${g.created.time}`)}${g.phase==='Completed'?metric('Finished',`${g.completed.day}, ${g.completed.time}`):''}${metric('Players',String(g.players.length))}${metric('Buy-in',`${cents(g.price)} · ${money(g.price,20000)} per chip unit`)}${metric('Blinds','1 / 2 · 100 BB')}${metric('Starting stack','200 chip units')}${metric('Reserve','3 stacks')}</section><div class="sec"><h3>Chip set</h3></div>${pills(g.configured,'compact')}<p class="locked-line">${ico('lock')}<span>${lockText}</span></p>`;
+}
+function playerPage(g){
+  const i=g.players.findIndex(p=>p.id===view.player), p=g.players[i], done=g.phase==='Completed';
+  const backLabel={payments:'Payments',results:'Results',play:'Play'}[view.origin];
+  let html=header(g,p.name,{nav:false,back:backLabel})+toast();
+  if(p.units!=null){
+    const v=done?g.settlement.balances[i]:p.units*g.price-contrib(g,p)*200;
+    html+=`<section class="hero"><span>${outcomeWord(v)}</span><strong class="amount ${tone(v)}">${done?cents(v,true):money(v,20000,true)}</strong>${metric(done?'Final result':'Chip value',done?cents(g.settlement.results[i]):money(p.units*g.price,20000))}${metric('All contributions',`−${cents(contrib(g,p))}`)}</section>`;
+    html+=`<div class="sec"><h3>Final chips · ${fmt(p.units)}</h3>${done?'':b('Correct','stub-correct','link')}</div>${pills(mixFor(p.units))}`;
+  }
+  html+=`<div class="sec"><h3>Buy-ins · ${cents(contrib(g,p))}</h3></div><div class="buyin"><div class="buyin-head"><strong>Buy-in</strong><span class="small">${cents(g.price)}</span></div>${pills(initial,'compact',true)}</div>`;
+  for(let k=1;k<=p.rebuys;k++)html+=`<div class="buyin"><div class="buyin-head"><strong>Rebuy ${k}</strong><span class="small">${cents(g.price)}</span></div>${pills(initial,'compact',true)}</div>`;
+  if(done)html+=`<p class="locked-line">${ico('lock')}<span>Read-only. To change something, reopen the game from ⋯.</span></p>`;
+  return html;
+}
+function planningPage(g){
+  const fresh=g.id==='g1';
+  return `<div class="topline">${b('← Games','back','quiet')}${b('⋯','menu','quiet','aria-label="Game actions"')}</div><p class="context">${g.mode} · ${when(g)}</p>${phaseBadge(g)}<h2 tabindex="-1">${fresh?'Distribution preview':esc(g.step)}</h2>${toast()}<p class="small">${fresh?`Fresh preview for ${g.players.length} players. Nothing handed out yet.`:`${g.players.length} players · autosaved draft`}</p><div class="card stub">${fresh?'The approved Distribution preview and Start screen appears here (from the distribution-preview prototype).':'The approved Planning wizard appears here (from the cash-game planning prototype).'}</div>`;
+}
+function tournamentStub(g){
+  return header(g,'Payments',{nav:false})+`<div class="card stub">Tournament Payments are designed in “Design tournament play, corrections, and Payments”. This entry only shows how a tournament is listed in History.</div>`;
+}
+
+// ----- Payments: three layouts -----
+function paymentsPage(g){
+  if(g.stub)return tournamentStub(g);
+  const st=g.settlement;
+  let html=header(g,'Payments')+toast()+`<p class="lead">Who pays whom. The app doesn’t track payments.</p>`;
+  if(!st.payments.length)html+=`<section class="status-card ok" aria-label="Settlement"><div class="icon" aria-hidden="true">✓</div><span class="big">No payments needed</span><p>Everyone broke even.</p></section>`;
+  return html+(variant==='A'?payA(g):variant==='B'?payB(g):payC(g));
+}
+const initialOf = name => esc(name.slice(0,1));
+function payA(g){
+  const st=g.settlement;let html='';
+  if(st.payments.length){
+    html+=`<div class="pay-hero"><strong>${plural(st.payments.length,'payment')}</strong><span>${cents(sum(st.payments.map(p=>p.amount)))} in total</span></div><ol class="pay-list">`;
+    html+=st.payments.map(p=>{const f=g.players[p.from].name,t=g.players[p.to].name;return `<li class="pay-row"><span class="who" aria-hidden="true"><span class="avatar">${initialOf(f)}</span><strong>${esc(f)}</strong></span><span class="pay-mid" aria-hidden="true"><strong>${cents(p.amount)}</strong><span class="arrow"></span><small>pays</small></span><span class="who" aria-hidden="true"><span class="avatar">${initialOf(t)}</span><strong>${esc(t)}</strong></span><span class="sr-only">${esc(f)} pays ${esc(t)} ${cents(p.amount)}</span></li>`;}).join('')+'</ol>';
+  }
+  html+=`<div class="sec"><h3>Balances</h3></div>`+g.players.map((p,i)=>{const v=st.balances[i];return `<div class="player-row"><button type="button" class="player-main" data-action="player" data-id="${p.id}"><span><strong>${esc(p.name)}</strong><span class="small">Final result ${cents(st.results[i])}</span><span class="small">Buy-ins ${cents(st.contribs[i])}</span></span><span class="net ${tone(v)}"><strong>${cents(v,true)}</strong><small>${v>0?'Gets':v<0?'Pays':'Even'}</small></span></button></div>`;}).join('');
+  return html;
+}
+function payB(g){
+  const st=g.settlement, nm=i=>esc(g.players[i].name);
+  let html=st.payments.length?`<p class="small">${plural(st.payments.length,'payment')} · find your name</p>`:'';
+  return html+g.players.map((p,i)=>{
+    const v=st.balances[i], outs=st.payments.filter(x=>x.from===i), ins=st.payments.filter(x=>x.to===i);
+    const lines=outs.map(x=>`<li><span class="verb">Pay</span><span>${nm(x.to)}</span><strong>${cents(x.amount)}</strong></li>`).join('')+ins.map(x=>`<li><span class="verb">Get</span><span>from ${nm(x.from)}</span><strong>${cents(x.amount)}</strong></li>`).join('');
+    return `<article class="ledger ${v<0?'owes':v>0?'gets':'even'}" aria-label="${nm(i)}"><div class="ledger-head"><span class="avatar" aria-hidden="true">${initialOf(p.name)}</span><h3>${nm(i)}</h3><strong class="${tone(v)}">${cents(v,true)}</strong></div>${lines?`<ul>${lines}</ul>`:'<p class="small">Nothing to pay or get.</p>'}<p class="small">Final result ${cents(st.results[i])} · Buy-ins ${cents(st.contribs[i])}</p></article>`;
+  }).join('');
+}
+function payC(g){
+  const st=g.settlement, P=st.payments;
+  const evenNames=g.players.filter((_,i)=>!st.balances[i]).map(p=>p.name);
+  if(!P.length)return `<p class="small">Even: ${esc(evenNames.join(', '))}</p>`;
+  const max=Math.max(...P.map(p=>p.amount)), h=p=>Math.round(40+28*p.amount/max), GAP=12, TOP=30;
+  const payers=[...new Set(P.map(p=>p.from))].sort((a,b)=>a-b), firstPayer=i=>Math.min(...P.filter(p=>p.to===i).map(p=>payers.indexOf(p.from)));
+  const getters=[...new Set(P.map(p=>p.to))].sort((a,b)=>firstPayer(a)-firstPayer(b)||a-b);
+  const ly=new Map(), ry=new Map(), nodesL=[], nodesR=[];
+  let y=0;for(const i of payers){const start=y;for(const p of P.filter(x=>x.from===i).sort((a,b)=>getters.indexOf(a.to)-getters.indexOf(b.to))){ly.set(p,y);y+=h(p);}nodesL.push({i,y:start,h:y-start});y+=GAP;}
+  const HL=y-GAP;
+  y=0;for(const i of getters){const start=y;for(const p of P.filter(x=>x.to===i).sort((a,b)=>payers.indexOf(a.from)-payers.indexOf(b.from))){ry.set(p,y);y+=h(p);}nodesR.push({i,y:start,h:y-start});y+=GAP;}
+  const HR=y-GAP, H=Math.max(HL,HR), oL=TOP+(H-HL)/2, oR=TOP+(H-HR)/2;
+  const X1=104, X2=236, XM=(X1+X2)/2;
+  let svg='', labels='';
+  for(const p of P){const a=ly.get(p)+oL, c=ry.get(p)+oR, t=h(p), text=cents(p.amount), w=text.length*7.4+10;
+    svg+=`<path d="M${X1} ${a} C${XM} ${a} ${XM} ${c} ${X2} ${c} L${X2} ${c+t} C${XM} ${c+t} ${XM} ${a+t} ${X1} ${a+t} Z" fill="#c9b5ff" fill-opacity=".26" stroke="#141e27" stroke-width="1.5"/>`;
+    labels+=`<rect x="${X2-6-w}" y="${c+t/2-10}" width="${w}" height="20" rx="10" fill="#2b2540"/><text x="${X2-11}" y="${c+t/2+4.5}" text-anchor="end" fill="#f1f4f5" font-size="12.5" font-weight="700">${text}</text>`;}
+  svg+=labels;
+  for(const nd of nodesL){const yy=nd.y+oL;svg+=`<rect x="${X1-7}" y="${yy}" width="7" height="${nd.h}" rx="3" fill="#ffb3aa"/><text x="${X1-14}" y="${yy+nd.h/2-2}" text-anchor="end" fill="#f1f4f5" font-size="14" font-weight="700">${esc(g.players[nd.i].name)}</text><text x="${X1-14}" y="${yy+nd.h/2+14}" text-anchor="end" fill="#ffb3aa" font-size="12">${cents(st.balances[nd.i],true)}</text>`;}
+  for(const nd of nodesR){const yy=nd.y+oR;svg+=`<rect x="${X2}" y="${yy}" width="7" height="${nd.h}" rx="3" fill="#b8dfbd"/><text x="${X2+14}" y="${yy+nd.h/2-2}" fill="#f1f4f5" font-size="14" font-weight="700">${esc(g.players[nd.i].name)}</text><text x="${X2+14}" y="${yy+nd.h/2+14}" fill="#b8dfbd" font-size="12">${cents(st.balances[nd.i],true)}</text>`;}
+  svg+=`<text x="${X1-14}" y="14" text-anchor="end" fill="#b3c0ca" font-size="11" font-weight="700" letter-spacing="1">PAYS</text><text x="${X2+14}" y="14" fill="#b3c0ca" font-size="11" font-weight="700" letter-spacing="1">GETS</text>`;
+  const label=P.map(p=>`${g.players[p.from].name} pays ${g.players[p.to].name} ${cents(p.amount)}`).join('. ');
+  return `<div class="flow-total"><strong>${plural(P.length,'payment')}</strong><span class="small">${cents(sum(P.map(p=>p.amount)))} in total</span></div><div class="flow"><svg viewBox="0 0 340 ${H+TOP+6}" role="img" aria-label="${esc(label)}">${svg}</svg></div>${evenNames.length?`<p class="small">Even: ${esc(evenNames.join(', '))}</p>`:''}`;
+}
+
+// ----- rendering, dialogs, actions -----
+function render(){
+  const app=document.querySelector('#app');
+  app.style.setProperty('--scale',scale);app.dataset.large=scale!=='1';
+  const modal=document.querySelector('#modal');modal.style.setProperty('--scale',scale);modal.dataset.large=scale!=='1';
+  let html;
+  if(view.page==='games')html=gamesPage();
+  else if(view.page==='history')html=historyPage();
+  else{const g=game();
+    html=`<div class="page">${g.phase==='Planning'?planningPage(g):view.page==='payments'?paymentsPage(g):view.page==='results'?resultsPage(g):view.page==='details'?detailsPage(g):view.page==='player'?playerPage(g):playPage(g)}</div>`;}
+  app.innerHTML=html.startsWith('<div class="page">')?html:`<div class="page">${html}</div>`;
+  document.querySelector('#variant').value=variant;document.querySelector('#fixture').value=fixture;document.querySelector('#history').value=historyMode;document.querySelector('#scale').value=scale;
+  document.querySelector('#variant-label').textContent=`${variant} · ${variants[variant]}`;
+  inspect();
+}
+function inspect(){
+  const out=s.games.map(g=>{const o={id:g.id,mode:g.mode,phase:g.phase,created:g.created.iso,completed:g.completed?.iso||null};
+    if(g.stub)return o;
+    o.reopened=g.reopened||undefined;
+    o.players=g.players.map(p=>`${p.name}: ${p.rebuys} rebuy(s), ${p.units==null?'uncounted':p.units+' units'}`);
+    if(g.settlement)o.final={balances:g.settlement.balances.map((v,i)=>`${g.players[i].name} ${cents(v,true)}`),payments:g.settlement.payments.map(p=>`${g.players[p.from].name} → ${g.players[p.to].name} ${cents(p.amount)}`)};
+    if(g.previous)o.previousPaymentsNoLongerFinal=g.previous.payments.length;
+    return o;});
+  document.querySelector('#inspector').textContent=JSON.stringify({view,games:out},null,1);
+}
+function announce(text){const a=document.querySelector('#announcement');a.textContent='';setTimeout(()=>a.textContent=text,30);}
+function updateURL(){const u=new URL(location);u.searchParams.set('variant',variant);u.searchParams.set('fixture',fixture);u.searchParams.set('history',historyMode);if(scale!=='1')u.searchParams.set('scale',scale);else u.searchParams.delete('scale');history.replaceState(null,'',u);}
+function nav(next,focus=true,note=null){s.toast=note;Object.assign(view,next);render();if(focus)document.querySelector('#app h2')?.focus();}
+function showDialog(html,cls='',focusSel='[data-action="close"]'){
+  const modal=document.querySelector('#modal');opener=document.activeElement;modal.className=cls;modal.innerHTML=html;
+  if(!modal.open)modal.showModal();(modal.querySelector(focusSel)||modal.querySelector('button'))?.focus();
+}
+function closeDialog(restore=true){const modal=document.querySelector('#modal');if(modal.open)modal.close();modal.innerHTML='';if(restore&&opener?.isConnected)opener.focus();}
+function menu(){
+  const g=game(), items=[];
+  if(g.phase==='Completed'&&!g.stub)items.push(['reopen','Reopen game…','Change results or buy-ins, then calculate again.','reopen','']);
+  if(g.phase==='In progress')items.push(['reset','Return to Planning…','Clear play and hand out new stacks.','reset','danger']);
+  items.push(['delete','Delete game…','Removes this game for good.','trash','danger']);
+  showDialog(`<h2 id="modal-title">Game actions</h2><p class="small">${g.phase} · ${g.mode} · ${when(g)}</p><div class="menu">${items.map(([a,label,text,icon,cls])=>`<button type="button" class="menu-item ${cls}" data-action="${a}">${ico(icon)}<strong>${esc(label)}</strong><small>${esc(text)}</small></button>`).join('')}</div>${b('Cancel','close','full')}`,'sheet');
+}
+function confirmCalculate(g){
+  const a=accounting(g);
+  showDialog(`<h2 id="modal-title">Calculate Payments?</h2><p class="ok-line">✓ All ${a.total} counted · ${fmt(a.counted)} chip units</p><p>This finishes the game. Results become read-only; you can reopen it later.</p><div class="actions">${b('Cancel','close')}${b('Calculate Payments','do-calculate','primary')}</div>`,'','[data-action="do-calculate"]');
+}
+function confirmReopen(g){
+  showDialog(`<h2 id="modal-title">Reopen this game?</h2><p>Results and buy-ins stay. These Payments stop being final. Calculate them again when you’re done.</p><div class="actions">${b('Cancel','close')}${b('Reopen game','do-reopen','primary')}</div>`);
+}
+function confirmReset(g){
+  const results=g.players.filter(p=>p.units!=null).length, rebuys=sum(g.players.map(p=>p.rebuys));
+  const cleared=[rebuys?plural(rebuys,'rebuy'):'',results?plural(results,'result'):'','all handed-out stacks'].filter(Boolean).join(' · ');
+  showDialog(`<h2 id="modal-title">Return to Planning?</h2><div class="facts stacked">${metric('Clears',cleared)}${metric('Keeps',`${plural(g.players.length,'player')} · buy-ins · settings`)}</div><p>Collect all chips. You’ll hand out new stacks after Start.</p><div class="actions">${b('Cancel','close')}${b('Return to Planning','do-reset','danger')}</div>`);
+}
+function confirmDelete(g){
+  showDialog(`<h2 id="modal-title">Delete this game?</h2><div class="game-id"><span class="badge">${g.phase} · ${g.mode}</span><strong>${esc(names(g))}</strong><span class="small">${g.created.day} ${g.created.year} · ${g.created.time}</span></div><p>Everything recorded in this game is deleted. This can’t be undone.</p><p class="small">Saved players and chip set templates stay.</p><div class="actions">${b('Cancel','close')}${b('Delete game','do-delete','danger')}</div>`);
+}
+const listFor = g => g.phase==='Completed'?'history':'games';
+function action(el){
+  const a=el.dataset.action, g=view.game?game():null;
+  if(a==='games'){view.game=null;return nav({page:'games',from:'games'});}
+  if(a==='history'){return nav({page:'history',from:'history'});}
+  if(a==='open'){const t=game(el.dataset.id);return nav({game:t.id,from:view.page==='history'?'history':'games',page:t.phase==='Completed'?'payments':t.phase==='Planning'?'planning':'play'});}
+  if(a==='back'){if(view.page==='player')return nav({page:view.origin});return nav({page:view.from});}
+  if(a==='tab')return nav({page:el.dataset.page});
+  if(a==='player')return nav({page:'player',player:el.dataset.id,origin:view.page});
+  if(a==='menu')return menu();
+  if(a==='close'){if(busy)return;closeDialog();return announce('Cancelled. Nothing changed.');}
+  if(a==='calculate'){
+    if(el.getAttribute('aria-disabled')==='true'){s.toast={kind:'error',title:'Can’t calculate Payments yet',text:blockReason(g)};render();document.querySelector('#status')?.focus();return announce(`Can’t calculate Payments yet. ${blockReason(g)}`);}
+    return confirmCalculate(g);
+  }
+  if(a==='do-calculate'){
+    if(busy)return;busy=true;el.textContent='Calculating…';el.setAttribute('aria-disabled','true');document.querySelector('#modal [data-action="close"]').setAttribute('aria-disabled','true');announce('Calculating Payments');
+    return setTimeout(()=>{busy=false;finish(g,{iso:'2026-11-23T23:41',day:'23 Nov',time:'23:41'});g.previous=null;closeDialog(false);nav({page:'payments'},true,{title:'Game finished'});announce('Game finished. Payments ready.');},700);
+  }
+  if(a==='reopen'){return confirmReopen(g);}
+  if(a==='do-reopen'){g.previous=g.settlement;g.settlement=null;g.phase='In progress';g.completed=null;g.reopened=true;closeDialog(false);nav({page:'results',from:'games'},true,{title:'Game reopened'});return announce('Game reopened. Payments are no longer final.');}
+  if(a==='reset'){return confirmReset(g);}
+  if(a==='do-reset'){g.phase='Planning';g.step='Distribution preview';g.reopened=false;g.previous=null;g.settlement=null;g.players.forEach(p=>{p.rebuys=0;p.units=null;});closeDialog(false);nav({page:'planning',from:'games'},true,{title:'Back in Planning'});return announce('Back in Planning. Play records cleared.');}
+  if(a==='delete'){return confirmDelete(g);}
+  if(a==='do-delete'){const list=listFor(g);s.games=s.games.filter(x=>x.id!==g.id);closeDialog(false);nav({page:list,from:list,game:null},true,{title:'Game deleted'});return announce('Game deleted.');}
+  if(a==='new'||a==='stub-link'||a==='stub-correct'){s.toast={kind:'error',title:'Not part of this prototype',text:a==='stub-correct'?'Corrections use the approved results prototype. Use “simulate a corrected count” in the controls.':'This screen was designed in an earlier ticket.'};return render();}
+}
+function walkthrough(w){
+  if(w==='even')fixture='even';else if(w==='blocked')fixture='short';else if(!['finish','history-empty'].includes(w)&&fixture==='short')fixture='ready';
+  historyMode=w==='history-empty'?'empty':w==='history'?'saved':historyMode;
+  reset();const g=game('g1');
+  if(['payments','even','history','reopen','delete','details'].includes(w))finish(g,{iso:'2026-11-23T23:41',day:'23 Nov',time:'23:41'});
+  if(w==='payments'||w==='even')nav({page:'payments'},false);
+  if(w==='history'||w==='history-empty')nav({page:'history',from:'history',game:null},false);
+  if(w==='details')nav({page:'details'},false);
+  if(w==='reopen'){nav({page:'payments'},false);confirmReopen(g);}
+  if(w==='reset'){nav({page:'play'},false);confirmReset(g);}
+  if(w==='delete'){nav({page:'payments',from:'history'},false);confirmDelete(g);}
+  updateURL();
+}
+function setVariant(v){variant=v;updateURL();render();}
+function cycle(d){const k=Object.keys(variants);setVariant(k[(k.indexOf(variant)+d+k.length)%k.length]);}
+document.addEventListener('click',e=>{
+  const el=e.target.closest('[data-action],[data-tool],[data-walk]');if(!el)return;
+  if(el.dataset.walk)return walkthrough(el.dataset.walk);
+  const t=el.dataset.tool;
+  if(t==='previous')return cycle(-1);if(t==='next')return cycle(1);if(t==='reset')return reset();
+  if(t==='restart'){const keep={...view};closeDialog(false);busy=false;s.toast=null;view=keep;render();return announce('Restored the same screen. Nothing was confirmed or replayed.');}
+  if(t==='correct'){const g=game('g1');if(!g||g.phase!=='In progress'||!g.players.every(p=>p.units!=null)){s.toast={kind:'error',title:'Reopen the game first',text:'This control needs the main game In progress with everyone counted.'};return render();}
+    const [x,y]=g.players.length>4?[3,4]:[0,1];g.players[x].units-=10;g.players[y].units+=10;s.toast={title:`${g.players[y].name}’s result corrected (+10 units, ${g.players[x].name} −10)`};return render();}
+  if(el.dataset.action)action(el);
+});
+document.querySelector('#modal').addEventListener('cancel',e=>{e.preventDefault();if(!busy){closeDialog();announce('Cancelled. Nothing changed.');}});
+document.querySelector('#variant').addEventListener('change',e=>setVariant(e.target.value));
+document.querySelector('#fixture').addEventListener('change',e=>{fixture=e.target.value;reset();});
+document.querySelector('#history').addEventListener('change',e=>{historyMode=e.target.value;reset();});
+document.querySelector('#scale').addEventListener('change',e=>{scale=e.target.value;updateURL();render();});
+document.addEventListener('keydown',e=>{if(document.querySelector('#modal').open||e.target.closest('input,select,textarea,[contenteditable]'))return;if(e.key==='ArrowLeft')cycle(-1);if(e.key==='ArrowRight')cycle(1);});
+reset();
+if(params.get('walk'))walkthrough(params.get('walk'));
+</script>
