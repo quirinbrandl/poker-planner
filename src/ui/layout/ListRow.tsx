@@ -1,5 +1,5 @@
 import { type ReactNode } from 'react';
-import { Pressable, StyleSheet, View } from 'react-native';
+import { Pressable, StyleSheet, useWindowDimensions, View } from 'react-native';
 
 import { Icon } from '../Icon';
 import { usePressFeedback } from '../motion';
@@ -52,6 +52,9 @@ export function ListRow({
   testID,
 }: ListRowProps) {
   const feedback = usePressFeedback();
+  // At large text the buttons go under the row instead of squeezing the name into a narrow column.
+  const { fontScale } = useWindowDimensions();
+  const stacked = Boolean(actions) && (fontScale || 1) >= LARGE_TEXT_SCALE;
   const lines = subtitle === undefined ? [] : typeof subtitle === 'string' ? [subtitle] : subtitle;
   const main = (
     <>
@@ -78,30 +81,38 @@ export function ListRow({
   );
   const padding = density === 'compact' ? space.sm : space.md;
   return (
-    <View style={[styles.row, divider && styles.divider]} testID={testID}>
+    <View style={[styles.row, stacked && styles.rowStacked, divider && styles.divider]} testID={testID}>
       {onPress ? (
         <Pressable
           onPress={onPress}
           accessibilityRole="button"
           accessibilityLabel={accessibilityLabel ?? [title, ...lines].join(', ')}
           accessibilityHint={accessibilityHint}
-          style={({ pressed }) => [styles.main, { paddingVertical: padding }, feedback(pressed, colors.surface)]}
+          style={({ pressed }) => [
+            styles.main,
+            stacked && styles.mainStacked,
+            { paddingVertical: padding },
+            feedback(pressed, colors.surface),
+          ]}
         >
           {main}
         </Pressable>
       ) : (
         <View
-          style={[styles.main, { paddingVertical: padding }]}
+          style={[styles.main, stacked && styles.mainStacked, { paddingVertical: padding }]}
           accessible={Boolean(accessibilityLabel)}
           accessibilityLabel={accessibilityLabel}
         >
           {main}
         </View>
       )}
-      {actions ? <View style={styles.actions}>{actions}</View> : null}
+      {actions ? <View style={[styles.actions, stacked && styles.actionsStacked]}>{actions}</View> : null}
     </View>
   );
 }
+
+/** From this text scale on, a row's action buttons sit under it. */
+const LARGE_TEXT_SCALE = 1.3;
 
 const styles = StyleSheet.create({
   row: {
@@ -111,7 +122,10 @@ const styles = StyleSheet.create({
     columnGap: space.sm,
     paddingVertical: space.xs,
   },
+  rowStacked: { flexDirection: 'column', flexWrap: 'nowrap', alignItems: 'stretch' },
   divider: { borderBottomWidth: 1, borderBottomColor: colors.divider },
+  mainStacked: { flexGrow: 0, flexBasis: 'auto' },
+  actionsStacked: { marginLeft: 0, paddingHorizontal: space.xs, paddingBottom: space.sm },
   main: {
     flexGrow: 1,
     flexShrink: 1,
