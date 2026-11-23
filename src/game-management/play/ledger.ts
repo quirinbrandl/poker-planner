@@ -41,6 +41,19 @@ export function isEliminated(play: PlayRecord, participantId: string): boolean {
   return play.eliminations?.some((e) => e.participantId === participantId) ?? false;
 }
 
+/** Tournaments: the eliminated participant ids, earliest first (the first one finishes last). */
+export function eliminationOrder(play: PlayRecord): string[] {
+  return (play.eliminations ?? []).map((e) => e.participantId);
+}
+
+/**
+ * Tournaments: late entry is possible only while no elimination is recorded. Undoing every
+ * elimination opens it again; rebuys never close it.
+ */
+export function isLateEntryOpen(play: PlayRecord): boolean {
+  return (play.eliminations?.length ?? 0) === 0;
+}
+
 /** Chips handed out across the table (every issuance so far). */
 export function issuedMix(issuances: readonly IssuanceRecord[], play: PlayRecord): ChipMix {
   const counts = play.terms.chipSet.map(() => 0);

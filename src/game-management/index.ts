@@ -137,6 +137,43 @@ export type {
   ReturnToPlanningConfirmation,
   ReturnToPlanningResult,
 } from './play/return-to-planning';
+export type {
+  BackInCode,
+  BackInConfirmation,
+  BackInResult,
+  RecordEliminationCode,
+  RecordEliminationResult,
+  RecordSameHandCode,
+  RecordSameHandResult,
+  SaveOrderCode,
+  SaveOrderResult,
+  TournamentAccessCode,
+} from './play/tournament';
+export type {
+  BackInData,
+  CalculateState,
+  EliminationPreview,
+  FinisherRow,
+  FinishingStatus,
+  LateEntryState,
+  MissedSlot,
+  OrderChangeRow,
+  OrderDraft,
+  OrderDraftRow,
+  OrderEditorView,
+  PrizePoolData,
+  PrizeRung,
+  PrizeRungHolder,
+  StillInData,
+  StillInPlayer,
+  TournamentBuyInRecord,
+  TournamentPlayerResult,
+  TournamentPlayerView,
+  TournamentPlayView,
+  TournamentResultsView,
+  TournamentTerm,
+  UnpaidFinisher,
+} from './play/tournament/types';
 
 // Cash-game final chip counts, results and accounting status
 export type {

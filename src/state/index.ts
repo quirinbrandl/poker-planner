@@ -10,6 +10,7 @@ export {
   useGame,
   useGameDetails,
   useGames,
+  useOrderEditor,
   usePersistenceStatus,
   usePlanningView,
   usePlayerPicker,
@@ -17,5 +18,8 @@ export {
   usePlayView,
   useSavedPlayers,
   useTemplates,
+  useTournamentPlay,
+  useTournamentPlayer,
+  useTournamentResults,
   useWorkingLocation,
 } from './hooks';

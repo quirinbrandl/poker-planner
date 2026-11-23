@@ -33,7 +33,9 @@ const plan = usePlanningView(gameId);     // PlanningView | null
 Hooks: `useGames`, `usePlanningView(gameId)`, `useDistributionPreview(gameId)`,
 `usePlayView(gameId)`, `usePlayScreen(gameId)`, `useBankReserve(gameId)`, `useGameDetails(gameId)`,
 `useAddPlayer(gameId)`, `useCashResults(gameId)`, `useCountEditor(gameId, participantId, showErrors?)`,
-`useCashPlayer(gameId, participantId)`, `usePlayerPicker(gameId)`, `useSavedPlayers`, `useTemplates`,
+`useCashPlayer(gameId, participantId)`, `useTournamentPlay(gameId)`, `useTournamentResults(gameId)`,
+`useTournamentPlayer(gameId, participantId)`, `useOrderEditor(draft)`, `usePlayerPicker(gameId)`,
+`useSavedPlayers`, `useTemplates`,
 `useWorkingLocation`, `usePersistenceStatus`. For any other read, call the method
 on `app` inside the component; reads are cheap, memoized and return the same object until
 something relevant changes.
@@ -492,6 +494,45 @@ else toast.show(result.reason.message, { tone: 'error' });
 // Issue rebuy / Accept & issue
 const done = await app.play.issueRebuy(gameId, acceptance);
 ```
+
+### Tournament eliminations and the finishing order
+
+One elimination order is the only tournament result record (`play.eliminations`, earliest first;
+internal). Places, the sole remaining winner, every payout and whether late entry is open are
+derived from it, the roster, all contributions (the prize pool) and the locked schedule (leftover
+cents to 1st first). For N players the first one out is Nth. Eliminations move no chips, need no
+chip count, never change contributions or the schedule, and never complete the game. Late entry is
+open only while no elimination is recorded (`isLateEntryOpen` in `play/ledger.ts` for the later
+late-entry operation).
+
+Reads (`null` unless an In progress tournament; hooks `useTournamentPlay`, `useTournamentResults`,
+`useTournamentPlayer`, `useOrderEditor`). Each is the screen's data from
+`src/features/tournament/types.ts` without the workspace frame or context line, which the container adds:
+
+| Read | Returns |
+| --- | --- |
+| `play.getTournamentPlay(gameId)` | `TournamentPlayView`: terms, prize-pool rungs with holders, `stillIn` (players with the `EliminationPreview` the Out popup shows: place, payout, `closesLateEntry`, the winner with two left; `nextPlaceLabels` for the same hand) or `null` with a `winner`, `lateEntry: { status: 'open' } \| { status: 'closed', eliminationsText, message }`, unpaid finishers, `reserveText`. |
+| `play.getTournamentResults(gameId)` | `TournamentResultsView`: `status` (`incomplete` with ring and names, or `winner`), `openPlaces`, `finishers` best first, `canEditOrder`, `calculate: { kind: 'ready' } \| { kind: 'blocked', stillPlayingText, message: 'Record eliminations until one player is left.' }`. |
+| `play.getTournamentPlayer(gameId, participantId)` | `TournamentPlayerView`: `status: 'stillIn' \| 'out' \| 'winner'`, `buyIns` (shaped like the player page's `BuyInRecord`), `buyInsTotalText`, `result: TournamentPlayerResult \| null` (place, payout, balance), `backIn: BackInData \| null` (eliminated players only). |
+| `play.describeOrderDraft(draft)` | `OrderEditorView` for any draft: rows with places, payouts, `was 5th` / `missed` markers and move labels; `missed` candidates and slots (or `null` with fewer than two left); `changes` against the saved order. Changes nothing. |
+
+Operations:
+
+| Operation | Result |
+| --- | --- |
+| `play.recordElimination(gameId, participantId)` | `accepted { place }` \| `rejected notPlaying \| alreadyOut \| lastPlayer` (+ access codes). The next open place from the bottom. |
+| `play.recordSameHand(gameId, { bestFirst, stillIn })` | `accepted` \| `rejected stillInChanged \| tooFewPlayers \| notPlaying \| alreadyOut \| lastPlayer`. Two or more players out in one hand, recorded in one commit in the host's order (best place first); `stillIn` is the set the host saw. |
+| `play.startOrderDraft(gameId)` | `OrderDraft \| null`: the saved order as a draft. Keep it in the editor screen; leaving discards it. |
+| `play.moveUpInOrderDraft(draft, id)`, `moveDownInOrderDraft`, `undoInOrderDraft`, `addMissedToOrderDraft(draft, { playerId, slotId })` | A new `OrderDraft` (pure; nothing saved). Impossible edits return the draft unchanged. |
+| `play.saveOrder(draft)` | `accepted` \| `rejected orderChanged` ("The order changed meanwhile. Nothing was saved.": the saved order or roster changed since the draft started) \| `invalidOrder`. Replaces the order in one commit. |
+| `play.backInTheGame(gameId, participantId, { confirmed? })` | `needsConfirmation { confirmation: { kind: 'backInTheGame', name, changes } }` until `confirmed` \| `accepted` \| `rejected notPlaying \| notOut`. Removes that elimination only (never a contribution). |
+
+Access codes on every tournament operation: `gameNotFound`, `notTournament`, `notInProgress`,
+`gameCompleted`. Change rows (`OrderChangeRow { key, label, struck?, value, spokenValue? }`) list
+only what changes: `5th → 4th` (plus ` · EUR 36.00` / ` · no payout` when the payout changes),
+`Out · 5th · no payout`, `Back in (was 5th)`, the winner withdrawn (`struck: 'Alice'`,
+`· none yet` or `→ Bob`) or new (`Alice · EUR 84.00`), `Late entry` `Closes` / `Opens again`;
+Back in the game adds `Buy-ins · EUR 20.00 · unchanged`.
 
 ## Saved players
 

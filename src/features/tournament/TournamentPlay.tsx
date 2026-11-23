@@ -190,9 +190,7 @@ export function TournamentPlay({
         onCancel={close}
       >
         <Text>
-          {lateEntry.status === 'closed'
-            ? `Late entry closes once anyone is out (${lateEntry.eliminationsText} recorded). It opens again only if every elimination is undone.`
-            : ''}
+          {lateEntry.status === 'closed' ? lateEntry.message : ''}
         </Text>
       </Dialog>
     </WorkspaceFrame>

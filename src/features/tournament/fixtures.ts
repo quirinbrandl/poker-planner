@@ -157,7 +157,13 @@ export function playData(game: FixtureGame): TournamentPlayData {
         },
     winner: winner ? { playerId: winner.id, name: winner.name } : null,
     lateEntry:
-      game.order.length === 0 ? { status: 'open' } : { status: 'closed', eliminationsText: plural(game.order.length, 'elimination') },
+      game.order.length === 0
+        ? { status: 'open' }
+        : {
+            status: 'closed',
+            eliminationsText: plural(game.order.length, 'elimination'),
+            message: `Late entry closes once anyone is out (${plural(game.order.length, 'elimination')} recorded). It opens again only if every elimination is undone.`,
+          },
     unpaidFinishers: bestFirst(game.order)
       .filter((id) => (placeOf(game, id) ?? 0) > game.shares.length)
       .map((id) => {
@@ -237,7 +243,11 @@ export function resultsData(game: FixtureGame): TournamentResultsData {
         ? { kind: 'readOnly' }
         : winner
           ? { kind: 'ready' }
-          : { kind: 'blocked', stillPlayingText: plural(left.length, 'player') },
+          : {
+              kind: 'blocked',
+              stillPlayingText: plural(left.length, 'player'),
+              message: 'Record eliminations until one player is left.',
+            },
     reopened: game.reopened,
   };
 }
