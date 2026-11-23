@@ -505,8 +505,8 @@ describe('screen reads', () => {
       chipValueText: 'EUR 0.10 per chip unit',
       blindsText: '1 / 2 chip units',
       depthText: '100 BB',
-      coverageText: '4 payments of each blind',
-      preferenceText: 'Fewer chips',
+      coverageText: '4 payments',
+      preferenceText: 'Fewer',
       reserveText: '3 stacks',
       startingStack: { unitsText: '200' },
       payouts: null,
@@ -533,7 +533,7 @@ describe('screen reads', () => {
     expect(proposal.popup.extraFacts).toEqual([{ label: 'Prize pool', value: 'EUR 120.00 → EUR 140.00' }]);
     expectStatus(await app.play.issueRebuy(gameId, proposal.acceptance), 'accepted');
     expect(app.play.getGameDetails(gameId)!.payouts!.note).toBe(
-      'Prize pool EUR 140.00 · 6 buy-ins + 1 rebuy. Rebuys raise every prize; the percentages stay.',
+      'Prize pool EUR 140.00 · 6 buy-ins + 1 rebuy',
     );
   });
 });

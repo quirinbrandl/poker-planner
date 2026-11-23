@@ -1,6 +1,6 @@
-import { StyleSheet, View } from 'react-native';
+import { View } from 'react-native';
 
-import { Button, Dialog, FactRow, space, Text } from '@/ui';
+import { Button, Dialog, FactRow } from '@/ui';
 
 import type { EliminationPreview } from './types';
 
@@ -53,33 +53,22 @@ export function OutDialog({
       onConfirm={onConfirm}
       onCancel={onCancel}
     >
-      <Text>
-        {`${name} finishes `}
-        <Text strong>{elimination.placeLabel}</Text>
-        {'.'}
-        {elimination.winner ? ` ${elimination.winner.name} is the last player left and wins.` : ''}
-      </Text>
       <View>
         {rows.map((row, index) => (
           <FactRow key={row.label} label={row.label} value={row.value} divider={index < rows.length - 1} />
         ))}
       </View>
-      <View style={styles.line}>
-        <Text>Buying back in?</Text>
-        <Button
-          label="Rebuy instead"
-          variant="tertiary"
-          accessibilityLabel={`Rebuy for ${name} instead`}
-          onPress={onRebuyInstead}
-        />
-      </View>
+      <Button
+        label="Rebuy instead"
+        icon="plus"
+        variant="tertiary"
+        alignStart
+        accessibilityLabel={`Rebuy for ${name} instead`}
+        onPress={onRebuyInstead}
+      />
       {sameHandAvailable ? (
         <Button label="Several out in the same hand…" variant="tertiary" alignStart onPress={onSameHand} />
       ) : null}
     </Dialog>
   );
 }
-
-const styles = StyleSheet.create({
-  line: { flexDirection: 'row', flexWrap: 'wrap', alignItems: 'center', columnGap: space.xs },
-});

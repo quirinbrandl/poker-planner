@@ -17,7 +17,7 @@ export type {
 /** Everything the Completed Payments tab shows: `PaymentsView` plus the screen's context line. */
 export interface PaymentsData {
   mode: PaymentsMode;
-  /** The context line with created and finished time: "Cash game · 23 Nov, 19:30 · finished 23:41". */
+  /** The context line with created and finished time: "Cash game · 23 Nov, 19:30–23:41". */
   context: string;
   summary: PaymentsSummary;
   balances: readonly BalanceRow[];

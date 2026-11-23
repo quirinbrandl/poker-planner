@@ -43,7 +43,7 @@ export type TournamentActionResult =
 
 /** The frame of a started game's workspace tab (see `WorkspaceFrame`). */
 export interface TournamentFrameData {
-  /** "Tournament · 23 Nov, 19:30"; Completed adds " · finished 23:41". */
+  /** "Tournament · 23 Nov, 19:30"; Completed adds "–23:41". */
   context: string;
   /** Where the top-left control leads. */
   backLabel: 'Games' | 'History';

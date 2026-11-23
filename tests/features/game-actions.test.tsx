@@ -51,20 +51,24 @@ const sheetLabels = () =>
 
 it('offers only Delete in Planning', async () => {
   await renderUi(<Host game="planning" callbacks={all()} />);
-  expect(screen.getByText('Planning · Cash game · 25 Nov, 19:30')).toBeTruthy();
+  expect(screen.queryByText('Planning · Cash game · 25 Nov, 19:30')).toBeNull();
   expect(sheetLabels()).toEqual(['Delete game…']);
 });
 
 it('offers Return to Planning and Delete In progress', async () => {
   await renderUi(<Host game="inProgress" callbacks={all()} />);
   expect(sheetLabels()).toEqual(['Return to Planning…', 'Delete game…']);
-  expect(screen.getByText('Clear play and hand out new stacks.')).toBeTruthy();
+  expect(screen.getByRole('button', { name: 'Return to Planning…' }).props.accessibilityHint).toBe(
+    'Clears play; new stacks are handed out after Start.',
+  );
 });
 
 it('offers Reopen and Delete on a Completed game, never Return to Planning', async () => {
   await renderUi(<Host game="completed" callbacks={all()} />);
   expect(sheetLabels()).toEqual(['Reopen game…', 'Delete game…']);
-  expect(screen.getByText('Change results or buy-ins, then calculate again.')).toBeTruthy();
+  expect(screen.getByRole('button', { name: 'Reopen game…' }).props.accessibilityHint).toBe(
+    'Change results or buy-ins, then calculate again.',
+  );
 });
 
 it('leaves out actions the host does not supply yet', async () => {
@@ -111,7 +115,7 @@ it('Reopen this game? keeps records; Cancel calls nothing', async () => {
   await renderUi(<Host game="completed" callbacks={callbacks} />);
   await fireEvent.press(screen.getByRole('button', { name: 'Reopen game…' }));
   expect(
-    await screen.findByText('Results and buy-ins stay. These Payments stop being final. Calculate them again when you’re done.'),
+    await screen.findByText('Results and buy-ins stay. Payments stop being final until you calculate them again.'),
   ).toBeTruthy();
   await fireEvent.press(screen.getByRole('button', { name: 'Cancel' }));
   await waitFor(() => expect(screen.queryByText('Reopen this game?')).toBeNull());
@@ -122,7 +126,7 @@ it('Reopen this game? words the tournament variant and reopens once', async () =
   const callbacks = all();
   await renderUi(<Host game="tournamentCompleted" callbacks={callbacks} />);
   await fireEvent.press(screen.getByRole('button', { name: 'Reopen game…' }));
-  expect(await screen.findByText('Places and buy-ins stay. These Payments stop being final.')).toBeTruthy();
+  expect(await screen.findByText('Places and buy-ins stay. Payments stop being final until you calculate them again.')).toBeTruthy();
   await fireEvent.press(screen.getByRole('button', { name: 'Reopen game' }));
   await fireEvent.press(screen.getByRole('button', { name: 'Reopening…' }));
   expect(callbacks.onReopen).toHaveBeenCalledTimes(1);

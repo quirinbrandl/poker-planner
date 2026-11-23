@@ -20,8 +20,8 @@ const cash: GameDetailsData = {
   chipValueText: 'EUR 0.10 per chip unit',
   blindsText: '1 / 2 chip units',
   depthText: '100 BB',
-  coverageText: '4 payments of each blind',
-  preferenceText: 'Fewer chips',
+  coverageText: '4 payments',
+  preferenceText: 'Fewer',
   reserveText: '3 stacks',
   startingStack: { unitsText: '200', chips: fixtureChips(STARTING_MIX) },
   chipSet: fixtureChips(CHIP_SET),
@@ -43,7 +43,7 @@ export const DETAILS_FIXTURES = {
   'cash-completed': {
     ...cash,
     phase: 'completed',
-    context: 'Cash game · 13 Nov, 19:30 · finished 23:41',
+    context: 'Cash game · 13 Nov, 19:30–23:41',
     createdText: '13 Nov 2026 · 19:30',
     finishedText: '13 Nov 2026 · 23:41',
   },
@@ -61,7 +61,7 @@ export const DETAILS_FIXTURES = {
         { id: 'p1', placeLabel: '1st', shareText: '70%', amountText: 'EUR 98.00' },
         { id: 'p2', placeLabel: '2nd', shareText: '30%', amountText: 'EUR 42.00' },
       ],
-      note: 'Prize pool EUR 140.00 · 6 buy-ins + 1 rebuy. Rebuys raise every prize; the percentages stay.',
+      note: 'Prize pool EUR 140.00 · 6 buy-ins + 1 rebuy',
     },
   },
 } satisfies Record<string, GameDetailsData>;

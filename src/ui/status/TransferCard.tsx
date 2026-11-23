@@ -1,6 +1,7 @@
 import { StyleSheet, useWindowDimensions, View } from 'react-native';
 import { Path, Svg } from 'react-native-svg';
 
+import { Icon } from '../Icon';
 import { Card } from '../layout/Card';
 import { Text } from '../Text';
 import { colors, space } from '../theme';
@@ -11,8 +12,10 @@ export interface TransferCardProps {
   to: string;
   /** Pre-formatted amount, e.g. "EUR 8.00". */
   amount: string;
-  /** Word under the arrow. Default "pays". */
+  /** The verb in the spoken name ("Bob pays Clara EUR 8.00"). Default "pays". */
   verb?: string;
+  /** Also show the verb under the arrow. Default false: the arrow says it. */
+  showVerb?: boolean;
   onPress?: () => void;
 }
 
@@ -31,7 +34,7 @@ function Person({ name }: { name: string }) {
  * Payment instruction card: payer → amount → receiver. Spoken as "Bob pays Clara EUR 8.00".
  * At large text or narrow widths it stacks vertically instead of clipping.
  */
-export function TransferCard({ from, to, amount, verb = 'pays', onPress }: TransferCardProps) {
+export function TransferCard({ from, to, amount, verb = 'pays', showVerb = false, onPress }: TransferCardProps) {
   const { width, fontScale } = useWindowDimensions();
   const stacked = fontScale >= 1.5 || width < 340;
   const label = `${from} ${verb} ${to} ${amount}`;
@@ -46,7 +49,10 @@ export function TransferCard({ from, to, amount, verb = 'pays', onPress }: Trans
           <Text variant="amount" tabular>
             {amount}
           </Text>
-          <Text variant="caption">{`${verb} ↓`}</Text>
+          <View style={styles.stackArrow}>
+            <Icon name="arrowDown" size={18} color={colors.primary} />
+            {showVerb ? <Text variant="caption">{verb}</Text> : null}
+          </View>
         </View>
         <View style={styles.stackRow}>
           <Avatar name={to} />
@@ -68,9 +74,11 @@ export function TransferCard({ from, to, amount, verb = 'pays', onPress }: Trans
             <Path d="M0 0 L12 8 L0 16 Z" fill={colors.primary} />
           </Svg>
         </View>
-        <Text variant="caption" align="center">
-          {verb}
-        </Text>
+        {showVerb ? (
+          <Text variant="caption" align="center">
+            {verb}
+          </Text>
+        ) : null}
       </View>
       <Person name={to} />
     </Card>
@@ -85,4 +93,5 @@ const styles = StyleSheet.create({
   line: { flex: 1, height: 2, backgroundColor: colors.primary, marginRight: -1 },
   stackRow: { flexDirection: 'row', alignItems: 'center', gap: space.md },
   stackMiddle: { paddingLeft: 52, gap: 2 },
+  stackArrow: { flexDirection: 'row', alignItems: 'center', gap: space.xs },
 });

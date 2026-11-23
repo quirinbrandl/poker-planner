@@ -93,7 +93,7 @@ describe('recording eliminations', () => {
     expect(start.lateEntry).toEqual({ status: 'open' });
     expect(start.stillIn).toMatchObject({
       count: 6,
-      summary: 'Playing for 1st–6th · next out 6th · no payout',
+      summary: 'Next out: 6th',
       sameHandAvailable: true,
       nextPlaceLabels: ['2nd', '3rd', '4th', '5th', '6th'],
     });
@@ -129,7 +129,7 @@ describe('recording eliminations', () => {
     view = tPlay(gameId);
     expect(view.stillIn).toMatchObject({
       count: 2,
-      summary: 'Playing for 1st–2nd · next out 2nd · EUR 36.00',
+      summary: 'Next out: 2nd · EUR 36.00',
       sameHandAvailable: false,
     });
     expect(view.stillIn!.players.map((p) => [p.name, p.elimination])).toEqual([
@@ -166,7 +166,7 @@ describe('recording eliminations', () => {
         names: 'Alice, Bob, Cleo, Dan, Emma, Felix',
         progressLabel: '0 of 5 eliminations recorded',
       },
-      openPlaces: { rangeLabel: '1st–6th', description: 'Still playing · 1st 84.00 · 2nd 36.00 open' },
+      openPlaces: { rangeLabel: '1st–6th', description: 'still playing' },
       canEditOrder: false,
       calculate: { kind: 'blocked', stillPlayingText: '6 players', message: 'Record eliminations until one player is left.' },
     });
@@ -296,6 +296,7 @@ describe('the finishing order editor', () => {
           name: 'Dan',
           placeLabel: '5th',
           marker: null,
+          paid: false,
           payoutText: 'No payout',
           canMoveUp: false,
           canMoveDown: true,
@@ -307,6 +308,7 @@ describe('the finishing order editor', () => {
           name: 'Felix',
           placeLabel: '6th',
           marker: null,
+          paid: false,
           payoutText: 'No payout',
           canMoveUp: true,
           canMoveDown: false,

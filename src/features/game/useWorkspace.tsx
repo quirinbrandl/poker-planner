@@ -22,7 +22,7 @@ import type { WorkspaceTab } from './WorkspaceFrame';
 export interface Workspace {
   game: GameCard;
   phase: 'inProgress' | 'completed';
-  /** "Cash game · 13 Nov, 19:30"; Completed adds " · finished 23:41". */
+  /** "Cash game · 13 Nov, 19:30"; Completed: "Cash game · 13 Nov, 19:30–23:41". */
   context: string;
   /** "History" for a Completed game opened from History, otherwise "Games". */
   backLabel: 'Games' | 'History';
@@ -45,16 +45,16 @@ const TAB_HREF = {
   payments: paymentsHref,
 } as const;
 
-/** "23 Nov, 19:30 · finished 23:41" (the finishing date is added when it is another day). */
+/** "–23:41" after the start time (with the date when it is another day: " – 24 Nov, 01:10"). */
 function finishedText(game: GameCard): string {
   if (!game.finishedAt) return '';
   const created = new Date(game.createdAt);
   const finished = new Date(game.finishedAt);
   const sameDay = created.toDateString() === finished.toDateString();
-  return ` · finished ${sameDay ? formatTime(game.finishedAt) : formatShortDateTime(game.finishedAt)}`;
+  return sameDay ? `–${formatTime(game.finishedAt)}` : ` – ${formatShortDateTime(game.finishedAt)}`;
 }
 
-/** The workspace context line: "Cash game · 23 Nov, 19:30", Completed with its finishing time. */
+/** The workspace game line: "Cash game · 23 Nov, 19:30"; Completed as a range "23 Nov, 19:30–23:41". */
 export function workspaceContext(game: GameCard): string {
   return `${modeLabel(game.mode)} · ${formatShortDateTime(game.createdAt)}${game.phase === 'completed' ? finishedText(game) : ''}`;
 }

@@ -245,7 +245,7 @@ describe('tournament Start', () => {
         { place: 2, placeLabel: '2nd', shareText: '30%', amount: 3600, amountText: 'EUR 36.00' },
       ],
       prizePool: { cents: 12000, text: 'EUR 120.00' },
-      prizePoolLine: 'Prize pool EUR 120.00 · 6 buy-ins. Rebuys raise every prize; the percentages stay.',
+      prizePoolLine: 'Prize pool EUR 120.00 · 6 buy-ins',
     });
     const result = await expectUnchanged(gameId, () => app.planning.choosePayoutPreset(gameId, 'top3'));
     expect(result).toMatchObject({ reason: { code: 'setupLocked' } });

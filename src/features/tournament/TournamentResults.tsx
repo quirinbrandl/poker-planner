@@ -62,6 +62,7 @@ export function TournamentResults({
       onSelectTab={onSelectTab}
       onBack={onBack}
       onMore={onMore}
+      reopened={data.reopened}
     >
       {status.kind === 'incomplete' ? (
         <StatusCard
@@ -82,7 +83,7 @@ export function TournamentResults({
         {data.openPlaces ? (
           <View
             accessible
-            accessibilityLabel={`${data.openPlaces.rangeLabel} place: ${data.openPlaces.description}`}
+            accessibilityLabel={`${data.openPlaces.rangeLabel} place, ${data.openPlaces.description}`}
             style={[styles.open, data.finishers.length > 0 && styles.divider]}
           >
             <PlaceBadge label={data.openPlaces.rangeLabel} />
@@ -98,9 +99,11 @@ export function TournamentResults({
             subtitle={row.isWinner ? 'Winner' : row.contributionText}
             leading={<PlaceBadge label={row.placeLabel} highlight={row.paid} filled={row.isWinner} />}
             trailing={
-              <Text variant={row.paid ? 'title' : 'body'} tone={row.paid ? 'main' : 'supporting'} tabular>
-                {row.payoutText}
-              </Text>
+              row.paid ? (
+                <Text variant="title" tabular>
+                  {row.payoutText}
+                </Text>
+              ) : undefined
             }
             accessibilityLabel={finisherLabel(row)}
             onPress={() => onOpenPlayer(row.playerId)}
@@ -130,11 +133,6 @@ export function TournamentResults({
           {calculate.kind === 'blocked' ? (
             <Text variant="supporting" align="center">
               {calculate.message}
-            </Text>
-          ) : null}
-          {data.reopened ? (
-            <Text variant="supporting" tone="warning" align="center">
-              Reopened · calculate Payments again when you’re done.
             </Text>
           ) : null}
         </View>

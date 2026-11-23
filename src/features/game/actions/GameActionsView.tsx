@@ -52,7 +52,7 @@ export function GameActionsView({
       sheetActions.push({
         key: action,
         label: 'Return to Planning…',
-        description: 'Clear play and hand out new stacks.',
+        hint: 'Clears play; new stacks are handed out after Start.',
         icon: 'undo',
         destructive: true,
         onPress: () => onChoose(action),
@@ -61,7 +61,7 @@ export function GameActionsView({
       sheetActions.push({
         key: action,
         label: 'Reopen game…',
-        description: 'Change results or buy-ins, then calculate again.',
+        hint: 'Change results or buy-ins, then calculate again.',
         icon: 'reopen',
         onPress: () => onChoose(action),
       });
@@ -69,7 +69,7 @@ export function GameActionsView({
       sheetActions.push({
         key: action,
         label: 'Delete game…',
-        description: 'Removes this game for good.',
+        hint: 'Removes this game for good.',
         icon: 'trash',
         destructive: true,
         onPress: () => onChoose(action),
@@ -82,7 +82,6 @@ export function GameActionsView({
       <BottomSheet
         visible={sheetVisible && confirmation === null}
         title="Game actions"
-        subtitle={game.subtitle}
         actions={sheetActions}
         onCancel={onCloseSheet}
       />

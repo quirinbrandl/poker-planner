@@ -100,7 +100,7 @@ export function buildPlay(game: StartedTournament, playView: PlayView): Tourname
       ? null
       : {
           count,
-          summary: `Playing for ${openRangeLabel(count)} · next out ${placeLabel(count)} · ${payoutInline(s, count)}`,
+          summary: `Next out: ${placeLabel(count)}${payoutAt(s, count) === null ? '' : ` · ${payoutInline(s, count)}`}`,
           players,
           sameHandAvailable: count >= 3,
           nextPlaceLabels: Array.from({ length: count - 1 }, (_, i) => placeLabel(i + 2)),
@@ -123,7 +123,10 @@ export function buildPlay(game: StartedTournament, playView: PlayView): Tourname
         contributionText: contributionText(play, id),
         payoutText: 'No payout',
       })),
-    reserveText: playView.reserve.summaryText,
+    reserveText:
+      playView.reserve.achievable === null
+        ? playView.reserve.summaryText
+        : plural(playView.reserve.achievable, 'reserve stack'),
   };
 }
 
@@ -148,7 +151,6 @@ export function buildResults(game: StartedTournament): TournamentResultsView {
   const needed = s.size - 1;
   const recorded = s.order.length;
   const left = s.remaining.length;
-  const openPaid = s.amounts.slice(0, left);
   const ids = [...(s.winner ? [s.winner.id] : []), ...bestFirst(s.order)];
   const completed = game.phase === 'completed';
   return {
@@ -173,11 +175,8 @@ export function buildResults(game: StartedTournament): TournamentResultsView {
       ? null
       : {
           rangeLabel: openRangeLabel(left),
-          description: `Still playing${
-            openPaid.length > 0
-              ? ` · ${openPaid.map((amount, i) => `${placeLabel(i + 1)} ${eurInputText(amount)}`).join(' · ')} open`
-              : ''
-          }`,
+          // The open prizes are in the prize pool card; the row only names the open range.
+          description: 'still playing',
         },
     finishers: ids.map((id) => finisherRow(play, s, id)),
     canEditOrder: !completed && recorded > 0,
@@ -274,6 +273,7 @@ export function buildOrderEditor(game: StartedTournament, draft: OrderDraft): Or
           : was !== null && was !== place
             ? { kind: 'was', text: `was ${placeLabel(was)}` }
             : null,
+        paid: payoutAt(s, place) !== null,
         payoutText: payoutText(s, place),
         canMoveUp: index > 0,
         canMoveDown: index < best.length - 1,

@@ -78,7 +78,7 @@ function cash(players: readonly CashPlayer[], payments: readonly Payment[], cont
         name: player.name,
         placeLabel: null,
         placeHighlight: false,
-        lines: [`Final result ${formatEur(player.final)}`, `Buy-ins ${formatEur(player.buyIns)}`],
+        lines: [`${formatEur(player.final)} chips · ${formatEur(player.buyIns)} buy-ins`],
         balanceText: formatSignedEur(balance),
         direction: direction(balance),
       };
@@ -90,7 +90,7 @@ function tournament(players: readonly TournamentPlayer[], payments: readonly Pay
   checkNets(Object.fromEntries(players.map((p) => [p.name, p.payout - p.buyIns])), payments);
   return {
     mode: 'tournament',
-    context: 'Tournament · 23 Nov, 19:30 · finished 23:41',
+    context: 'Tournament · 23 Nov, 19:30–23:41',
     summary: summary(payments),
     balances: players.map((player, index) => {
       const balance = player.payout - player.buyIns;
@@ -99,7 +99,7 @@ function tournament(players: readonly TournamentPlayer[], payments: readonly Pay
         name: player.name,
         placeLabel: ORDINAL[player.place - 1],
         placeHighlight: player.place === 1,
-        lines: [player.payout > 0 ? `Payout ${formatEur(player.payout)}` : 'No payout', `Buy-ins ${formatEur(player.buyIns)}`],
+        lines: [`${player.payout > 0 ? `${formatEur(player.payout)} payout · ` : ''}${formatEur(player.buyIns)} buy-ins`],
         balanceText: formatSignedEur(balance),
         direction: direction(balance),
       };
@@ -107,7 +107,7 @@ function tournament(players: readonly TournamentPlayer[], payments: readonly Pay
   };
 }
 
-const CASH_CONTEXT = 'Cash game · 23 Nov, 19:30 · finished 23:41';
+const CASH_CONTEXT = 'Cash game · 23 Nov, 19:30–23:41';
 
 const eur = (amount: number) => Math.round(amount * 100);
 const player = (name: string, final: number, buyIns = 20): CashPlayer => ({ name, final: eur(final), buyIns: eur(buyIns) });

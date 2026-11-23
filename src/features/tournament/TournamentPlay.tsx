@@ -5,7 +5,6 @@ import { WorkspaceFrame, type WorkspaceTab } from '@/features/game/WorkspaceFram
 import {
   Button,
   Card,
-  Dialog,
   InlineNotice,
   ListRow,
   PlaceBadge,
@@ -13,6 +12,7 @@ import {
   space,
   TermsPanel,
   Text,
+  useToast,
 } from '@/ui';
 
 import { OutDialog } from './OutDialog';
@@ -24,8 +24,7 @@ import { useOperation } from './useOperation';
 /** Which popup Play shows on load (development fixtures and captures). */
 export type TournamentPlayPopup =
   | { kind: 'out'; playerId: string }
-  | { kind: 'sameHand'; selectedIds: readonly string[] }
-  | { kind: 'entryClosed' };
+  | { kind: 'sameHand'; selectedIds: readonly string[] };
 
 export interface TournamentPlayProps {
   data: TournamentPlayData;
@@ -77,6 +76,7 @@ export function TournamentPlay({
   initialPopup,
 }: TournamentPlayProps) {
   const [popup, setPopup] = useState<Popup>(initialPopup ?? null);
+  const toast = useToast();
   const operation = useOperation(onRejected);
   const working = busy || operation.pending;
   const close = () => {
@@ -105,9 +105,9 @@ export function TournamentPlay({
       {stillIn ? (
         <StillInCard
           stillIn={stillIn}
-          lateEntryOpen={lateEntry.status === 'open'}
+          lateEntryClosedReason={lateEntry.status === 'closed' ? lateEntry.message : null}
           onAddPlayer={onAddPlayer}
-          onAddPlayerLocked={() => setPopup({ kind: 'entryClosed' })}
+          onAddPlayerLocked={() => toast.show(LATE_ENTRY_CLOSED)}
           onRebuy={onRebuy}
           onOut={(playerId) => setPopup({ kind: 'out', playerId })}
           onSameHand={() => setPopup({ kind: 'sameHand', selectedIds: [] })}
@@ -115,9 +115,16 @@ export function TournamentPlay({
         />
       ) : null}
       {winner ? (
-        <InlineNotice tone="confirmed">
-          {`${winner.name} is the last player left and wins. Next: Results → Calculate Payments.`}
-        </InlineNotice>
+        <View style={styles.winner}>
+          <Text variant="sectionTitle" style={styles.title}>{`${winner.name} wins`}</Text>
+          <Button
+            label="Results"
+            variant="primary"
+            trailingIcon="chevronRight"
+            accessibilityLabel={`${winner.name} wins. Go to Results`}
+            onPress={() => onSelectTab('results')}
+          />
+        </View>
       ) : null}
       {data.unpaidFinishers.length > 0 ? (
         <View>
@@ -128,7 +135,6 @@ export function TournamentPlay({
               title={finisher.name}
               subtitle={finisher.contributionText}
               leading={<PlaceBadge label={finisher.placeLabel} />}
-              trailing={<Text tone="supporting">{finisher.payoutText}</Text>}
               accessibilityLabel={`${finisher.name}, ${finisher.placeLabel} place, ${finisher.payoutText.toLowerCase()}, ${finisher.contributionText}`}
               onPress={() => onOpenPlayer(finisher.playerId)}
               divider={index < data.unpaidFinishers.length - 1}
@@ -141,6 +147,7 @@ export function TournamentPlay({
         trailingIcon="external"
         fullWidth
         accessibilityLabel={`${data.reserveText}. Bank and reserve details`}
+        variant="tertiary"
         onPress={onOpenBank}
       />
 
@@ -191,19 +198,12 @@ export function TournamentPlay({
           }}
         />
       ) : null}
-      <Dialog
-        visible={popup?.kind === 'entryClosed' && lateEntry.status === 'closed'}
-        title="Can’t add a player now"
-        cancelLabel="OK"
-        onCancel={close}
-      >
-        <Text>
-          {lateEntry.status === 'closed' ? lateEntry.message : ''}
-        </Text>
-      </Dialog>
     </WorkspaceFrame>
   );
 }
+
+/** The toast when the locked Add player is pressed; the full reason is its spoken hint. */
+const LATE_ENTRY_CLOSED = 'Late entry closed: someone is out.';
 
 function moved(ids: readonly string[], id: string, by: -1 | 1): readonly string[] {
   const from = ids.indexOf(id);
@@ -216,7 +216,8 @@ function moved(ids: readonly string[], id: string, by: -1 | 1): readonly string[
 
 interface StillInCardProps {
   stillIn: StillInData;
-  lateEntryOpen: boolean;
+  /** Late entry is closed: why, spoken as the locked Add player's hint. `null` while open. */
+  lateEntryClosedReason: string | null;
   onAddPlayer: () => void;
   onAddPlayerLocked: () => void;
   onRebuy: (playerId: string) => void;
@@ -228,7 +229,7 @@ interface StillInCardProps {
 /** "Still in · N": who is playing for which places, with + Rebuy and Out beside each player. */
 function StillInCard({
   stillIn,
-  lateEntryOpen,
+  lateEntryClosedReason,
   onAddPlayer,
   onAddPlayerLocked,
   onRebuy,
@@ -240,20 +241,19 @@ function StillInCard({
     <Card gap={space.xs}>
       <View style={styles.heading}>
         <Text variant="sectionTitle" style={styles.title}>{`Still in · ${stillIn.count}`}</Text>
-        {lateEntryOpen ? (
+        {lateEntryClosedReason === null ? (
           <Button label="Add player" icon="plus" variant="tertiary" onPress={onAddPlayer} />
         ) : (
           <Button
             label="Add player"
             icon="lock"
             unavailable
-            accessibilityHint="Late entry closed: someone is out."
+            accessibilityHint={lateEntryClosedReason}
             onUnavailablePress={onAddPlayerLocked}
           />
         )}
       </View>
       <Text variant="supporting">{stillIn.summary}</Text>
-      {lateEntryOpen ? null : <Text variant="supporting">Late entry closed: someone is out.</Text>}
       <View>
         {stillIn.players.map((player, index) => (
           <ListRow
@@ -301,4 +301,12 @@ const styles = StyleSheet.create({
     rowGap: space.xs,
   },
   title: { flexShrink: 1 },
+  winner: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    columnGap: space.md,
+    rowGap: space.sm,
+  },
 });

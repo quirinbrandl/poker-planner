@@ -12,7 +12,7 @@ export type { DetailsPayoutPlace, DetailsPlayer };
  */
 export interface GameDetailsData extends Omit<GameDetailsScreenView, 'phase' | 'createdAt' | 'finishedAt'> {
   phase: 'inProgress' | 'completed';
-  /** "Cash game · 13 Nov, 19:30" (Completed adds "· finished 23:41"). */
+  /** "Cash game · 13 Nov, 19:30" (Completed: "Cash game · 13 Nov, 19:30–23:41"). */
   context: string;
   backLabel: 'Games' | 'History';
   /** "13 Nov 2026 · 19:30". */

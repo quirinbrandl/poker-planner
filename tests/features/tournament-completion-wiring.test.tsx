@@ -128,17 +128,17 @@ it('Add player opens late entry before anyone is out, and explains instead once 
   screen.unmount();
 
   const { gameId, router } = await open(tournament(['Felix']), (id) => `/game/${id}/play`);
+  expect(screen.getByRole('button', { name: 'Add player' }).props.accessibilityHint).toBe(
+    'Late entry closes once anyone is out (1 elimination recorded). It opens again only if every elimination is undone.',
+  );
   await press('Add player');
-  expect(screen.getByText('Can’t add a player now')).toBeTruthy();
-  expect(
-    screen.getByText('Late entry closes once anyone is out (1 elimination recorded). It opens again only if every elimination is undone.'),
-  ).toBeTruthy();
+  expect(screen.getByText('Late entry closed: someone is out.')).toBeTruthy();
   expect(router.getPathname()).toBe(`/game/${gameId}/play`);
 });
 
 it('the reserve line opens Bank & reserve in place', async () => {
   await open(tournament(), (id) => `/game/${id}/play`);
-  await press(/reserve stacks? available\. Bank and reserve details/);
+  await press(/reserve stacks?\. Bank and reserve details/);
   // The top bar and the button under the page both go back to Play.
   const back = screen.getAllByRole('button', { name: 'Back to Play' });
   expect(back).toHaveLength(2);
@@ -162,7 +162,7 @@ it('Calculate Payments… on tournament Results confirms once and lands on Payme
   expect(calculate.mock.calls.filter(([, options]) => options?.confirmed)).toHaveLength(1);
   expect(router.getPathname()).toBe(`/game/${gameId}/payments`);
   expect(screen.getByText('5 payments')).toBeTruthy();
-  expect(screen.getByText('Payout EUR 84.00')).toBeTruthy();
+  expect(screen.getByRole('button', { name: /^Alice, 1st, EUR 84\.00 payout · EUR 20\.00 buy-ins,/ })).toBeTruthy();
   expect(live.games.get(gameId)!.phase).toBe('completed');
 });
 
@@ -181,11 +181,12 @@ it('a Completed tournament shows read-only Results and a read-only player page',
 
 it.each([
   ['tournament', tournament(['Felix', 'Emma', 'Dan', 'Cleo', 'Bob'], { complete: true }), 'Payouts · Top 2'],
-  ['cash game', completedCash, 'Cash-game rate: EUR 0.10 per chip unit'],
+  ['cash game', completedCash, 'Rate: EUR 0.10 per chip unit'],
 ])('Completed Game details of a %s shows the finishing time and no bank link', async (_mode, seed, marker) => {
   await open(seed, (id) => `/game/${id}/details`);
-  expect(screen.getByLabelText(/^Created: /)).toBeTruthy();
-  expect(screen.getByLabelText(/^Finished: \d+ \w+ \d{4} · \d\d:\d\d$/)).toBeTruthy();
+  // Created and finished are the game line's range ("23 Nov, 19:30–23:41"), not rows.
+  expect(screen.getByText(/ · \d+ \w+, \d\d:\d\d(–| – \d+ \w+, )\d\d:\d\d$/)).toBeTruthy();
+  expect(screen.getByText('Completed')).toBeTruthy();
   expect(screen.queryByText(marker) ?? screen.queryByLabelText(marker)).toBeTruthy();
   expect(screen.getByText('Read-only. To change something, reopen the game from ⋯.')).toBeTruthy();
   expect(screen.queryByRole('button', { name: 'View current bank & reserve' })).toBeNull();

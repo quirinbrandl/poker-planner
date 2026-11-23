@@ -89,7 +89,6 @@ it('Calculate Payments confirms once and lands on Payments', async () => {
   expect(calculate.mock.calls.filter(([, options]) => options?.confirmed)).toHaveLength(1);
   expect(router.getPathname()).toBe(`/game/${gameId}/payments`);
   expect(screen.getByText('1 payment')).toBeTruthy();
-  expect(screen.getByText('Who pays whom. The app doesn’t track payments.')).toBeTruthy();
   expect(screen.getByRole('button', { name: 'Back to Games' })).toBeTruthy();
   expect(live.games.get(gameId)!.phase).toBe('completed');
 });
@@ -111,7 +110,7 @@ it('History opens Payments with back to History; a player opens read-only', asyn
   });
   expect(router.getPathname()).toBe(`/game/${gameId}/payments`);
   expect(screen.getByRole('button', { name: 'Back to History' })).toBeTruthy();
-  expect(screen.getByText(/finished/)).toBeTruthy();
+  expect(screen.getByText(/ · \d+ \w+, \d\d:\d\d(–| – \d+ \w+, )\d\d:\d\d$/)).toBeTruthy();
 
   await act(async () => {
     await fireEvent.press(screen.getByRole('button', { name: /^Alice,/ }));
