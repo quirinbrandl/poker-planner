@@ -6,10 +6,6 @@ import { historyCountLabel } from './cardData';
 import { GameCardView } from './GameCardView';
 import type { GameCardData, GamesData } from './types';
 
-function draftCount(count: number): string {
-  return `${count} ${count === 1 ? 'draft' : 'drafts'}`;
-}
-
 export interface GamesViewProps {
   data: GamesData;
   onNewGame: () => void;
@@ -21,10 +17,12 @@ export interface GamesViewProps {
 
 /**
  * Games: the home. New game first, then In progress games on the prominent card and Planning
- * games on quieter cards, then History (with its count), Saved players and Chip set templates.
+ * games on quieter cards, then History (with its count once there are games), Saved players and
+ * Chip set templates.
  */
 export function GamesView({ data, onNewGame, onOpenGame, onOpenHistory, onOpenSavedPlayers, onOpenTemplates }: GamesViewProps) {
   const { inProgress, planning } = data;
+  const historyCount = historyCountLabel(data.historyCount);
   const cards = (list: readonly GameCardData[]) => (
     <Stack gap="md">
       {list.map((game) => (
@@ -49,7 +47,7 @@ export function GamesView({ data, onNewGame, onOpenGame, onOpenHistory, onOpenSa
 
       {planning.length > 0 ? (
         <Stack gap="md">
-          <SectionHeading title="Planning" meta={draftCount(planning.length)} />
+          <SectionHeading title="Planning" />
           {cards(planning)}
         </Stack>
       ) : null}
@@ -59,8 +57,8 @@ export function GamesView({ data, onNewGame, onOpenGame, onOpenHistory, onOpenSa
         <ListRow
           title="History"
           leading={<Icon name="clock" />}
-          trailing={<Text variant="supporting">{historyCountLabel(data.historyCount)}</Text>}
-          accessibilityLabel={`History, ${historyCountLabel(data.historyCount)}`}
+          trailing={historyCount ? <Text variant="supporting">{historyCount}</Text> : undefined}
+          accessibilityLabel={historyCount ? `History, ${historyCount}` : 'History'}
           divider={false}
           density="compact"
           onPress={onOpenHistory}

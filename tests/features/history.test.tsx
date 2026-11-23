@@ -69,10 +69,12 @@ it('shows In progress, reopened and Planning cards and the History count', async
       onOpenTemplates={jest.fn()}
     />,
   );
-  expect(screen.getByText('Reopened · calculate Payments again →')).toBeTruthy();
-  expect(screen.getByText('Open Play →')).toBeTruthy();
-  expect(screen.getByText('Resume game settings →')).toBeTruthy();
-  expect(screen.getByText('1 draft')).toBeTruthy();
+  expect(screen.getByText('Reopened')).toBeTruthy();
+  expect(screen.getByRole('button', { name: 'In progress · Cash game. Alice, Bob. 23 Nov 2026, 19:30. Open Play' })).toBeTruthy();
+  expect(
+    screen.getByRole('button', { name: 'Planning · Cash game. Alice, Bob. 23 Nov 2026, 19:30. Step 4 of 5. Resume game settings' }),
+  ).toBeTruthy();
+  expect(screen.queryByText('1 draft')).toBeNull();
   await fireEvent.press(
     screen.getByRole('button', { name: 'In progress · Cash game. Alice, Bob. 23 Nov 2026, 19:30. Reopened · calculate Payments again' }),
   );
@@ -82,8 +84,8 @@ it('shows In progress, reopened and Planning cards and the History count', async
 });
 
 it('labels the History row by its count', () => {
-  expect(historyCountLabel(undefined)).toBe('Empty');
-  expect(historyCountLabel(0)).toBe('Empty');
+  expect(historyCountLabel(undefined)).toBe('');
+  expect(historyCountLabel(0)).toBe('');
   expect(historyCountLabel(1)).toBe('1 game');
   expect(historyCountLabel(3)).toBe('3 games');
 });

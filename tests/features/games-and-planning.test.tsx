@@ -45,9 +45,7 @@ it('offers New game on an empty Games screen; choosing a mode creates a plan tha
 
   await fireEvent.press(screen.getAllByRole('button', { name: 'Back to Games' })[0]);
   await waitFor(() => expect(router.getPathname()).toBe('/'));
-  expect(await screen.findByText('Planning · Tournament')).toBeTruthy();
-  expect(screen.getByText('Resume players →')).toBeTruthy();
-  expect(screen.getByText('1 draft')).toBeTruthy();
+  expect(await screen.findByRole('button', { name: /^Planning · Tournament\. .*Step 2 of 6\. Resume players$/ })).toBeTruthy();
 });
 
 it('reopens on the saved step, with Games underneath', async () => {
@@ -58,7 +56,7 @@ it('reopens on the saved step, with Games underneath', async () => {
 
   await fireEvent.press(screen.getAllByRole('button', { name: 'Back to Games' })[0]);
   await waitFor(() => expect(router.getPathname()).toBe('/'));
-  expect(await screen.findByText('Resume game settings →')).toBeTruthy();
+  expect(await screen.findByRole('button', { name: /Step 4 of 5\. Resume game settings$/ })).toBeTruthy();
 });
 
 it('stays on Game settings after an invalid Continue and shows the problems', async () => {
