@@ -1,11 +1,54 @@
-import { Stack } from 'expo-router';
+import { DarkTheme, Stack, ThemeProvider, type Theme } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
+import * as SystemUI from 'expo-system-ui';
+import { useEffect } from 'react';
+import { StyleSheet } from 'react-native';
+import { GestureHandlerRootView } from 'react-native-gesture-handler';
+import { SafeAreaProvider } from 'react-native-safe-area-context';
+
+import { colors, ToastProvider } from '@/ui';
+
+/** Navigator colours: always dark, whatever the device appearance. */
+const navigationTheme: Theme = {
+  ...DarkTheme,
+  dark: true,
+  colors: {
+    ...DarkTheme.colors,
+    primary: colors.primary,
+    background: colors.background,
+    card: colors.background,
+    text: colors.text,
+    border: colors.divider,
+    notification: colors.primary,
+  },
+};
 
 export default function RootLayout() {
+  useEffect(() => {
+    // Root view / system navigation bar background behind the app, also on light-mode devices.
+    SystemUI.setBackgroundColorAsync(colors.background).catch(() => undefined);
+  }, []);
+
   return (
-    <>
-      <StatusBar style="light" />
-      <Stack screenOptions={{ headerShown: false, contentStyle: { backgroundColor: '#111920' } }} />
-    </>
+    <GestureHandlerRootView style={styles.root}>
+      <SafeAreaProvider style={styles.root}>
+        <ThemeProvider value={navigationTheme}>
+          <ToastProvider>
+            <StatusBar style="light" />
+            <Stack
+              screenOptions={{
+                headerShown: false,
+                animation: 'none',
+                contentStyle: { backgroundColor: colors.background },
+              }}
+            />
+          </ToastProvider>
+        </ThemeProvider>
+      </SafeAreaProvider>
+    </GestureHandlerRootView>
   );
 }
+
+const styles = StyleSheet.create({
+  root: { flex: 1, backgroundColor: colors.background },
+});
