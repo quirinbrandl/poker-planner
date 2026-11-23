@@ -11,7 +11,7 @@ export interface TopBarProps {
   /** Visible back text: "Games", "History", "Back". Omit for a root screen. */
   backLabel?: string;
   onBack?: () => void;
-  /** Spoken name; default "Back to <backLabel>" (or "Back"). */
+  /** Spoken name; default "Back to <backLabel>", or the label itself when it already starts with "Back". */
   backAccessibilityLabel?: string;
   /** Default arrow; `chevronLeft` for in-wizard Back, `home` for Games from the wizard. */
   backIcon?: IconName;
@@ -40,7 +40,7 @@ export function TopBar({
         <Pressable
           onPress={onBack}
           accessibilityRole="button"
-          accessibilityLabel={backAccessibilityLabel ?? (backLabel === 'Back' ? 'Back' : `Back to ${backLabel}`)}
+          accessibilityLabel={backAccessibilityLabel ?? (/^back\b/i.test(backLabel) ? backLabel : `Back to ${backLabel}`)}
           style={({ pressed }) => [styles.back, feedback(pressed, colors.surface)]}
         >
           <Icon name={backIcon} size={20} color={colors.text} />
