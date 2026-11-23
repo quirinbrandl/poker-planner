@@ -2,7 +2,7 @@ import { router, useLocalSearchParams, usePreventRemove } from 'expo-router';
 import { useMemo, useRef, useState } from 'react';
 
 import { ChipSetBlock } from '@/features/planning/chip-set/ChipSetBlock';
-import { paletteDescription, removeDenominationText } from '@/features/planning/chip-set/copy';
+import { removeDenominationText } from '@/features/planning/chip-set/copy';
 import { DenominationRow } from '@/features/planning/chip-set/DenominationRow';
 import { useRefMap } from '@/features/planning/chip-set/useRefMap';
 import { planningStepHref } from '@/features/shared/routes';
@@ -236,7 +236,6 @@ function TemplateEditor({
       <ChipColorPalette
         visible={paletteRow !== null}
         color={paletteRow?.color ?? null}
-        description={paletteRow ? paletteDescription(paletteRow.valueText) : undefined}
         returnFocusRef={paletteReturn}
         onCancel={() => setPaletteRowId(null)}
         onApply={(color) => {

@@ -19,6 +19,11 @@ export interface ChipColorButtonProps {
   caption?: string;
   /** For returning focus here when the palette closes. */
   ref?: Ref<ViewRef>;
+  /**
+   * `row` (default): chip with "Chip color / Red" beside it. `compact`: a smaller chip with only the
+   * colour name as a caption under it, for the one-line denomination row.
+   */
+  layout?: 'row' | 'compact';
 }
 
 /** Tappable chip symbol with "Chip color / Red" text; opens the colour palette in a denomination row. */
@@ -29,8 +34,26 @@ export function ChipColorButton({
   accessibilityLabel,
   caption = 'Chip color',
   ref,
+  layout = 'row',
 }: ChipColorButtonProps) {
   const feedback = usePressFeedback();
+  if (layout === 'compact') {
+    return (
+      <Pressable
+        ref={ref}
+        onPress={onPress}
+        accessibilityRole="button"
+        accessibilityLabel={accessibilityLabel}
+        accessibilityHint="Opens the color palette"
+        style={({ pressed }) => [styles.compact, feedback(pressed, colors.surfacePressed)]}
+      >
+        <ChipSymbol color={color} value={value} size={48} />
+        <Text variant="caption" align="center">
+          {chipColorName(color)}
+        </Text>
+      </Pressable>
+    );
+  }
   return (
     <Pressable
       ref={ref}
@@ -61,4 +84,13 @@ const styles = StyleSheet.create({
     flexShrink: 1,
   },
   text: { flexShrink: 1 },
+  compact: {
+    alignItems: 'center',
+    gap: 2,
+    minWidth: 64,
+    minHeight: touchTarget,
+    paddingVertical: space.xs,
+    paddingHorizontal: 2,
+    borderRadius: radii.control,
+  },
 });

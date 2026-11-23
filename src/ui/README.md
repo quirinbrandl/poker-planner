@@ -72,7 +72,7 @@ Rules of use:
 **`IconButton`** — 48×48, required `accessibilityLabel` naming the specific action. `icon`, `variant` (`outline` / `plain`), `tone` (`destructive`, `primary`), `unavailable`.
 `<IconButton icon="trash" accessibilityLabel="Remove denomination 2 (value 5)" onPress={remove} />`
 
-**`TextField`** — persistent `label`, `value` (raw text, kept as typed), `onChangeText`, `unit` (EUR, BB, payments, stacks, chip units, chips, %) with `unitSpoken`, `icon`, `helper`, `error` (shown in words under the field, spoken as the input's hint, announced), `keyboard` (`text` / `decimal` / `whole`), `onBlur`, `onSubmitEditing` + `returnKeyType`, `inputRef`, `footer` (e.g. "Use automatic (3)"), `editable`, `size="large"` / `size="compact"` (48-high box inside cards), `before` / `after`, `inputWidth` (fixed box width that grows with text size; `before` / `after` take the rest), `labelHidden` (spoken but not shown, only where visible context names the field, such as a payout place's share), `inputIcon` (decorative icon inside the box). Never placeholder-only, except a search field: `labelHidden` + `inputIcon="search"` + `placeholder="Search"`.
+**`TextField`** — persistent `label`, `value` (raw text, kept as typed), `onChangeText`, `unit` (EUR, BB, payments, stacks, chip units, chips, %) with `unitSpoken`, `icon`, `helper`, `error` (shown in words under the field, spoken as the input's hint, announced), `keyboard` (`text` / `decimal` / `whole`), `onBlur`, `onSubmitEditing` + `returnKeyType`, `inputRef`, `footer` (e.g. "Use automatic (3)"), `editable`, `size="large"` / `size="compact"` (48-high box inside cards), `before` / `after`, `inputWidth` (fixed box width that grows with text size; `before` / `after` take the rest), `labelHidden` (spoken but not shown, only where visible context names the field, such as a payout place's share), `inputIcon` (decorative icon inside the box), `spokenLabel` (a fuller spoken name than the visible label, e.g. "Value (chip units), denomination 2" under a "Value" column heading), `errorTextHidden` (border and spoken error stay; the caller shows the words, e.g. under a compact row). Never placeholder-only, except a search field: `labelHidden` + `inputIcon="search"` + `placeholder="Search"`.
 `<TextField label="Buy-in per player" icon="wallet" unit="EUR" unitSpoken="euros" keyboard="decimal" value={raw} onChangeText={setRaw} error={buyInError} />`
 
 **`StepperField`** — − / large quantity / +. Same text props as `TextField`; `onDecrement` / `onIncrement` are yours (no number rules inside), `decrementLabel` / `incrementLabel`, `decrementUnavailable`.
@@ -163,10 +163,10 @@ Colours are `ChipColor | null` from `src/domain/types.ts`; `null` is "No color".
 **`ChipPill`** / **`ChipPillRow`** — symbol + `×N`; spoken "N × value color". `color`, `value`, `count`, `showValue` (adds "(value)" as in the bank strip), `size="compact"`, `delta` ("−5" badge).
 `<ChipPill color="grey" value={1} count={110} showValue />`
 
-**`ChipColorButton`** — tappable chip + "Chip color / Red" in a denomination row. `color`, `value`, `onPress`, specific `accessibilityLabel`. `ref` lets the palette return focus to it.
+**`ChipColorButton`** — tappable chip + "Chip color / Red" in a denomination row; `layout="compact"` is a 48 chip with only the colour name under it (the one-line denomination row). `color`, `value`, `onPress`, specific `accessibilityLabel`. `ref` lets the palette return focus to it.
 
 **`ChipColorPalette`** — the "Chip color" dialog: all twelve choices as labelled radio tiles, staged until **Apply color**; Cancel keeps the old colour. `visible`, `color`, `description`, `onApply(color)`, `onCancel`, `returnFocusRef` (the chip button that opened it).
-`<ChipColorPalette visible={open} color={row.color} description="Value: 5 chip units. Match your physical chips." onApply={apply} onCancel={close} returnFocusRef={chipRef} />`
+`<ChipColorPalette visible={open} color={row.color} onApply={apply} onCancel={close} returnFocusRef={chipRef} />`
 
 **`ChipTray`** — compact chip preview of a set (template picker and list): chip symbol, value and colour name per denomination, wrapping. `chips: { key, color, value }[]`, `accessibilityLabel`.
 

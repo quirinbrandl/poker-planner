@@ -49,6 +49,16 @@ export interface TextFieldProps {
    * then take the rest of the row. Default: the box fills the row.
    */
   inputWidth?: number;
+  /**
+   * Spoken name when it says more than the visible label ("Value (chip units), denomination 2" for a
+   * field shown under a "Value" column heading). Default: `label`.
+   */
+  spokenLabel?: string;
+  /**
+   * The error keeps its red border and stays in the spoken hint, but its words are shown by the
+   * caller (under a whole compact row instead of a narrow column). Default false.
+   */
+  errorTextHidden?: boolean;
   /** Content beside the input box (e.g. stepper − and + buttons). */
   before?: ReactNode;
   after?: ReactNode;
@@ -91,6 +101,8 @@ export function TextField({
   keyboard = 'text',
   size = 'regular',
   labelHidden,
+  spokenLabel: spokenLabelProp,
+  errorTextHidden,
   inputWidth,
   before,
   after,
@@ -113,7 +125,8 @@ export function TextField({
   const { fontScale } = useWindowDimensions();
   const large = size === 'large';
   const compact = size === 'compact';
-  const spokenLabel = unit ? `${label}, ${unitSpoken ?? unit}` : label;
+  const named = spokenLabelProp ?? label;
+  const spokenLabel = unit ? `${named}, ${unitSpoken ?? unit}` : named;
   const hint = [error ? `Error: ${error}` : null, helper ?? null].filter(Boolean).join('. ') || undefined;
   const borderColor = error ? colors.error : focused ? colors.primary : colors.controlBorder;
   const borderWidth = error || focused ? 2 : 1;
@@ -204,7 +217,7 @@ export function TextField({
         </View>
         {after}
       </View>
-      {error ? (
+      {error && !errorTextHidden ? (
         <View style={styles.message} accessibilityLiveRegion="polite">
           <Icon name="error" size={16} color={colors.error} />
           <Text variant="supporting" tone="error" style={styles.messageText}>

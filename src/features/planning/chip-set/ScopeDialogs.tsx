@@ -77,13 +77,7 @@ export function ScopeDialogs({ gameId, confirmation, onClose }: ScopeDialogsProp
             : { label: 'Save as new template', onPress: () => setStage('name') }
         }
         onCancel={cancel}
-      >
-        <Text variant="supporting">
-          {offersUpdate
-            ? `Your game draft is retained. You can also update “${source!.name}” for future games. Other games always keep their own chip set.`
-            : 'Your game draft is retained. You can save a new template to reuse this chip set. Other games always keep their own chip set.'}
-        </Text>
-      </Dialog>
+      />
     );
   }
 
