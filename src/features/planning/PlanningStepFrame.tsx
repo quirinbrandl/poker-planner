@@ -4,9 +4,9 @@ import { BackHandler } from 'react-native';
 
 import { GameActionsSheet } from '@/features/game/GameActionsSheet';
 import { formatGameDateTime, modeLabel, playerCountLabel } from '@/features/shared/format';
-import { gamesHref, planningStepHref } from '@/features/shared/routes';
+import { gamesHref, paymentsHref, planningStepHref, playHref } from '@/features/shared/routes';
 import type { PlanningView, Problem, StepId, StepView } from '@/game-management';
-import { useGameManagement, usePersistenceStatus, usePlanningView } from '@/state';
+import { useGame, useGameManagement, usePersistenceStatus, usePlanningView } from '@/state';
 import {
   Badge,
   BadgeRow,
@@ -127,10 +127,16 @@ export function PlanningStepFrame({
   );
 
   const missing = plan === null;
+  const phase = useGame(gameId)?.phase ?? null;
   useEffect(() => {
-    // The game was deleted or has left Planning: this step no longer exists.
-    if (missing) router.dismissTo(gamesHref);
-  }, [missing]);
+    if (!missing) return;
+    // The step no longer exists. A game that has started (Start was just confirmed here, or the
+    // step was opened for a started game) continues in its workspace; this must not pass through
+    // Games, which would record Games as the place to reopen. A deleted game leaves to Games.
+    if (phase === 'inProgress') router.replace(playHref(gameId));
+    else if (phase === 'completed') router.replace(paymentsHref(gameId));
+    else router.dismissTo(gamesHref);
+  }, [missing, phase, gameId]);
   if (!plan) return <Screen />;
 
   const position = plan.steps.findIndex((item) => item.id === step);

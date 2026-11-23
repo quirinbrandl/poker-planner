@@ -1,6 +1,6 @@
 import { router, useLocalSearchParams } from 'expo-router';
 
-import { planningStepHref, playHref } from '@/features/shared/routes';
+import { planningStepHref } from '@/features/shared/routes';
 import type { PlanningView, PreviewStepView, StepId } from '@/game-management';
 import { useDistributionPreview, useGameManagement, usePlanningView } from '@/state';
 import { useToast } from '@/ui';
@@ -53,7 +53,8 @@ export default function PreviewStepScreen() {
       data={previewData(plan, preview)}
       onOpenStep={(step) => void openStep(step)}
       onStart={(acceptance) => app.planning.start(gameId, acceptance)}
-      onStarted={() => router.replace(playHref(gameId))}
+      // The frame leaves for Play as soon as the game has started (see PlanningStepFrame).
+      onStarted={() => undefined}
       onStartRejected={(message) => toast.show(message, { tone: 'error' })}
       renderFrame={(frame) => <PlanningStepFrame gameId={gameId} step="preview" {...frame} />}
     />
