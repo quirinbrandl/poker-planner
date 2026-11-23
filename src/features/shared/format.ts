@@ -36,3 +36,13 @@ export function phaseLabel(phase: GamePhase): string {
 export function playerCountLabel(count: number): string {
   return `${count} ${count === 1 ? 'player' : 'players'}`;
 }
+
+/** "Planning · Cash game": the identity badge on game cards and in the Delete popup. */
+export function phaseModeLabel(phase: GamePhase, mode: GameMode): string {
+  return `${phaseLabel(phase)} · ${modeLabel(mode)}`;
+}
+
+/** Participant names in joining order, or a plain statement that there are none yet. */
+export function participantNamesLabel(names: readonly string[]): string {
+  return names.length > 0 ? names.join(', ') : 'No players yet';
+}

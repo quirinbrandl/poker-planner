@@ -1,41 +1,116 @@
-import { router } from 'expo-router';
+import { router, useFocusEffect } from 'expo-router';
+import { useCallback } from 'react';
+import { View } from 'react-native';
 
-import { formatGameDateTime, modeLabel, phaseLabel } from '@/features/shared/format';
-import { locationHref } from '@/features/shared/routes';
-import type { GameMode } from '@/domain/types';
+import { useLaunchRestore } from '@/features/shared/launch';
+import {
+  historyHref,
+  locationHref,
+  newGameHref,
+  savedPlayersHref,
+  templatesHref,
+} from '@/features/shared/routes';
+import type { GameCard } from '@/game-management';
 import { useGameManagement, useGames } from '@/state';
-import { Button, ListRow, Screen, ScreenHeader, Stack } from '@/ui';
+import { Button, Divider, Icon, ListRow, Screen, ScreenHeader, SectionHeading, space, Stack, Text, useToast } from '@/ui';
 
-/** Placeholder Games home: just enough to create and reopen plans until the real screen is built. */
+import { GameCardView } from './GameCardView';
+
+function draftCount(count: number): string {
+  return `${count} ${count === 1 ? 'draft' : 'drafts'}`;
+}
+
+/**
+ * Games: the home. New game first, then In progress games on the prominent card and Planning
+ * games on quieter cards (the interface orders each section newest first), then the secondary
+ * destinations. On the first focus after launch it moves on to where the host left off instead.
+ */
 export default function GamesScreen() {
   const app = useGameManagement();
   const games = useGames();
+  const launch = useLaunchRestore();
+  const toast = useToast();
 
-  const create = async (mode: GameMode) => {
-    const result = await app.games.create(mode);
-    if (result.status === 'accepted') router.push(locationHref(result.location));
-  };
+  useFocusEffect(
+    useCallback(() => {
+      const restore = launch.take();
+      if (restore) {
+        router.push(locationHref(restore));
+        return;
+      }
+      void app.location.set({ kind: 'games' });
+    }, [app, launch]),
+  );
+
   const open = async (gameId: string) => {
     const result = await app.games.open(gameId);
     if (result.status === 'accepted') router.push(locationHref(result.location));
+    else toast.show(result.reason.message, { tone: 'error' });
   };
 
-  return (
-    <Screen>
-      <ScreenHeader title="Games" />
-      <Stack direction="row">
-        <Button label="New cash game" variant="primary" icon="plus" onPress={() => create('cash')} />
-        <Button label="New tournament" icon="plus" onPress={() => create('tournament')} />
-      </Stack>
-      {games.map((game) => (
-        <ListRow
-          key={game.id}
-          title={`${modeLabel(game.mode)} · ${phaseLabel(game.phase)}`}
-          subtitle={[formatGameDateTime(game.createdAt), game.participantNames.join(', ') || 'No players yet']}
-          chevron
-          onPress={() => open(game.id)}
-        />
+  const inProgress = games.filter((game) => game.phase === 'inProgress');
+  const planning = games.filter((game) => game.phase === 'planning');
+
+  const cards = (list: readonly GameCard[]) => (
+    <Stack gap="md">
+      {list.map((game) => (
+        <GameCardView key={game.id} game={game} onPress={() => void open(game.id)} />
       ))}
+    </Stack>
+  );
+
+  return (
+    <Screen gap={space.xl}>
+      <ScreenHeader eyebrow="POKER PLANNER" title="Games" />
+      <Button
+        label="New game"
+        icon="plus"
+        variant="primary"
+        fullWidth
+        onPress={() => router.push(newGameHref)}
+      />
+
+      {games.length === 0 ? <Text tone="supporting">No games yet.</Text> : null}
+
+      {inProgress.length > 0 ? (
+        <Stack gap="md">
+          <SectionHeading title="In progress" />
+          {cards(inProgress)}
+        </Stack>
+      ) : null}
+
+      {planning.length > 0 ? (
+        <Stack gap="md">
+          <SectionHeading title="Planning" meta={draftCount(planning.length)} />
+          {cards(planning)}
+        </Stack>
+      ) : null}
+
+      <View>
+        <Divider />
+        <ListRow
+          title="History"
+          leading={<Icon name="clock" />}
+          trailing={<Text variant="supporting">Empty</Text>}
+          divider={false}
+          density="compact"
+          onPress={() => router.push(historyHref)}
+        />
+        <ListRow
+          title="Saved players"
+          leading={<Icon name="players" />}
+          divider={false}
+          density="compact"
+          onPress={() => router.push(savedPlayersHref)}
+        />
+        <ListRow
+          title="Chip set templates"
+          leading={<Icon name="templates" />}
+          divider={false}
+          density="compact"
+          onPress={() => router.push(templatesHref)}
+        />
+      </View>
     </Screen>
   );
 }

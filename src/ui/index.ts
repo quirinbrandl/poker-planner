@@ -39,6 +39,7 @@ export { focusView } from './overlays/focus';
 export { BottomSheet, type BottomSheetProps, type SheetAction } from './overlays/BottomSheet';
 export { ChoiceSheet, type ChoiceSheetProps, type SheetChoice } from './overlays/ChoiceSheet';
 export { ToastProvider, useToast, TOAST_DURATION_MS, type ToastApi, type ToastTone } from './overlays/Toast';
+export { focusView } from './overlays/focus';
 
 export { Badge, BadgeRow, type BadgeProps } from './status/Badge';
 export { PlaceBadge, type PlaceBadgeProps } from './status/PlaceBadge';

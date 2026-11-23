@@ -34,3 +34,10 @@ export function locationHref(location: WorkingLocation): Href {
       return gamesHref;
   }
 }
+
+/** New game: the mode choice that creates the plan. */
+export const newGameHref = '/new-game' as Href;
+
+export const historyHref = '/history' as Href;
+export const savedPlayersHref = '/players' as Href;
+export const templatesHref = '/templates' as Href;

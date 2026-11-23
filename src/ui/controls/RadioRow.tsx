@@ -49,16 +49,18 @@ export function RadioRow({ label, description, selected, onPress, children, unav
 }
 
 export interface RadioGroupProps {
-  /** Visible group label ("Distribution preference"). */
+  /** Group label ("Distribution preference"). Visible unless `hideLabel`. */
   label: string;
   children: ReactNode;
+  /** Keep the label for screen readers only, when the screen title already names the choice ("Choose mode"). */
+  hideLabel?: boolean;
 }
 
 /** Labels a set of RadioRows as one radio group. */
-export function RadioGroup({ label, children }: RadioGroupProps) {
+export function RadioGroup({ label, children, hideLabel }: RadioGroupProps) {
   return (
     <View accessibilityRole="radiogroup" accessibilityLabel={label} style={styles.group}>
-      <Text variant="title">{label}</Text>
+      {hideLabel ? null : <Text variant="title">{label}</Text>}
       <View style={styles.options}>{children}</View>
     </View>
   );

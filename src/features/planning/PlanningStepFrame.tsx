@@ -1,10 +1,11 @@
-import { router } from 'expo-router';
-import { type ReactNode, useEffect, useState } from 'react';
+import { router, useFocusEffect } from 'expo-router';
+import { type ReactNode, type Ref, useCallback, useEffect, useState } from 'react';
+import { BackHandler } from 'react-native';
 
 import { GameActionsSheet } from '@/features/game/GameActionsSheet';
 import { formatGameDateTime, modeLabel, playerCountLabel } from '@/features/shared/format';
 import { gamesHref, planningStepHref } from '@/features/shared/routes';
-import type { Problem, StepId, StepView } from '@/game-management';
+import type { PlanningView, Problem, StepId, StepView } from '@/game-management';
 import { useGameManagement, usePersistenceStatus, usePlanningView } from '@/state';
 import {
   Badge,
@@ -12,6 +13,7 @@ import {
   Button,
   Dialog,
   FooterActions,
+  InlineNotice,
   Screen,
   ScreenHeader,
   StepLink,
@@ -20,6 +22,7 @@ import {
   type StepStatus,
   TopBar,
   useToast,
+  type ViewRef,
 } from '@/ui';
 
 export interface PlanningStepFrameProps {
@@ -43,6 +46,13 @@ export interface PlanningStepFrameProps {
   footerNote?: string;
   footerNoteTone?: 'supporting' | 'warning' | 'error';
   scrollRef?: ScreenProps['scrollRef'];
+  /**
+   * The short task-level line shown under the title after the default Continue failed, while the
+   * step still has problems. Default “Check the highlighted fields.”; `null` shows none.
+   */
+  invalidNotice?: string | null;
+  /** Ref to the default Continue / Return to preview button, e.g. to move focus there after the last field. */
+  continueRef?: Ref<ViewRef>;
 }
 
 const STATUS: Record<StepView['status'], StepStatus> = {
@@ -51,12 +61,29 @@ const STATUS: Record<StepView['status'], StepStatus> = {
   complete: 'complete',
 };
 
+function stepProblems(plan: PlanningView, step: StepId): readonly Problem[] {
+  switch (step) {
+    case 'players':
+      return plan.players.problems;
+    case 'chipSet':
+      return plan.chipSet.problems;
+    case 'settings':
+      return plan.settings.problems;
+    case 'payouts':
+      return plan.payoutSchedule.problems;
+    default:
+      return [];
+  }
+}
+
 /**
- * The shared shell of every Planning wizard step: Games and game actions at the top, the game's
- * mode, phase, date and roster size, the step link with its step list, the step's content, and
- * the Back / Continue (or Return to preview) dock with truthful draft feedback.
+ * The shared shell of every Planning wizard step: Games and game actions at the top; the mode and
+ * Planning badges, date and roster size, the step link with its step list and the task heading;
+ * the step's content; and the Back / Continue (or Return to preview) dock with truthful draft
+ * feedback. On the first step Back is the exit to Games.
  *
- * Leaving through Back, Games or the step list never needs valid input and never applies anything.
+ * Leaving through Back, Games, the step list or Android's back button never needs valid input and
+ * never applies anything; the draft is already saved.
  */
 export function PlanningStepFrame({
   gameId,
@@ -69,6 +96,8 @@ export function PlanningStepFrame({
   footerNote,
   footerNoteTone,
   scrollRef,
+  invalidNotice = 'Check the highlighted fields.',
+  continueRef,
 }: PlanningStepFrameProps) {
   const app = useGameManagement();
   const plan = usePlanningView(gameId);
@@ -76,21 +105,35 @@ export function PlanningStepFrame({
   const toast = useToast();
   const [stepsOpen, setStepsOpen] = useState(false);
   const [actionsOpen, setActionsOpen] = useState(false);
+  const [continueFailed, setContinueFailed] = useState(false);
+
+  const goToGames = useCallback(() => {
+    void app.location.set({ kind: 'games' });
+    router.dismissTo(gamesHref);
+  }, [app]);
+
+  // Android back from a wizard step goes to Games. Open popups handle back themselves first.
+  useFocusEffect(
+    useCallback(() => {
+      const subscription = BackHandler.addEventListener('hardwareBackPress', () => {
+        goToGames();
+        return true;
+      });
+      return () => subscription.remove();
+    }, [goToGames]),
+  );
 
   const missing = plan === null;
   useEffect(() => {
     // The game was deleted or has left Planning: this step no longer exists.
-    if (missing) router.replace(gamesHref);
+    if (missing) router.dismissTo(gamesHref);
   }, [missing]);
   if (!plan) return <Screen />;
 
   const position = plan.steps.findIndex((item) => item.id === step);
   const current = plan.steps[position];
-
-  const goToGames = () => {
-    void app.location.set({ kind: 'games' });
-    router.dismissTo(gamesHref);
-  };
+  const isFirst = position === 0;
+  const showInvalid = continueFailed && invalidNotice !== null && stepProblems(plan, step).length > 0;
 
   const goBack = async () => {
     const result = await app.planning.goBack(gameId);
@@ -109,8 +152,10 @@ export function PlanningStepFrame({
   const continueDefault = async () => {
     const result = await app.planning.continueFromStep(gameId, step);
     if (result.status === 'accepted') router.replace(planningStepHref(gameId, result.nextStep));
-    else if (result.status === 'stepInvalid') onStepInvalid?.(result.problems);
-    else if (result.status === 'rejected') toast.show(result.reason.message, { tone: 'error' });
+    else if (result.status === 'stepInvalid') {
+      setContinueFailed(true);
+      onStepInvalid?.(result.problems);
+    } else if (result.status === 'rejected') toast.show(result.reason.message, { tone: 'error' });
   };
 
   const draftNote =
@@ -132,9 +177,14 @@ export function PlanningStepFrame({
             note={footerNote ?? draftNote}
             noteTone={footerNote ? footerNoteTone : persistence.state === 'failed' ? 'error' : undefined}
           >
-            <Button label="Back" icon="chevronLeft" onPress={goBack} />
+            {isFirst ? (
+              <Button label="Games" icon="chevronLeft" onPress={goToGames} accessibilityLabel="Back to Games" />
+            ) : (
+              <Button label="Back" icon="chevronLeft" onPress={goBack} />
+            )}
             {primaryAction ?? (
               <Button
+                ref={continueRef}
                 label={plan.returnToPreview ? 'Return to preview' : 'Continue'}
                 variant="primary"
                 trailingIcon="chevronRight"
@@ -145,6 +195,7 @@ export function PlanningStepFrame({
         }
       >
         <ScreenHeader
+          badgesFirst
           badges={
             <BadgeRow>
               <Badge label={modeLabel(plan.mode)} />
@@ -152,13 +203,15 @@ export function PlanningStepFrame({
             </BadgeRow>
           }
           context={`${formatGameDateTime(plan.createdAt)} · ${playerCountLabel(plan.players.participants.length)}`}
+          beforeTitle={
+            <StepLink
+              label={`Step ${position + 1} of ${plan.steps.length} · Setup steps`}
+              onPress={() => setStepsOpen(true)}
+            />
+          }
           title={title ?? current?.title ?? ''}
-        >
-          <StepLink
-            label={`Step ${position + 1} of ${plan.steps.length} · Setup steps`}
-            onPress={() => setStepsOpen(true)}
-          />
-        </ScreenHeader>
+        />
+        {showInvalid ? <InlineNotice tone="error">{invalidNotice}</InlineNotice> : null}
         {children}
       </Screen>
 

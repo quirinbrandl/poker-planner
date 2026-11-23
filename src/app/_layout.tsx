@@ -6,6 +6,7 @@ import { StyleSheet } from 'react-native';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 
+import { LaunchRestoreProvider } from '@/features/shared/launch';
 import { GameManagementProvider } from '@/state';
 import { colors, EmptyState, Screen, ToastProvider } from '@/ui';
 
@@ -23,6 +24,9 @@ const navigationTheme: Theme = {
     notification: colors.primary,
   },
 };
+
+/** Games is always underneath, also when the app opens straight on another screen. */
+export const unstable_settings = { anchor: 'index' };
 
 export default function RootLayout() {
   useEffect(() => {
@@ -44,13 +48,15 @@ export default function RootLayout() {
                 </Screen>
               )}
             >
-              <Stack
-                screenOptions={{
-                  headerShown: false,
-                  animation: 'none',
-                  contentStyle: { backgroundColor: colors.background },
-                }}
-              />
+              <LaunchRestoreProvider>
+                <Stack
+                  screenOptions={{
+                    headerShown: false,
+                    animation: 'none',
+                    contentStyle: { backgroundColor: colors.background },
+                  }}
+                />
+              </LaunchRestoreProvider>
             </GameManagementProvider>
           </ToastProvider>
         </ThemeProvider>

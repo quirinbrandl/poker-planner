@@ -15,10 +15,18 @@ export interface ScreenHeaderProps {
   eyebrow?: string;
   /** Content under the title: a StepLink, a lead sentence, workspace tabs. */
   children?: ReactNode;
+  /**
+   * Planning order: badges first, then the context line. Default is context → badges, as in the
+   * workspaces.
+   */
+  badgesFirst?: boolean;
+  /** Content between the identity (context, badges) and the title, e.g. the wizard StepLink. */
+  beforeTitle?: ReactNode;
 }
 
-/** Screen identity block in reading order: context → badges → title → extras. */
-export function ScreenHeader({ context, badges, title, eyebrow, children }: ScreenHeaderProps) {
+/** Screen identity block in reading order: context → badges (or badges → context) → title → extras. */
+export function ScreenHeader({ context, badges, title, eyebrow, children, badgesFirst, beforeTitle }: ScreenHeaderProps) {
+  const contextLine = context ? <Text variant="supporting">{context}</Text> : null;
   return (
     <View style={styles.header}>
       {eyebrow ? (
@@ -26,8 +34,9 @@ export function ScreenHeader({ context, badges, title, eyebrow, children }: Scre
           {eyebrow}
         </Text>
       ) : null}
-      {context ? <Text variant="supporting">{context}</Text> : null}
-      {badges}
+      {badgesFirst ? badges : contextLine}
+      {badgesFirst ? contextLine : badges}
+      {beforeTitle ? <View style={styles.beforeTitle}>{beforeTitle}</View> : null}
       <Text variant="pageTitle" style={styles.title}>
         {title}
       </Text>
@@ -40,4 +49,5 @@ const styles = StyleSheet.create({
   header: { gap: space.sm + 2 },
   eyebrow: { letterSpacing: 1.6, fontWeight: '700' },
   title: { marginTop: 2 },
+  beforeTitle: { marginTop: space.sm, marginBottom: space.xs },
 });
