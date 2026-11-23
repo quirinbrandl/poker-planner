@@ -89,7 +89,7 @@ export function FixPage({
   let next: string | null = null;
   switch (data.step) {
     case 1:
-      next = `Next: save ${name}’s ${what}, then give ${owner} a new rebuy.`;
+      next = `Next: ${data.target === 'count' ? 'save' : 'remove'} ${name}’s ${what}, then give ${owner} a new rebuy.`;
       body = (
         <>
           <Eyebrow tone="error">{`Can’t ${data.target === 'count' ? `save ${name}’s count` : `remove ${name}’s result`} yet`}</Eyebrow>
