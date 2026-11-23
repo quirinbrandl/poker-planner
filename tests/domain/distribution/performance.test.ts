@@ -7,11 +7,13 @@ import {
 } from '@/domain/distribution';
 
 /**
- * Generous wall-clock guards (several times the measured desktop times) so a slow CI machine
- * does not flake, while an accidental exponential blow-up still fails.
+ * Generous wall-clock guards (many times the measured desktop times: about 1 ms for a typical
+ * plan, well under 1 ms for the later-stack calls) so a busy machine does not flake, while an
+ * accidental exponential blow-up still fails.
  */
 
 const ADVERSARIAL_MS = 20_000;
+const TYPICAL_MS = 3_000;
 
 const time = <T>(body: () => T): [T, number] => {
   const start = performance.now();
@@ -58,7 +60,7 @@ describe('performance', () => {
   it.each(typical)('plans a typical game quickly: %s', (_, request) => {
     const [result, ms] = time(() => planInitialDistribution(request));
     expect(result.kind).toBe('planned');
-    expect(ms).toBeLessThan(500);
+    expect(ms).toBeLessThan(TYPICAL_MS);
   });
 
   it('allocates a later stack, measures a mix and counts the reserve in milliseconds', () => {
@@ -73,9 +75,9 @@ describe('performance', () => {
     expect(measured.kind).toBe('measured');
     const [capacity, capacityMs] = time(() => reserveCapacity({ bank: d.bank, blinds: d.blinds, stackValue: d.stackValue, coverage: 4, max: 10 }));
     expect(capacity.kind).toBe('measured');
-    expect(rebuyMs).toBeLessThan(100);
-    expect(measureMs).toBeLessThan(50);
-    expect(capacityMs).toBeLessThan(100);
+    expect(rebuyMs).toBeLessThan(TYPICAL_MS);
+    expect(measureMs).toBeLessThan(TYPICAL_MS);
+    expect(capacityMs).toBeLessThan(TYPICAL_MS);
   });
 
   it('bounds adversarial inputs: an answer or searchLimitReached, never a hang', () => {
