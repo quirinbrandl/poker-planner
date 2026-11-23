@@ -130,7 +130,7 @@ export function GameDetailsView({ data, onViewBank, onSelectTab, onBack, onMore 
         <SectionHeading title="Chip set" />
         <ChipPillRow accessibilityLabel="Configured chip set">
           {data.chipSet.map((chip) => (
-            <ChipPill key={chip.value} color={chip.color} value={chip.value} count={chip.count} showValue />
+            <ChipPill key={chip.value} color={chip.color} value={chip.value} count={chip.count} showValue showColorName />
           ))}
         </ChipPillRow>
       </View>

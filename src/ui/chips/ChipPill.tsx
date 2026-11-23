@@ -14,13 +14,15 @@ export interface ChipPillProps {
   count: number;
   /** Also print "(value)" after the count, as in the bank strip. Default false. */
   showValue?: boolean;
+  /** With `showValue`, also print the colour name: "(1 · White)", as in a locked chip set. Default false. */
+  showColorName?: boolean;
   size?: 'regular' | 'compact';
   /** Optional ±N badge for blocked-mix explanations ("−5"). */
   delta?: string;
 }
 
 /** Chip symbol plus ×N. Spoken as "N × <value> <color>", e.g. "15 × 1 White". */
-export function ChipPill({ color, value, count, showValue, size = 'regular', delta }: ChipPillProps) {
+export function ChipPill({ color, value, count, showValue, showColorName, size = 'regular', delta }: ChipPillProps) {
   const compact = size === 'compact';
   return (
     <View
@@ -34,7 +36,7 @@ export function ChipPill({ color, value, count, showValue, size = 'regular', del
       </Text>
       {showValue ? (
         <Text variant="supporting" tabular>
-          {`(${value})`}
+          {showColorName ? `(${value} · ${chipColorName(color)})` : `(${value})`}
         </Text>
       ) : null}
       {delta ? (
