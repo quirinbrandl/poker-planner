@@ -22,6 +22,8 @@ export function useRebuyPopup(gameId: string, onIssued?: (feedback: IssueFeedbac
   const [busy, setBusy] = useState(false);
 
   const request = (participantId: string) => {
+    // A new request starts fresh: an earlier "No rebuy issued" must not linger beside its outcome.
+    toast.hide();
     const result = app.play.proposeRebuy(gameId, participantId);
     if (result.status === 'needsConfirmation') {
       setOpen({ popup: result.confirmation.popup, acceptance: result.confirmation.acceptance });

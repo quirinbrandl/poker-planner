@@ -38,6 +38,8 @@ export function CashPlayScreen({ gameId }: { gameId: string }) {
 
   const openRebuy = (participantId: string) => {
     setFeedback(null);
+    // A new request starts fresh: an earlier "No rebuy issued" must not linger beside its outcome.
+    toast.hide();
     const result = app.play.proposeRebuy(gameId, participantId);
     if (result.status === 'needsConfirmation') {
       setRebuy({ popup: result.confirmation.popup, acceptance: result.confirmation.acceptance });
