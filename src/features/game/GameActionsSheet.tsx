@@ -9,7 +9,7 @@ import {
   phaseLabel,
   phaseModeLabel,
 } from '@/features/shared/format';
-import { gamesHref, historyHref, planningStepHref } from '@/features/shared/routes';
+import { gamesHref, historyHref, planningStepHref, resultsHref } from '@/features/shared/routes';
 import type { GameCard, ReturnToPlanningConfirmation } from '@/game-management';
 import { useGameManagement } from '@/state';
 import { useToast } from '@/ui';
@@ -38,8 +38,7 @@ export function gameActionsGame(game: GameCard): GameActionsGame {
 
 /**
  * Game actions behind ⋯, connected to game management. Delete works in every phase; Return to
- * Planning is offered In progress; Reopen appears once game management offers it (see
- * `GameActionsView`). Cancel anywhere changes nothing.
+ * Planning is offered In progress; Reopen when Completed. Cancel anywhere changes nothing.
  */
 export function GameActionsSheet({ gameId, visible, onClose }: GameActionsSheetProps) {
   const app = useGameManagement();
@@ -49,6 +48,7 @@ export function GameActionsSheet({ gameId, visible, onClose }: GameActionsSheetP
   const [reset, setReset] = useState<ReturnToPlanningConfirmation | null>(null);
   const game = app.games.get(gameId);
   const inProgress = game?.phase === 'inProgress';
+  const completed = game?.phase === 'completed';
 
   useEffect(() => {
     // What Return to Planning would clear and keep, read fresh each time the sheet opens.
@@ -76,6 +76,19 @@ export function GameActionsSheet({ gameId, visible, onClose }: GameActionsSheetP
     } else if (result.status === 'rejected') toast.show(result.reason.message, { tone: 'error' });
   };
 
+  const reopen = async () => {
+    setBusy('reopen');
+    const result = await app.play.reopen(gameId, { confirmed: true });
+    setBusy(null);
+    setConfirmation(null);
+    if (result.status === 'accepted') {
+      // In progress again: the game is back on Games, so Results sits on top of Games.
+      router.dismissTo(gamesHref);
+      router.push(resultsHref(gameId));
+      toast.show(GAME_TOASTS.reopened, { tone: 'confirmed' });
+    } else if (result.status === 'rejected') toast.show(result.reason.message, { tone: 'error' });
+  };
+
   const deleteGame = async () => {
     setConfirmation(null);
     // Leave first: the game's screens disappear with it. Completed games lived in History.
@@ -97,6 +110,7 @@ export function GameActionsSheet({ gameId, visible, onClose }: GameActionsSheetP
       onCancelConfirmation={() => setConfirmation(null)}
       busy={busy}
       onDelete={() => void deleteGame()}
+      onReopen={completed ? () => void reopen() : undefined}
       onReturnToPlanning={inProgress && reset ? () => void returnToPlanning() : undefined}
       returnToPlanning={inProgress && reset ? { clears: reset.clears.parts, keeps: reset.keeps.parts } : undefined}
     />

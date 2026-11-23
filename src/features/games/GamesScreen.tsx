@@ -9,7 +9,7 @@ import {
   savedPlayersHref,
   templatesHref,
 } from '@/features/shared/routes';
-import { useGameManagement, useGames } from '@/state';
+import { useGameManagement, useGames, useHistory } from '@/state';
 import { useToast } from '@/ui';
 
 import { gameCardData } from './cardData';
@@ -22,6 +22,7 @@ import { GamesView } from './GamesView';
 export default function GamesScreen() {
   const app = useGameManagement();
   const games = useGames();
+  const history = useHistory();
   const launch = useLaunchRestore();
   const toast = useToast();
 
@@ -47,6 +48,7 @@ export default function GamesScreen() {
       data={{
         inProgress: games.filter((game) => game.phase === 'inProgress').map((game) => gameCardData(game)),
         planning: games.filter((game) => game.phase === 'planning').map((game) => gameCardData(game)),
+        historyCount: history.length,
       }}
       onNewGame={() => router.push(newGameHref)}
       onOpenGame={(gameId) => void open(gameId)}

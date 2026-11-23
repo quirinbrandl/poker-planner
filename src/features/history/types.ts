@@ -1,12 +1,7 @@
-/** Display data for History. Plain data only; the host maps game management's views into it. */
+/** Display data for History. Plain data only; `historyCardData` maps game management's `HistoryGameView`. */
+import type { HistoryFact } from '@/game-management';
 
-/** One fact on a History card: a quiet label and a strong value ("Buy-ins" "EUR 160.00"). */
-export interface HistoryFact {
-  /** Quiet lead word: "Buy-ins", "Prize pool", "Top", "Winner". Omitted for "3 payments". */
-  label?: string;
-  /** "EUR 160.00", "3 payments", "Alice +EUR 13.00", "No payments needed". */
-  value: string;
-}
+export type { HistoryFact } from '@/game-management';
 
 /** One finished game on History. */
 export interface HistoryCardData {

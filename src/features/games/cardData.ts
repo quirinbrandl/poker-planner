@@ -11,14 +11,14 @@ function planningEntry(game: GameCard): string {
 }
 
 /**
- * A Games card from game management's `GameCard`. `reopened` (not in `GameCard` yet) gives an
- * In progress game the reopened entry line.
+ * A Games card from game management's `GameCard`. A reopened In progress game (`GameCard.reopened`,
+ * or `extra.reopened` for fixtures) gets the reopened entry line.
  */
 export function gameCardData(game: GameCard, extra: { reopened?: boolean } = {}): GameCardData {
   const phase = game.phase === 'planning' ? 'planning' : 'inProgress';
   let entryText: string;
   if (phase === 'planning') entryText = planningEntry(game);
-  else entryText = extra.reopened ? REOPENED_ENTRY : 'Open Play';
+  else entryText = (extra.reopened ?? game.reopened) ? REOPENED_ENTRY : 'Open Play';
   return {
     id: game.id,
     phase,

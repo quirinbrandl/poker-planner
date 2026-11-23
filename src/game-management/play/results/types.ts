@@ -178,6 +178,10 @@ export interface ResultsPlayerRow {
 /** `play.getResults`: the cash-game Results tab and the accounting status behind it. */
 export interface CashResultsView {
   gameId: string;
+  /** In progress (editable, exact amounts) or Completed (read-only, allocated cents). */
+  phase: 'inProgress' | 'completed';
+  /** Reopened after Payments and not calculated again yet: Results shows "Reopened · calculate Payments again…". */
+  reopened: boolean;
   status: ResultsStatus;
   /** In joining order. */
   players: readonly ResultsPlayerRow[];
@@ -192,7 +196,10 @@ export interface CashResultsView {
     /** `countedUnits − issuedUnits` once everyone is counted (negative: missing); `null` before. */
     difference: number | null;
   };
-  /** Calculate Payments… is offered only when everything adds up; otherwise its one reason. */
+  /**
+   * Calculate Payments… is offered only when everything adds up (In progress); otherwise its one
+   * reason. Completed: never available.
+   */
   calculatePayments:
     | { available: true; reason: null }
     | { available: false; /** "Count everyone first." */ reason: string };
@@ -267,6 +274,8 @@ export interface ReturnToPlayData {
 /** `play.getCashPlayer`: the cash player page except the screen's context line and Back label. */
 export interface CashPlayerView {
   gameId: string;
+  /** Completed shows the page read-only with allocated cents. */
+  phase: 'inProgress' | 'completed';
   playerId: string;
   name: string;
   /** Confirmed result, or `null` while the player is still playing. */

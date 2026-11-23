@@ -14,7 +14,8 @@ export function createResultOperations(rt: Runtime) {
   return {
     /**
      * The cash-game Results tab: accounting status, one row per player in joining order and
-     * whether Calculate Payments is available. `null` unless the game is an In progress cash game.
+     * whether Calculate Payments is available. Completed: read-only, with the allocated cents of its
+     * settlement. `null` unless the game is a started cash game.
      */
     getResults(gameId: string): CashResultsView | null {
       const game = findGame(rt.state(), gameId);
@@ -24,11 +25,14 @@ export function createResultOperations(rt: Runtime) {
       });
     },
 
-    /** One participant's cash player page; `null` unless an In progress cash game with this participant. */
+    /**
+     * One participant's cash player page (Completed: read-only, allocated cents); `null` unless a
+     * started cash game with this participant.
+     */
     getCashPlayer(gameId: string, participantId: string): CashPlayerView | null {
       const game = findGame(rt.state(), gameId);
       return rt.memo(`play.cashPlayer:${gameId}:${participantId}`, [game], () => {
-        const found = cashParticipant(rt.state(), gameId, participantId);
+        const found = cashParticipant(rt.state(), gameId, participantId, { read: true });
         return found.ok ? buildCashPlayerView(found.access) : null;
       });
     },

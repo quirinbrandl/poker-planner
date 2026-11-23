@@ -1,16 +1,27 @@
 /**
  * The cash player page: the result summary, final chips and every stack handed to the player with
  * its actual mix (from `play.issuances`, so rebuys and late entries appear as they are recorded).
+ * Completed: read-only, with the allocated cents of the stored settlement.
  */
 import { formatEur } from '@/domain/money';
 
 import { countDraftOf, issuancesOf, resultOf } from '../ledger';
 import { formatCount } from '../../shared/numbers';
-import { type CashAccess, chipValueText, coloredMix, contributionsOf, unitsOf, winLoss } from './shared';
+import {
+  allocatedWinLoss,
+  type CashAccess,
+  chipValueText,
+  coloredMix,
+  contributionsOf,
+  settledOf,
+  unitsOf,
+  winLoss,
+} from './shared';
 import type { BuyInRecord, CashPlayerView, PlayerResult } from './types';
 
 export function buildCashPlayerView(access: CashAccess): CashPlayerView {
-  const { play, rate, participant } = access;
+  const { play, rate, participant, completion } = access;
+  const settled = settledOf(completion, participant.id);
   const contributions = contributionsOf(play, participant.id);
   const recorded = resultOf(play, participant.id);
 
@@ -38,8 +49,8 @@ export function buildCashPlayerView(access: CashAccess): CashPlayerView {
   if (recorded) {
     const units = unitsOf(recorded.mix);
     result = {
-      winLoss: winLoss(units, contributions, rate),
-      chipValueText: chipValueText(units, rate),
+      winLoss: settled ? allocatedWinLoss(settled.balance) : winLoss(units, contributions, rate),
+      chipValueText: settled ? formatEur(settled.finalResult) : chipValueText(units, rate),
       contributionsText: `−${formatEur(contributions)}`,
       unitsText: formatCount(units),
       finalChips: coloredMix(play, recorded.mix),
@@ -49,6 +60,7 @@ export function buildCashPlayerView(access: CashAccess): CashPlayerView {
 
   return {
     gameId: access.game.id,
+    phase: completion ? 'completed' : 'inProgress',
     playerId: participant.id,
     name: participant.name,
     result,
@@ -56,6 +68,6 @@ export function buildCashPlayerView(access: CashAccess): CashPlayerView {
     buyInsTotalText: formatEur(contributions),
     buyIns,
     returnToPlay: null,
-    actions: { countFinalChips: !recorded },
+    actions: { countFinalChips: !recorded && !completion },
   };
 }
