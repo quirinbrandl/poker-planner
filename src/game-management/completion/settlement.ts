@@ -15,9 +15,9 @@ import type { BalanceDirection, HistoryGameView, PaymentsSummary, PaymentsView }
  * (final result − contributions, summing to zero) and the fewest direct payments settling them.
  */
 export function settle(game: StartedGame, finalResults: readonly FinalResult[], finishedAt: string): CompletionRecord {
-  const players: SettledPlayer[] = finalResults.map(({ participantId, finalResult }) => {
+  const players: SettledPlayer[] = finalResults.map(({ participantId, finalResult, place }) => {
     const contributions = contributionsOf(game.play, participantId);
-    return { participantId, finalResult, contributions, balance: finalResult - contributions };
+    return { participantId, finalResult, contributions, balance: finalResult - contributions, ...(place !== undefined ? { place } : {}) };
   });
   const balances = playerBalances(
     players.map((p) => ({ id: p.participantId, finalResult: p.finalResult, contributions: p.contributions })),

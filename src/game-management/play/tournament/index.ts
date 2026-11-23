@@ -67,6 +67,12 @@ function asStartedTournament(game: GameDocument | undefined): StartedTournament 
   return game as StartedTournament;
 }
 
+/** A started tournament, In progress or Completed (for the Results and player page reads). */
+function asReadableTournament(game: GameDocument | undefined): StartedTournament | null {
+  if (!game || game.mode !== 'tournament' || game.phase === 'planning' || !game.play?.terms.payoutSchedule) return null;
+  return game as StartedTournament;
+}
+
 function access(rt: Runtime, gameId: string): Access {
   const state = rt.state();
   const game = findGame(state, gameId);
@@ -105,6 +111,7 @@ function moveInDraft(draft: OrderDraft, participantId: string, by: 1 | -1): Orde
 
 export function createTournamentOperations(rt: Runtime) {
   const started = (gameId: string) => asStartedTournament(findGame(rt.state(), gameId));
+  const readable = (gameId: string) => asReadableTournament(findGame(rt.state(), gameId));
 
   return {
     /** Tournament Play (layout B · Standings), or `null` unless an In progress tournament. */
@@ -116,19 +123,23 @@ export function createTournamentOperations(rt: Runtime) {
       return rt.memo(`tournament.play:${gameId}`, [game, playView], () => buildPlay(game, playView));
     },
 
-    /** Tournament Results: status, finishing order, Edit order and whether Calculate Payments is available. */
+    /**
+     * Tournament Results: status, finishing order, Edit order and whether Calculate Payments is
+     * available; a Completed tournament's read-only Results. `null` unless a started tournament.
+     */
     getTournamentResults(gameId: string): TournamentResultsView | null {
-      const game = started(gameId);
+      const game = readable(gameId);
       if (!game) return null;
       return rt.memo(`tournament.results:${gameId}`, [game], () => buildResults(game));
     },
 
     /**
      * The tournament player page: buy-ins with their mixes, the result card of a finished player
-     * and "Back in the game?" for an eliminated one. `null` if the game or participant is unknown.
+     * and "Back in the game?" for an eliminated one (In progress only). Read-only with
+     * `phase: 'completed'` for a Completed tournament. `null` if the game or participant is unknown.
      */
     getTournamentPlayer(gameId: string, participantId: string): TournamentPlayerView | null {
-      const game = started(gameId);
+      const game = readable(gameId);
       if (!game) return null;
       return rt.memo(`tournament.player:${gameId}:${participantId}`, [game], () => buildPlayer(game, participantId));
     },

@@ -366,7 +366,8 @@ export interface TournamentBuyInRecord {
 /** The tournament player page: the shared player page parts plus the tournament sections. */
 export interface TournamentPlayerView {
   gameId: string;
-  phase: 'inProgress';
+  /** Completed: read-only (no Back in the game, no rebuys). */
+  phase: 'inProgress' | 'completed';
   playerId: string;
   name: string;
   /** `stillIn`, `out` (eliminated) or `winner` (the derived winner). */
@@ -377,6 +378,6 @@ export interface TournamentPlayerView {
   buyIns: readonly TournamentBuyInRecord[];
   /** Place, payout and balance of a finished player (out or winner); `null` while still in. */
   result: TournamentPlayerResult | null;
-  /** What "Back in the game?" shows; only for an eliminated player. */
+  /** What "Back in the game?" shows; only for an eliminated player of an In progress tournament. */
   backIn: BackInData | null;
 }

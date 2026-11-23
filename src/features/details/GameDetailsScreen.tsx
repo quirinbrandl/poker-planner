@@ -10,7 +10,10 @@ import { Screen } from '@/ui';
 
 import { GameDetailsView } from './GameDetailsView';
 
-/** Game details of a started game: the locked setup, read-only, with the current bank and reserve. */
+/**
+ * Game details of a started game: the locked setup, read-only. In progress it links the current bank
+ * and reserve; Completed adds the finishing time.
+ */
 export default function GameDetailsScreen() {
   const { gameId } = useLocalSearchParams<{ gameId: string }>();
   const workspace = useWorkspace(gameId);
@@ -44,9 +47,9 @@ export default function GameDetailsScreen() {
           context: workspace.context,
           backLabel: workspace.backLabel,
           createdText: formatGameDateTime(details.createdAt),
-          finishedText: null,
+          finishedText: details.finishedAt ? formatGameDateTime(details.finishedAt) : null,
         }}
-        onViewBank={bank ? () => setShowBank(true) : undefined}
+        onViewBank={bank && details.phase === 'inProgress' ? () => setShowBank(true) : undefined}
         onSelectTab={workspace.onSelectTab}
         onBack={workspace.onBack}
         onMore={workspace.onMore}

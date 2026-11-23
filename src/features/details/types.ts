@@ -7,10 +7,10 @@ import type { DetailsPayoutPlace, DetailsPlayer, GameDetailsScreenView } from '@
 export type { DetailsPayoutPlace, DetailsPlayer };
 
 /**
- * The Game details tab. In progress it is game management's `GameDetailsScreenView` plus what the
- * workspace adds (context, back label, formatted dates); Completed comes with a later task.
+ * The Game details tab: game management's `GameDetailsScreenView` (In progress or Completed) plus
+ * what the workspace adds (context, back label, formatted dates).
  */
-export interface GameDetailsData extends Omit<GameDetailsScreenView, 'phase' | 'createdAt'> {
+export interface GameDetailsData extends Omit<GameDetailsScreenView, 'phase' | 'createdAt' | 'finishedAt'> {
   phase: 'inProgress' | 'completed';
   /** "Cash game · 13 Nov, 19:30" (Completed adds "· finished 23:41"). */
   context: string;

@@ -150,9 +150,10 @@ export function buildResults(game: StartedTournament): TournamentResultsView {
   const left = s.remaining.length;
   const openPaid = s.amounts.slice(0, left);
   const ids = [...(s.winner ? [s.winner.id] : []), ...bestFirst(s.order)];
+  const completed = game.phase === 'completed';
   return {
     gameId: game.id,
-    phase: 'inProgress',
+    phase: completed ? 'completed' : 'inProgress',
     status: s.winner
       ? {
           kind: 'winner',
@@ -179,11 +180,13 @@ export function buildResults(game: StartedTournament): TournamentResultsView {
           }`,
         },
     finishers: ids.map((id) => finisherRow(play, s, id)),
-    canEditOrder: recorded > 0,
-    calculate: s.winner
-      ? { kind: 'ready' }
-      : { kind: 'blocked', stillPlayingText: plural(left, 'player'), message: CALCULATE_BLOCKED_MESSAGE },
-    reopened: false,
+    canEditOrder: !completed && recorded > 0,
+    calculate: completed
+      ? { kind: 'readOnly' }
+      : s.winner
+        ? { kind: 'ready' }
+        : { kind: 'blocked', stillPlayingText: plural(left, 'player'), message: CALCULATE_BLOCKED_MESSAGE },
+    reopened: !completed && play.reopenedAt !== undefined,
   };
 }
 
@@ -357,15 +360,16 @@ export function buildPlayer(game: StartedTournament, participantId: string): Tou
     };
   }
   const out = s.order.includes(participantId);
+  const completed = game.phase === 'completed';
   return {
     gameId: game.id,
-    phase: 'inProgress',
+    phase: completed ? 'completed' : 'inProgress',
     playerId: participantId,
     name: participant.name,
     status: out ? 'out' : place === 1 ? 'winner' : 'stillIn',
     buyInsTotalText: formatEur(contributions),
     buyIns: buyInRecords(play, participantId),
     result,
-    backIn: out ? buildBackIn(game, participantId) : null,
+    backIn: out && !completed ? buildBackIn(game, participantId) : null,
   };
 }

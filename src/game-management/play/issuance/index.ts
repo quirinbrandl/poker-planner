@@ -37,7 +37,7 @@ export function createIssuanceOperations(rt: Runtime) {
       return getBankReserve(rt, findGame(rt.state(), gameId));
     },
 
-    /** Locked Game details of an In progress game (both modes); `null` otherwise. */
+    /** Locked Game details of a started game (In progress or Completed, both modes); `null` in Planning. */
     getGameDetails(gameId: string): GameDetailsScreenView | null {
       return getGameDetails(rt, findGame(rt.state(), gameId));
     },
