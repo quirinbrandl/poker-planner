@@ -6,7 +6,8 @@ validation or totals, and never talk to storage. Vocabulary follows [`CONTEXT.md
 
 Covers Planning (#11), saved players (#12), chip set templates (#13), Distribution preview and
 Start (#14–#17, tournament Start of #26), Return to Planning, the In progress read model, rebuys
-and late entry (#19–#21). Later work adds results, corrections and Payments to the same object.
+and late entry (#19–#21), cash results (#18), corrections of recorded play (#22, #23 and the
+historical corrections of #27), tournament eliminations and completion.
 
 ## Basics
 
@@ -33,7 +34,9 @@ const plan = usePlanningView(gameId);     // PlanningView | null
 Hooks: `useGames`, `usePlanningView(gameId)`, `useDistributionPreview(gameId)`,
 `usePlayView(gameId)`, `usePlayScreen(gameId)`, `useBankReserve(gameId)`, `useGameDetails(gameId)`,
 `useAddPlayer(gameId)`, `useCashResults(gameId)`, `useCountEditor(gameId, participantId, showErrors?)`,
-`useCashPlayer(gameId, participantId)`, `useTournamentPlay(gameId)`, `useTournamentResults(gameId)`,
+`useCashPlayer(gameId, participantId)`, `useCorrectionEditor(gameId, participantId, showErrors?)`,
+`usePlayerBuyIns(gameId, participantId)`, `useRebuyMixEditor(gameId, participantId, options)`,
+`useFix(gameId, start)`, `useTournamentPlay(gameId)`, `useTournamentResults(gameId)`,
 `useTournamentPlayer(gameId, participantId)`, `useOrderEditor(draft)`, `usePlayerPicker(gameId)`,
 `usePayments(gameId)`, `useHistory`, `useSavedPlayers`, `useTemplates`, `useWorkingLocation`,
 `usePersistenceStatus`. For any other read, call the method
@@ -423,11 +426,52 @@ CashPlayerView` (`useCashPlayer`). The screen types re-export the plain data typ
   (`accounting.issuedUnits`), never the chip set or bank. `calculatePayments` is available only when
   everything adds up, else its one reason ("Count everyone first." / "Find the missing chips
   first." / "Fix the extra chips first."). Rows: `uncounted` / `countDraft` / `result` (no
-  "Result confirmed" tag; `correctionDraft` is reserved for corrections).
+  "Result confirmed" tag); `correctionDraft` marks a result with an unconfirmed correction draft.
 - `CashPlayerView.buyIns` lists every issuance of the participant from `play.issuances` with its
   actual mix: the first stack as "Buy-in", then "Rebuy 1", …; `coverageText` for a reduced-coverage
-  stack. `undo`, `returnToPlay`, `addedLater`, `corrected` and `correctionDraft` are filled by the
-  correction work; `actions.countFinalChips` is true until a result exists.
+  stack, `addedLater` / `corrected` tags, and each rebuy's `undo` popup while In progress.
+  `returnToPlay` is the Return to play popup of a player with a result (In progress);
+  `result.correctionDraft` marks a saved correction draft; `actions.countFinalChips` is true until
+  a result exists.
+
+### Corrections of recorded play
+
+Corrections change records, never chips: each popup says what the host does with the physical
+chips. Every accepted correction keeps each bank denomination (chip set − all issuances + confirmed
+cash returns) between zero and the configured quantity; nothing cascades into another record, and
+inventory-valid imbalance is saved (Results explains it). All of these are part of `app.play`, so a
+Completed game rejects them with `gameCompleted` until Reopen.
+
+Reads: `play.getPlayerBuyIns(gameId, participantId): PlayerBuyInsView` (`usePlayerBuyIns`; both
+modes, Completed read-only: rows, `undo` popups, `actions.addForgottenRebuy` / `actions.rebuy`),
+`play.getCorrectionEditor(gameId, participantId, { showErrors? }): CountEditorView` with
+`kind: 'correction'` (`useCorrectionEditor`; the saved correction draft or the confirmed counts;
+`null` without a result), `play.getRebuyMixEditor(gameId, participantId, { rebuyId?, texts?,
+showErrors? }): RebuyMixEditorView` (`useRebuyMixEditor`; the screen holds the typed texts, omitted:
+blanks or the recorded mix), `play.getFix(gameId, start?): FixView` (`useFix`), and
+`PlayScreenView.fixText` ("Fixing Alice’s count · Step 2 of 3", or `null`).
+
+| Operation | Result |
+| --- | --- |
+| `play.setCorrectionText(gameId, participantId, value, text)`, `play.setRemainingCorrectionToZero`, `play.discardCorrection` | `accepted` \| `rejected …access \| noResult \| denominationNotFound`. The correction draft is stored like a count draft (`PlayRecord.countDrafts`, for a participant with a result); a draft equal to the confirmed counts is dropped. The result stays in force. |
+| `play.reviewCorrection(gameId, participantId)` (synchronous) | `needsConfirmation { confirmation }` (`kind: 'replace'`) \| `needsCorrection` \| `blocked` ("More chips than the game has", or "Those chips were handed out again" when later stacks use them and no single rebuy can be undone for it) \| `dependent { fix: FixStart }` \| `rejected`. |
+| `play.replaceResult(gameId, participantId, { counts })` | `accepted` \| `blocked` \| `dependent` \| `rejected …access \| noResult \| countIncomplete \| countChanged`. Replaces the return once and drops the draft. |
+| `play.returnToPlay(gameId, participantId)` | `accepted` \| `blocked` \| `dependent` \| `rejected`. Removes the result, its return and any correction draft; keeps every buy-in; issues nothing. Cash only. |
+| `play.undoRebuy(gameId, rebuyId)` | `accepted { participantId, feedback: { title: 'Rebuy undone' } }` \| `blocked` ("Can’t undo this rebuy": a later result returned its chips) \| `rejected …access \| rebuyNotFound \| notARebuy` (the first stack). Both modes; reverses contribution, issuance and reserve consumption. |
+| `play.reviewRebuyMix(gameId, participantId, { rebuyId?, texts })` (synchronous) | `needsConfirmation { confirmation: RebuyMixConfirmationData }` (warnings `reducedCoverage` "Covers only c of k blind payments with separate chips." / `weakenedReserve` "Leaves chips for only x of y reserve stacks (was z)."; notes "Alice’s result stays." / "Bob · Stays out · 6th"; tournament: Prize pool before → after) \| `needsCorrection { firstDenominationValue \| null, problem }` ("Quantities missing." / "180 chip units, not 200.") \| `blocked` ("Not enough chips for this mix") \| `rejected …access \| rebuyNotFound \| notARebuy \| tooComplex`. |
+| `play.recordRebuyMix(gameId, participantId, { rebuyId?, counts, acceptedWarnings })` | `accepted { issuanceId, feedback }` ("Forgotten rebuy added" / "Rebuy corrected") \| `blocked` \| `rejected … \| wrongMix \| warningsNotAccepted`. A forgotten rebuy costs the buy-in, consumes reserve and is tagged `addedLater`; Correct mix replaces the mix in place (`corrected`); `reducedCoverage` follows the actual mix. Results and eliminations stay. |
+| `play.undoFixBlocker(gameId, start, rebuyId)` | Step 1: `accepted` (records `PlayRecord.fix` at step 2, with the retained counts) \| `blocked` \| `rejected … \| fixChanged \| fixInProgress \| noResult`. |
+| `play.saveFixStep(gameId, { counts? })` | Step 2: Replace result with the counts `FixView.correction` shows, or remove the result. `accepted` \| `blocked` \| `rejected … \| noFix \| countChanged`. Replace result in the count editor or Back in the game on the player page completes step 2 as well. |
+| `play.finishFix(gameId)` | Forgets the fix (Done → Back to Play). Step 3 is the ordinary `proposeRebuy` / `issueRebuy` for `FixView.newRebuy.participantId`; issuing it marks the fix `done`. |
+
+- The fix flow: `reviewCorrection`, `replaceResult` and `returnToPlay` answer `dependent` when the
+  latest rebuy of another player whose undo would make the change valid exists. Step 1 is derived
+  from the records (`getFix(gameId, start)`; nothing stored, so Back to count changes nothing); from
+  the accepted undo on the fix is recorded and `getFix(gameId)` returns it at step 2, 3 or `done`
+  across leaving and restart. One fix at a time.
+- Weakened reserve compares the still-targeted stacks the bank can form at once after the
+  historical record (`x of y`) with what it could form before (`z`), and warns when `x < min(y, z)`.
+  Later ordinary allocations protect what is achievable (`proposeRebuy`).
 
 ## Rebuys and late entry
 
