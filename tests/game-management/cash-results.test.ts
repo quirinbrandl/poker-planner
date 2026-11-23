@@ -440,6 +440,43 @@ describe('accounting status', () => {
     expect(app.games.get(gameId)!.phase).toBe('inProgress');
   });
 
+  it('counts recycled chips: issue → return → reissue → return beyond the chip set’s own quantities', async () => {
+    // Exactly two stacks' worth of chips and no reserve: Bob's rebuy can only come from Alice's return.
+    const id = await plannedGame(app, 'cash', {
+      players: ['Alice', 'Bob'],
+      chips: [
+        ['1', '30'],
+        ['5', '4'],
+        ['25', '6'],
+        ['100', '2'],
+      ],
+      reserve: '0',
+    });
+    expectStatus(await app.planning.start(id, { depthBb: 100, reserveStacks: 0 }), 'accepted');
+    const [alice, bob] = app.play.getView(id)!.players.map((p) => p.id);
+    expect(bank(id)).toEqual([0, 0, 0, 0]);
+    expect(app.play.proposeRebuy(id, bob)).toMatchObject({ status: 'rejected', reason: { code: 'insufficientValue' } });
+
+    // Alice leaves with her own stack; Bob rebuys with exactly those chips.
+    const aliceStack = counts(app.play.getCashPlayer(id, alice)!.buyIns[0].mix);
+    await confirmCount(id, alice, aliceStack);
+    expect(bank(id)).toEqual(aliceStack);
+    const proposal = expectStatus(app.play.proposeRebuy(id, bob), 'needsConfirmation');
+    expect(proposal.confirmation.acceptance.mix).toEqual(aliceStack);
+    expectStatus(await app.play.issueRebuy(id, proposal.confirmation.acceptance), 'accepted');
+    expect(bank(id)).toEqual([0, 0, 0, 0]);
+
+    // Bob ends with every chip at the table: more White chips than the set has were issued in total.
+    await confirmCount(id, bob, [30, 4, 6, 2]);
+    app = await harness.restart(app);
+    const view = results(id);
+    expect(view.accounting).toEqual({ counted: 2, total: 2, countedUnits: 600, issuedUnits: 600, difference: 0 });
+    expect(view.status).toEqual({ kind: 'addsUp', description: 'All 2 counted · 600 chip units' });
+    expect(bank(id)).toEqual([30, 4, 6, 2]);
+    // The return does not give back the rebuy's reserve consumption.
+    expect(app.play.getView(id)!.reserve).toMatchObject({ startedTarget: 0, consumed: 1, unconsumed: 0 });
+  });
+
   it('keeps exact sub-cent amounts while In progress', async () => {
     const { gameId, ids } = await startedGame({ ...SETUP, buyIn: '20.01' });
     await typeCount(gameId, ids[0], ['15', '2', '5', '1']);
