@@ -1,0 +1,203 @@
+import { type ReactNode, type Ref, useId, useState } from 'react';
+import { StyleSheet, TextInput, View, type ReturnKeyTypeOptions, type TextInputProps } from 'react-native';
+
+import { Icon, type IconName } from '../Icon';
+import { Text } from '../Text';
+import { colors, radii, space, tabularNums, type } from '../theme';
+import { type TextInputRef } from '../refs';
+
+/** `text` names, `decimal` EUR amounts, `whole` counts (depth, coverage, reserve, quantities). */
+export type FieldKeyboard = 'text' | 'decimal' | 'whole';
+
+export interface TextFieldProps {
+  /** Persistent visible label. Never replaced by a placeholder. */
+  label: string;
+  value: string;
+  onChangeText: (text: string) => void;
+  /** Unit suffix shown inside the field and spoken with the label: EUR, BB, payments, stacks, chips … */
+  unit?: string;
+  /** Spoken form of the unit when it differs ("euros" for EUR). Default: `unit`. */
+  unitSpoken?: string;
+  /** Leading icon beside the label (decorative). */
+  icon?: IconName;
+  /** Short helper line under the field. Shown together with an error. */
+  helper?: string;
+  /** Actionable error for this field. Shown under it in words and colour, and spoken with the field. */
+  error?: string;
+  keyboard?: FieldKeyboard;
+  /** `large` is the centred hero number of the count editor / stepper. */
+  size?: 'regular' | 'large';
+  /** Content beside the input box (e.g. stepper − and + buttons). */
+  before?: ReactNode;
+  after?: ReactNode;
+  /** Extra content under the helper (e.g. "Use automatic (3)"). */
+  footer?: ReactNode;
+  /** Centre the label (count editor). */
+  centerLabel?: boolean;
+  onBlur?: () => void;
+  onFocus?: () => void;
+  onSubmitEditing?: () => void;
+  returnKeyType?: ReturnKeyTypeOptions;
+  autoFocus?: boolean;
+  editable?: boolean;
+  placeholder?: string;
+  inputRef?: Ref<TextInputRef>;
+  testID?: string;
+  autoCapitalize?: TextInputProps['autoCapitalize'];
+}
+
+const keyboardType: Record<FieldKeyboard, TextInputProps['keyboardType']> = {
+  text: 'default',
+  decimal: 'decimal-pad',
+  whole: 'number-pad',
+};
+
+/**
+ * Labelled text/numeric input with unit suffix, helper and error. The error is linked to the input:
+ * it is part of the input's accessibility hint and is announced politely when it appears.
+ */
+export function TextField({
+  label,
+  value,
+  onChangeText,
+  unit,
+  unitSpoken,
+  icon,
+  helper,
+  error,
+  keyboard = 'text',
+  size = 'regular',
+  before,
+  after,
+  footer,
+  centerLabel,
+  onBlur,
+  onFocus,
+  onSubmitEditing,
+  returnKeyType,
+  autoFocus,
+  editable = true,
+  placeholder,
+  inputRef,
+  testID,
+  autoCapitalize,
+}: TextFieldProps) {
+  const [focused, setFocused] = useState(false);
+  const id = useId();
+  const labelId = `${id}-label`;
+  const large = size === 'large';
+  const spokenLabel = unit ? `${label}, ${unitSpoken ?? unit}` : label;
+  const hint = [error ? `Error: ${error}` : null, helper ?? null].filter(Boolean).join('. ') || undefined;
+  const borderColor = error ? colors.error : focused ? colors.primary : colors.controlBorder;
+  const borderWidth = error || focused ? 2 : 1;
+
+  return (
+    <View style={styles.field}>
+      <View style={[styles.labelRow, centerLabel && styles.center]}>
+        {icon ? <Icon name={icon} size={18} color={colors.textSupporting} /> : null}
+        <Text variant="label" nativeID={labelId} align={centerLabel ? 'center' : undefined}>
+          {label}
+        </Text>
+      </View>
+      <View style={styles.inputRow}>
+        {before}
+        <View
+          style={[
+            styles.box,
+            large && styles.boxLarge,
+            { borderColor, borderWidth, padding: borderWidth === 2 ? 0 : 1 },
+            !editable && styles.readOnly,
+          ]}
+        >
+          <TextInput
+            ref={inputRef}
+            testID={testID}
+            value={value}
+            onChangeText={onChangeText}
+            onFocus={() => {
+              setFocused(true);
+              onFocus?.();
+            }}
+            onBlur={() => {
+              setFocused(false);
+              onBlur?.();
+            }}
+            onSubmitEditing={onSubmitEditing}
+            returnKeyType={returnKeyType}
+            submitBehavior={onSubmitEditing ? 'submit' : undefined}
+            autoFocus={autoFocus}
+            editable={editable}
+            keyboardType={keyboardType[keyboard]}
+            inputMode={keyboard === 'decimal' ? 'decimal' : keyboard === 'whole' ? 'numeric' : 'text'}
+            autoCapitalize={autoCapitalize ?? (keyboard === 'text' ? 'words' : 'none')}
+            autoCorrect={false}
+            placeholder={placeholder}
+            placeholderTextColor={colors.controlBorder}
+            accessibilityLabel={spokenLabel}
+            accessibilityHint={hint}
+            aria-invalid={error ? true : undefined}
+            selectionColor={colors.primary}
+            cursorColor={colors.primary}
+            style={[
+              styles.input,
+              large ? styles.inputLarge : null,
+              keyboard !== 'text' && { fontVariant: tabularNums },
+            ]}
+          />
+          {unit ? (
+            <Text variant="supporting" importantForAccessibility="no" accessibilityElementsHidden style={styles.unit}>
+              {unit}
+            </Text>
+          ) : null}
+        </View>
+        {after}
+      </View>
+      {error ? (
+        <View style={styles.message} accessibilityLiveRegion="polite">
+          <Icon name="error" size={16} color={colors.error} />
+          <Text variant="supporting" tone="error" style={styles.messageText}>
+            {error}
+          </Text>
+        </View>
+      ) : null}
+      {helper ? (
+        <Text variant="caption" style={styles.helper} importantForAccessibility="no" accessibilityElementsHidden>
+          {helper}
+        </Text>
+      ) : null}
+      {footer}
+    </View>
+  );
+}
+
+const styles = StyleSheet.create({
+  field: { gap: space.sm, minWidth: 0 },
+  labelRow: { flexDirection: 'row', alignItems: 'center', gap: space.sm, flexWrap: 'wrap' },
+  center: { justifyContent: 'center' },
+  inputRow: { flexDirection: 'row', alignItems: 'center', gap: space.md },
+  box: {
+    flex: 1,
+    minWidth: 0,
+    minHeight: 56,
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: colors.surfaceSunken,
+    borderRadius: radii.field,
+  },
+  boxLarge: { minHeight: 84 },
+  readOnly: { opacity: 0.7 },
+  input: {
+    flex: 1,
+    minWidth: 0,
+    alignSelf: 'stretch',
+    paddingHorizontal: space.lg,
+    paddingVertical: space.md,
+    color: colors.text,
+    fontSize: 18,
+  },
+  inputLarge: { ...type.amountHero, color: colors.text, textAlign: 'center', paddingVertical: space.sm },
+  unit: { paddingRight: space.lg, paddingLeft: space.xs },
+  message: { flexDirection: 'row', gap: space.xs + 2, alignItems: 'flex-start' },
+  messageText: { flex: 1 },
+  helper: { marginTop: -2 },
+});
