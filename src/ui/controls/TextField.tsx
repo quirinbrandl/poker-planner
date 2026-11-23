@@ -132,13 +132,16 @@ export function TextField({
             styles.box,
             large && styles.boxLarge,
             compact && styles.boxCompact,
-            inputWidth !== undefined && {
-              flexGrow: 0,
-              flexShrink: 1,
-              flexBasis: 'auto',
-              width: inputWidth * Math.min(Math.max(fontScale || 1, 1), 2),
-              maxWidth: '60%',
-            },
+            // A fixed-width box must not carry `flex: 1` at all: on Android that shorthand keeps a
+            // zero basis even when the longhands are overridden, and the box collapses.
+            inputWidth === undefined
+              ? styles.boxFill
+              : {
+                  flexGrow: 0,
+                  flexShrink: 1,
+                  width: inputWidth * Math.min(Math.max(fontScale || 1, 1), 2),
+                  maxWidth: '60%',
+                },
             { borderColor, borderWidth, padding: borderWidth === 2 ? 0 : 1 },
             !editable && styles.readOnly,
           ]}
@@ -215,8 +218,8 @@ const styles = StyleSheet.create({
   labelRow: { flexDirection: 'row', alignItems: 'center', gap: space.sm, flexWrap: 'wrap' },
   center: { justifyContent: 'center' },
   inputRow: { flexDirection: 'row', alignItems: 'center', gap: space.md },
+  boxFill: { flex: 1 },
   box: {
-    flex: 1,
     minWidth: 0,
     minHeight: 56,
     flexDirection: 'row',

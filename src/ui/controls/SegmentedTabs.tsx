@@ -1,4 +1,4 @@
-import { Pressable, StyleSheet, View } from 'react-native';
+import { Pressable, StyleSheet, useWindowDimensions, View } from 'react-native';
 
 import { usePressFeedback } from '../motion';
 import { Text } from '../Text';
@@ -25,6 +25,10 @@ export function SegmentedTabs<K extends string>({
   accessibilityLabel = 'Workspace',
 }: SegmentedTabsProps<K>) {
   const feedback = usePressFeedback();
+  // The width a tab asks for grows with the text size, so tabs wrap to a new row before a label
+  // would break inside a word.
+  const { fontScale } = useWindowDimensions();
+  const basis = TAB_BASIS * Math.max(1, fontScale || 1);
   return (
     <View accessibilityRole="tablist" accessibilityLabel={accessibilityLabel} style={styles.list}>
       {tabs.map((tab) => {
@@ -39,6 +43,7 @@ export function SegmentedTabs<K extends string>({
             aria-selected={selected}
             style={({ pressed }) => [
               styles.tab,
+              { flexBasis: basis },
               selected && styles.selected,
               !selected && feedback(pressed, colors.surface),
             ]}
@@ -53,6 +58,8 @@ export function SegmentedTabs<K extends string>({
   );
 }
 
+const TAB_BASIS = 80;
+
 const styles = StyleSheet.create({
   list: {
     flexDirection: 'row',
@@ -65,7 +72,6 @@ const styles = StyleSheet.create({
   },
   tab: {
     flexGrow: 1,
-    flexBasis: 80,
     minHeight: touchTarget + 4,
     paddingHorizontal: space.sm,
     alignItems: 'center',
