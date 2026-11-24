@@ -5,7 +5,7 @@ import { Text } from '../Text';
 import { space } from '../theme';
 
 export interface ScreenHeaderProps {
-  /** Context line, e.g. "Cash game · 23 Nov, 19:30 · finished 23:41". */
+  /** Context line, e.g. "Cash game · 23 Nov, 19:30–23:41". */
   context?: string;
   /** Badges (usually a BadgeRow) between the context line and the title. */
   badges?: ReactNode;
