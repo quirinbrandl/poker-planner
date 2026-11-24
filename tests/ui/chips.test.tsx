@@ -48,11 +48,13 @@ describe('chip case layout', () => {
   });
 
   it('draws nothing for zero or blank quantities', () => {
-    const { channels } = chipCaseLayout([
+    const { channels, width } = chipCaseLayout([
       { key: 'a', color: 'red', quantity: 0 },
       { key: 'b', color: 'red', quantity: null },
     ]);
     expect(channels).toEqual([]);
+    // An empty set keeps the width of the smallest case (four channels), not a narrow box.
+    expect(width).toBe(chipCaseLayout([{ key: 'w', color: 'white', quantity: 400 }]).width);
   });
 
   it('bounds the drawing per denomination and marks the schematic channel', () => {

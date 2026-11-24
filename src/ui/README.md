@@ -176,7 +176,7 @@ Colours are `ChipColor | null` from `src/domain/types.ts`; `null` is "No color".
 
 **`ChipTray`** — compact chip preview of a set (template picker and list): chip symbol, value and colour name per denomination, wrapping. `chips: { key, color, value }[]`, `accessibilityLabel`.
 
-**`ChipCase`** — open chip case. `denominations: { key, color, quantity: number | null }[]`. One channel per started 100 chips, channels never shared, nothing for zero/blank, max 32 channels per denomination with a "•••" mark and a caption, scales down to fit with no horizontal scroll. One labelled image (`accessibilityLabel` overridable). `chipCaseLayout()` is the pure layout.
+**`ChipCase`** — open chip case. `denominations: { key, color, quantity: number | null }[]`. One channel per started 100 chips, channels never shared, nothing for zero/blank (a set with fewer than four channels leaves the rest of the smallest case empty), max 32 channels per denomination with a "•••" mark and a caption, scales down to fit with no horizontal scroll. One labelled image (`accessibilityLabel` overridable). `chipCaseLayout()` is the pure layout.
 `<ChipCase denominations={rows.map((r) => ({ key: r.id, color: r.color, quantity: parsedQuantityOrNull }))} />`
 
 **`ChipTowers`** — 3D towers for one stack. `columns: { value, color, count }[]` (zero counts skipped, sorted ascending), `size` (`showcase` / `compact` for popups), `accessibilityLabel`. Each column is a list item "15 chips of value 1 (White)"; at most `MAX_TOWER_DISCS` (20) discs drawn.

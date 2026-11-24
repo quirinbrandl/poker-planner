@@ -23,6 +23,8 @@ import { paintFor } from './palette';
 export const CHIPS_PER_CHANNEL = 100;
 /** Defensive drawing bound per denomination; more channels are indicated schematically. */
 export const MAX_CHANNELS_PER_DENOMINATION = 32;
+/** The case never has fewer storage channels than this: an empty or small set leaves channels empty. */
+export const MIN_CASE_CHANNELS = 4;
 
 export interface ChipCaseDenomination {
   /** Stable key (row id). */
@@ -59,7 +61,7 @@ export function chipCaseLayout(denominations: readonly ChipCaseDenomination[]) {
       });
     }
   }
-  const width = Math.max(88, channels.length * 42 + 46);
+  const width = Math.max(MIN_CASE_CHANNELS, channels.length) * 42 + 46;
   return { channels, schematic, width };
 }
 
@@ -273,7 +275,12 @@ export function ChipCase({
   accessibilityLabel = 'Chip case illustration, scaled to fit the screen. Exact chip values and quantities are in the fields below.',
 }: ChipCaseProps) {
   const [available, setAvailable] = useState(0);
-  const { channels, schematic, width } = chipCaseLayout(denominations);
+  const { channels: filled, schematic, width } = chipCaseLayout(denominations);
+  // Empty channels fill a small or empty set up to the smallest case, so it reads as a case.
+  const channels = [...filled];
+  for (let i = filled.length; i < MIN_CASE_CHANNELS; i += 1) {
+    channels.push({ key: `empty-${i}`, color: null, count: 0, more: false });
+  }
   const scale = available > 0 ? Math.min(1, available / width) : 0;
   const onLayout = (event: LayoutChangeEvent) => setAvailable(event.nativeEvent.layout.width);
   return (
