@@ -169,7 +169,7 @@ it('Calculate Payments… on tournament Results confirms once and lands on Payme
 it('a Completed tournament shows read-only Results and a read-only player page', async () => {
   const { gameId, router } = await open(tournament(['Felix', 'Emma', 'Dan', 'Cleo', 'Bob'], { complete: true }), (id) => `/game/${id}/results`);
   expect(screen.getByText('Alice wins')).toBeTruthy();
-  expect(screen.getByText('Read-only. To change something, reopen the game from ⋯.')).toBeTruthy();
+  expect(screen.getByText('Completed')).toBeTruthy();
   expect(screen.queryByRole('button', { name: /Edit order/ })).toBeNull();
   expect(screen.queryByRole('button', { name: 'Calculate Payments…' })).toBeNull();
 

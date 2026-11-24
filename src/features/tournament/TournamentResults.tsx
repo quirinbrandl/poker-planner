@@ -6,7 +6,6 @@ import {
   Button,
   colors,
   Dialog,
-  Icon,
   ListRow,
   PlaceBadge,
   SectionHeading,
@@ -32,7 +31,7 @@ export interface TournamentResultsProps {
 }
 
 function finisherLabel(row: FinisherRow): string {
-  const detail = row.isWinner ? 'winner' : row.contributionText;
+  const detail = row.isWinner ? `winner, ${row.contributionText}` : row.contributionText;
   return `${row.name}, ${row.placeLabel} place, ${detail}, ${row.paid ? `payout ${row.payoutText}` : 'no payout'}`;
 }
 
@@ -96,7 +95,7 @@ export function TournamentResults({
           <ListRow
             key={row.playerId}
             title={row.name}
-            subtitle={row.isWinner ? 'Winner' : row.contributionText}
+            subtitle={row.contributionText}
             leading={<PlaceBadge label={row.placeLabel} highlight={row.paid} filled={row.isWinner} />}
             trailing={
               row.paid ? (
@@ -111,14 +110,8 @@ export function TournamentResults({
           />
         ))}
       </View>
-      {calculate.kind === 'readOnly' ? (
-        <View style={styles.readOnly}>
-          <Icon name="lock" size={20} color={colors.textSupporting} />
-          <Text variant="supporting" style={styles.readOnlyText}>
-            Read-only. To change something, reopen the game from ⋯.
-          </Text>
-        </View>
-      ) : (
+      {/* Completed: the "Completed" badge in the game line says it; how to change it is in Game details. */}
+      {calculate.kind === 'readOnly' ? null : (
         <View style={styles.calculate}>
           <Button
             label="Calculate Payments…"
@@ -158,6 +151,4 @@ const styles = StyleSheet.create({
   divider: { borderBottomWidth: 1, borderBottomColor: colors.divider },
   openText: { flex: 1, minWidth: 0 },
   calculate: { gap: space.sm },
-  readOnly: { flexDirection: 'row', alignItems: 'flex-start', gap: space.sm },
-  readOnlyText: { flex: 1 },
 });

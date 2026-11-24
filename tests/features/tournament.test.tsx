@@ -200,7 +200,7 @@ describe('Results', () => {
   it('makes Calculate Payments available once a winner is derived', async () => {
     const { onCalculatePayments } = await renderResults(fixtureGame(ORDERS.winner, { reopened: true }));
     expect(screen.getByText('Alice wins')).toBeTruthy();
-    expect(button('Alice, 1st place, winner, payout EUR 98.00')).toBeTruthy();
+    expect(button('Alice, 1st place, winner, EUR 20.00, payout EUR 98.00')).toBeTruthy();
     expect(button('Clara, 2nd place, EUR 20.00, payout EUR 42.00')).toBeTruthy();
     expect(screen.getByText('Reopened')).toBeTruthy();
     await fireEvent.press(button('Calculate Payments…'));
@@ -211,7 +211,7 @@ describe('Results', () => {
     await renderResults(fixtureGame(ORDERS.winner, { phase: 'completed' }));
     expect(screen.queryByRole('button', { name: 'Edit order' })).toBeNull();
     expect(screen.queryByRole('button', { name: 'Calculate Payments…' })).toBeNull();
-    expect(screen.getByText('Read-only. To change something, reopen the game from ⋯.')).toBeTruthy();
+    expect(screen.getByText('Completed')).toBeTruthy();
   });
 });
 

@@ -22,6 +22,14 @@ const DISC_H = 5.6;
 const STEP = 5.4;
 const BASE_CY = 166;
 
+/** The part of the drawing a tower of `count` chips needs: the empty sky above the top disc is cropped. */
+function towerView(count: number): { viewTop: number; viewHeight: number } {
+  const drawn = Math.max(1, Math.min(MAX_TOWER_DISCS, count));
+  const topY = BASE_CY - (drawn - 1) * STEP;
+  const viewTop = Math.max(0, Math.floor(topY - RY - 3));
+  return { viewTop, viewHeight: 186 - viewTop };
+}
+
 const Tower = memo(function Tower({ value, color, count, width }: TowerColumn & { width: number }) {
   const paint = paintFor(color);
   const drawn = Math.max(1, Math.min(MAX_TOWER_DISCS, count));
@@ -59,9 +67,7 @@ const Tower = memo(function Tower({ value, color, count, width }: TowerColumn & 
   }
   const topY = BASE_CY - (drawn - 1) * STEP;
   const fontSize = label.length > 3 ? 9.5 : 12;
-  // Crop the empty sky above the top disc so short towers do not leave a tall gap.
-  const viewTop = Math.max(0, Math.floor(topY - RY - 3));
-  const viewHeight = 186 - viewTop;
+  const { viewTop, viewHeight } = towerView(count);
   return (
     <Svg width={width} height={(width * viewHeight) / 100} viewBox={`0 ${viewTop} 100 ${viewHeight}`}>
       <Ellipse cx={50} cy={174} rx={38} ry={12} fill="#04080C" opacity={0.75} />
@@ -111,13 +117,19 @@ export interface ChipTowersProps {
   accessibilityLabel?: string;
 }
 
-/** 3D isometric chip towers for one stack: tower, ×N, then "1 · White". Each column is a labelled list item. */
+/**
+ * 3D isometric chip towers for one stack: tower, ×N, then "1 · White" (only the value for a chip
+ * without a colour). Each column is a labelled list item.
+ */
 export function ChipTowers({ columns, size = 'showcase', accessibilityLabel = 'One starting stack' }: ChipTowersProps) {
   const used = columns.filter((c) => c.count > 0).sort((a, b) => a.value - b.value);
   const compact = size === 'compact';
   const towerWidth = compact ? 58 : 76;
-  // Up to three towers share the row in thirds, so a label like "100 · No color" stays on one line.
+  // Up to three towers share the row in thirds, so a label like "100 · Black" stays on one line.
   const basis = used.length <= 3 ? '33.33%' : '25%';
+  // Every tower stands in a box as tall as the tallest one, so the towers share a ground line even
+  // when one caption needs two lines.
+  const tallest = Math.max(0, ...used.map((c) => (towerWidth * towerView(c.count).viewHeight) / 100));
   return (
     <View role="list" accessibilityLabel={accessibilityLabel} style={[styles.stage, compact && styles.stageCompact]}>
       {used.map((column) => {
@@ -130,14 +142,18 @@ export function ChipTowers({ columns, size = 'showcase', accessibilityLabel = 'O
             accessibilityLabel={`${column.count} ${column.count === 1 ? 'chip' : 'chips'} of value ${column.value} (${name})`}
             style={[styles.column, { flexBasis: basis }, compact ? styles.columnCompact : null]}
           >
-            <View accessibilityElementsHidden importantForAccessibility="no-hide-descendants">
+            <View
+              accessibilityElementsHidden
+              importantForAccessibility="no-hide-descendants"
+              style={[styles.ground, { height: tallest }]}
+            >
               <Tower {...column} width={towerWidth} />
             </View>
             <Text variant={compact ? 'sectionTitle' : 'amount'} tabular align="center" style={styles.count}>
               {`×${column.count}`}
             </Text>
             <Text variant="caption" tabular align="center">
-              {`${column.value} · ${name}`}
+              {column.color ? `${column.value} · ${name}` : String(column.value)}
             </Text>
           </View>
         );
@@ -150,7 +166,7 @@ const styles = StyleSheet.create({
   stage: {
     flexDirection: 'row',
     flexWrap: 'wrap',
-    alignItems: 'flex-end',
+    alignItems: 'flex-start',
     justifyContent: 'center',
     rowGap: space.lg,
     paddingTop: space.sm,
@@ -158,5 +174,6 @@ const styles = StyleSheet.create({
   stageCompact: { rowGap: space.md, paddingTop: 0 },
   column: { flexGrow: 0, minWidth: 78, alignItems: 'center', gap: 2, paddingHorizontal: space.xs },
   columnCompact: { minWidth: 64 },
+  ground: { justifyContent: 'flex-end' },
   count: { fontWeight: '800', marginTop: -space.xs },
 });
