@@ -8,51 +8,18 @@
 // The phone needs USB debugging switched on (Settings → Developer options) and has to trust this
 // computer. The release build carries its own JavaScript, so the app then runs without the
 // computer. Installing again keeps the games already on the phone.
+//
+// This build is signed with the Android debug key, the published one (release.mjs) with the
+// release key, so the two cannot replace each other on a phone without removing the app first.
 import { execFileSync, spawnSync } from 'node:child_process';
 import { existsSync, readFileSync } from 'node:fs';
-import { homedir } from 'node:os';
-import { dirname, join } from 'node:path';
-import { fileURLToPath } from 'node:url';
+import { join } from 'node:path';
 
-const root = join(dirname(fileURLToPath(import.meta.url)), '..');
+import { adb, buildReleaseApk, builtApk, fail, root } from './android-build.mjs';
+
 const args = process.argv.slice(2);
 const noBuild = args.includes('--no-build');
 const wanted = args.includes('--device') ? args[args.indexOf('--device') + 1] : undefined;
-
-function fail(message) {
-  console.error(`\n${message}\n`);
-  process.exit(1);
-}
-
-function androidSdk() {
-  const candidates = [
-    process.env.ANDROID_HOME,
-    process.env.ANDROID_SDK_ROOT,
-    join(homedir(), 'Library/Android/sdk'),
-    join(homedir(), 'Android/Sdk'),
-  ];
-  const sdk = candidates.find((dir) => dir && existsSync(join(dir, 'platform-tools')));
-  if (!sdk) fail('Android SDK not found. Install it with Android Studio, or set ANDROID_HOME.');
-  return sdk;
-}
-
-/** JDK 17 is the one the Android build is known to work with; a set JAVA_HOME is respected. */
-function javaHome() {
-  if (process.env.JAVA_HOME) return process.env.JAVA_HOME;
-  if (process.platform !== 'darwin') return undefined;
-  try {
-    const options = { encoding: 'utf8', stdio: ['ignore', 'pipe', 'ignore'] };
-    return execFileSync('/usr/libexec/java_home', ['-v', '17'], options).trim();
-  } catch {
-    return undefined; // no JDK 17: Gradle uses the default Java
-  }
-}
-
-const sdk = androidSdk();
-const adb = join(sdk, 'platform-tools', 'adb');
-const env = { ...process.env, ANDROID_HOME: sdk };
-const jdk = javaHome();
-if (jdk) env.JAVA_HOME = jdk;
 
 function attached() {
   return execFileSync(adb, ['devices'], { encoding: 'utf8' })
@@ -90,32 +57,17 @@ function pickDevice() {
   return device.serial;
 }
 
-function run(what, command, commandArgs, cwd = root) {
-  console.log(`\n› ${what}`);
-  const result = spawnSync(command, commandArgs, { cwd, env, stdio: 'inherit' });
-  if (result.status !== 0) fail(`${what} failed.`);
-}
-
 const serial = pickDevice();
 const prop = (name) => execFileSync(adb, ['-s', serial, 'shell', 'getprop', name], { encoding: 'utf8' }).trim();
 const model = prop('ro.product.model') || serial;
 const appId = JSON.parse(readFileSync(join(root, 'app.json'), 'utf8')).expo.android.package;
-const apk = join(root, 'android/app/build/outputs/apk/release/app-release.apk');
 
-if (!noBuild) {
-  // Only the phone's own processor architecture is built: faster, and a smaller APK.
-  const abi = prop('ro.product.cpu.abi');
-  run('Prepare the Android project', 'npx', ['expo', 'prebuild', '--platform', 'android', '--no-install']);
-  run(
-    `Build the release app (${abi})`,
-    './gradlew',
-    ['assembleRelease', `-PreactNativeArchitectures=${abi}`, '--console=plain', '--quiet'],
-    join(root, 'android'),
-  );
-}
+// Only the phone's own processor architecture is built: faster, and a smaller APK.
+const apk = noBuild ? builtApk : buildReleaseApk([prop('ro.product.cpu.abi')]);
 if (!existsSync(apk)) fail('There is no built app yet. Run it without --no-build.');
 
-console.log(`\n› Install on ${model}`);
+// Play Protect may ask on the phone before it lets the app in, so the phone has to be unlocked.
+console.log(`\n› Install on ${model} (keep the phone unlocked; confirm if it asks)`);
 const install = spawnSync(adb, ['-s', serial, 'install', '-r', apk], { encoding: 'utf8' });
 const installOutput = `${install.stdout ?? ''}${install.stderr ?? ''}`;
 if (install.status !== 0) {
