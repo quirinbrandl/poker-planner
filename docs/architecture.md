@@ -88,10 +88,10 @@ npm test               # jest
 npm run web            # Expo web dev server, for quick visual checks in a browser
 npm run android        # development build on the Android emulator
 npm run phone          # release build onto the Android phone plugged in by USB (scripts/phone.mjs)
-npm run release        # signed APK published as a GitHub release (scripts/release.mjs; needs the release key)
+npm run release        # tags main as v<version>; GitHub Actions then builds, signs and publishes the APK
 ```
 
-Run typecheck, lint and the tests before calling work done.
+Run typecheck, lint and the tests before calling work done. The same three run in CI on every pull request, and `main` only accepts changes through a pull request whose checks pass.
 
 ## Tests
 

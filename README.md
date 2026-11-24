@@ -23,8 +23,14 @@ npm test
 
 The module layout and conventions are in [docs/architecture.md](docs/architecture.md); domain vocabulary is in [CONTEXT.md](CONTEXT.md).
 
-## Releases
+## Changes and releases
 
-`npm run release` builds the APK for 64-bit and 32-bit phones, signs it with the release key and publishes it as a GitHub release named after the version in `app.json`. Before a new release, raise `version` in `app.json` and `package.json` and `android.versionCode` in `app.json`, then commit and push `main`. `npm run release -- --build-only` only builds and signs into `dist/`.
+`main` is protected: every change goes through a pull request, and it can only be merged once the CI checks (typecheck, lint, tests) pass.
 
-The release key is not in the repository; [scripts/release.mjs](scripts/release.mjs) says where it is expected. Updates can only be installed over a published version when they are signed with the same key, so it needs a backup. Builds from `npm run phone` are signed with the Android debug key and cannot replace a published build on a phone, or the other way round, without removing the app first.
+A release is the tag `v<version>` on `main`. Raise `version` in `app.json` and `package.json` and `android.versionCode` in `app.json`, merge that, then run `npm run release` on the updated `main`: it pushes the tag, and GitHub Actions builds the APK for 64-bit and 32-bit phones, signs it and publishes it as a GitHub release. `npm run release -- --build-only` builds and signs into `dist/` on this computer instead and publishes nothing.
+
+The release key is not in the repository: GitHub Actions reads it from the repository secrets, and [scripts/release.mjs](scripts/release.mjs) says where a local build expects it. Updates can only be installed over a published version when they are signed with the same key, so it needs a backup. Builds from `npm run phone` are signed with the Android debug key and cannot replace a published build on a phone, or the other way round, without removing the app first.
+
+## License
+
+[MIT](LICENSE)
