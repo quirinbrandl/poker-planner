@@ -22,8 +22,6 @@ import type { FinishedPlayerRow, PlayData, PlayingPlayerRow, RebuyPopupData } fr
 
 export interface PlayViewProps {
   data: PlayData;
-  /** One quiet confirmation after an accepted action ("Rebuy issued for Ben" + what was recorded). */
-  feedback?: { title: string; message: string } | null;
   /** The rebuy popup's content; `null` while closed. */
   rebuy: RebuyPopupData | null;
   /** An accepted rebuy is being issued. */
@@ -55,7 +53,6 @@ export interface PlayViewProps {
  */
 export function PlayView({
   data,
-  feedback,
   rebuy,
   rebuyBusy,
   onRebuy,
@@ -107,11 +104,6 @@ export function PlayView({
       />
       {data.fixText && onContinueFix ? (
         <Button label={data.fixText} trailingIcon="forward" variant="primary" fullWidth onPress={onContinueFix} />
-      ) : null}
-      {feedback ? (
-        <InlineNotice tone="confirmed" title={feedback.title}>
-          {feedback.message}
-        </InlineNotice>
       ) : null}
 
       <View>

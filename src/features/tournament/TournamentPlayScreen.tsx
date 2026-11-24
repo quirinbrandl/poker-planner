@@ -33,16 +33,18 @@ export function TournamentPlayScreen({ gameId }: { gameId: string }) {
   const [showBank, setShowBank] = useState(false);
   const [rebuy, setRebuy] = useState<OpenRebuy | null>(null);
   const [busy, setBusy] = useState(false);
-  const [feedback, setFeedback] = useState<IssueFeedback | null>(null);
 
   const backToPlay = useCallback(() => setShowBank(false), []);
   useSubViewBack(showBank, backToPlay);
-  useIssueFeedback(gameId, setFeedback);
+  // Issued rebuys and entries are confirmed with the usual ✓ toast, not a line that stays on Play.
+  const showIssued = useCallback((issued: IssueFeedback) => toast.show(issued.title, { tone: 'confirmed' }), [toast]);
+  useIssueFeedback(gameId, showIssued);
 
   if (!workspace || !view) return <Screen>{workspace?.actions}</Screen>;
 
   const openRebuy = (participantId: string) => {
-    setFeedback(null);
+    // A new request starts fresh: an earlier toast must not linger beside its outcome.
+    toast.hide();
     const result = app.play.proposeRebuy(gameId, participantId);
     if (result.status === 'needsConfirmation') {
       setRebuy({ popup: result.confirmation.popup, acceptance: result.confirmation.acceptance });
@@ -60,7 +62,7 @@ export function TournamentPlayScreen({ gameId }: { gameId: string }) {
     setBusy(false);
     setRebuy(null);
     if (result.status === 'accepted') {
-      setFeedback(result.feedback);
+      showIssued(result.feedback);
       return;
     }
     toast.show(result.reason.message, { tone: 'error' });
@@ -87,25 +89,17 @@ export function TournamentPlayScreen({ gameId }: { gameId: string }) {
     <>
       <TournamentPlay
         data={{ ...view, frame: { context: workspace.context, backLabel: workspace.backLabel } }}
-        feedback={feedback}
         onSelectTab={workspace.onSelectTab}
         onBack={workspace.onBack}
         onMore={workspace.onMore}
-        onRecordElimination={async (playerId) => {
-          setFeedback(null);
-          return actionResult(await app.play.recordElimination(gameId, playerId));
-        }}
-        onRecordSameHand={async (bestFirst) => {
-          setFeedback(null);
-          return actionResult(await app.play.recordSameHand(gameId, { bestFirst, stillIn }));
-        }}
+        onRecordElimination={async (playerId) => actionResult(await app.play.recordElimination(gameId, playerId))}
+        onRecordSameHand={async (bestFirst) =>
+          actionResult(await app.play.recordSameHand(gameId, { bestFirst, stillIn }))
+        }
         onRejected={(message) => toast.show(message, { tone: 'error' })}
         onOpenPlayer={(playerId) => router.push(playerHref(gameId, playerId))}
         onRebuy={openRebuy}
-        onAddPlayer={() => {
-          setFeedback(null);
-          router.push(addPlayerHref(gameId));
-        }}
+        onAddPlayer={() => router.push(addPlayerHref(gameId))}
         onOpenBank={() => {
           setRebuy(null);
           setShowBank(true);

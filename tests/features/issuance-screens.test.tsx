@@ -106,7 +106,8 @@ it('Rebuy opens the proposal; Cancel records nothing; Issue records it once with
   await press('Issue rebuy · EUR 20.00');
   expect(await screen.findByText('Rebuy issued for Bob')).toBeTruthy();
   expect(screen.queryByText('No rebuy issued')).toBeNull();
-  expect(screen.getByText(/EUR 20.00 contribution · 200 chip units issued/)).toBeTruthy();
+  // A short ✓ toast, not a line that stays on Play; the row shows the new contribution.
+  expect(screen.queryByText(/chip units issued/)).toBeNull();
   expect(screen.getByText('EUR 40.00 · 1 rebuy')).toBeTruthy();
   expect(app().play.getView(gameId)!.totals.rebuys).toBe(1);
 });
@@ -123,7 +124,6 @@ it('a reduced-coverage rebuy needs Accept & issue; Decline records nothing', asy
   await press('Rebuy for Alice');
   await press('Accept & issue · EUR 20.00');
   expect(await screen.findByText('Rebuy issued for Alice')).toBeTruthy();
-  expect(screen.getByText(/covers 3 of 4 blind payments/)).toBeTruthy();
   expect(app().play.getView(gameId)!.totals.rebuys).toBe(1);
 });
 

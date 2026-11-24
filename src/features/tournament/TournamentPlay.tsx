@@ -5,7 +5,6 @@ import { WorkspaceFrame, type WorkspaceTab } from '@/features/game/WorkspaceFram
 import {
   Button,
   Card,
-  InlineNotice,
   ListRow,
   PlaceBadge,
   SectionHeading,
@@ -47,8 +46,6 @@ export interface TournamentPlayProps {
   onOpenPlayer: (playerId: string) => void;
   /** The reserve line: opens the bank and reserve view. */
   onOpenBank: () => void;
-  /** The quiet confirmation after a rebuy or late entry: "Rebuy issued for Bob" · "+EUR 20.00 contribution · …". */
-  feedback?: { title: string; message: string } | null;
   /** Development fixtures: a popup open on load. */
   initialPopup?: TournamentPlayPopup;
 }
@@ -72,7 +69,6 @@ export function TournamentPlay({
   onAddPlayer,
   onOpenPlayer,
   onOpenBank,
-  feedback = null,
   initialPopup,
 }: TournamentPlayProps) {
   const [popup, setPopup] = useState<Popup>(initialPopup ?? null);
@@ -97,11 +93,6 @@ export function TournamentPlay({
     >
       <TermsPanel items={data.terms} />
       <PrizeLadder prizePool={data.prizePool} onOpenPlayer={onOpenPlayer} />
-      {feedback ? (
-        <InlineNotice tone="confirmed" title={feedback.title}>
-          {feedback.message}
-        </InlineNotice>
-      ) : null}
       {stillIn ? (
         <StillInCard
           stillIn={stillIn}

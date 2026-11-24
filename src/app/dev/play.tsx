@@ -1,6 +1,6 @@
 /**
  * Development only: Play, the rebuy popup and Bank & reserve with fixture data (no game management).
- *   /dev/play?state=normal|exhausted|zero-target|joined|mixed|all-finished|feedback|bank|bank-weakened|bank-used|bank-none|
+ *   /dev/play?state=normal|exhausted|zero-target|joined|mixed|all-finished|bank|bank-weakened|bank-used|bank-none|
  *     rebuy|rebuy-exhausted|rebuy-zero-target|rebuy-reduced|rebuy-zero|rebuy-impossible|
  *     rebuy-shortage|rebuy-tournament
  * Rebuy on any row opens that story's proposal; issuing resolves after a short delay.
@@ -25,17 +25,15 @@ interface DevState {
   view: 'play' | 'bank';
   popupFor?: string;
   tournament?: boolean;
-  feedback?: boolean;
 }
 
 const STATES: Record<string, DevState> = {
   normal: { story: 'normal', view: 'play' },
   exhausted: { story: 'exhausted', view: 'play' },
   'zero-target': { story: 'zeroTarget', view: 'play' },
-  joined: { story: 'joined', view: 'play', feedback: true },
+  joined: { story: 'joined', view: 'play' },
   mixed: { story: 'mixed', view: 'play' },
   'all-finished': { story: 'allFinished', view: 'play' },
-  feedback: { story: 'normal', view: 'play', feedback: true },
   bank: { story: 'normal', view: 'bank' },
   'bank-weakened': { story: 'weakened', view: 'bank' },
   'bank-used': { story: 'exhausted', view: 'bank' },
@@ -61,13 +59,6 @@ function Fixture({ initial }: { initial: DevState }) {
     initial.popupFor ? proposalFor(initial, initial.popupFor) : null,
   );
   const [busy, setBusy] = useState(false);
-  const [feedback, setFeedback] = useState<{ title: string; message: string } | null>(
-    initial.feedback
-      ? initial.story === 'joined'
-        ? { title: 'Nora joined', message: '+EUR 20.00 contribution · 200 chip units issued.' }
-        : { title: 'Rebuy issued for Ben', message: '+EUR 20.00 contribution · 200 chip units issued.' }
-      : null,
-  );
 
   if (view === 'bank') {
     return (
@@ -83,27 +74,16 @@ function Fixture({ initial }: { initial: DevState }) {
   return (
     <PlayView
       data={playFixture(initial.story)}
-      feedback={feedback}
       rebuy={rebuy}
       rebuyBusy={busy}
-      onRebuy={(playerId) => {
-        setFeedback(null);
-        setRebuy(proposalFor(initial, playerId));
-      }}
+      onRebuy={(playerId) => setRebuy(proposalFor(initial, playerId))}
       onConfirmRebuy={() => {
         if (rebuy?.kind !== 'proposal') return;
         setBusy(true);
         setTimeout(() => {
           setBusy(false);
           setRebuy(null);
-          setFeedback({
-            title: `Rebuy issued for ${rebuy.playerName}`,
-            message: `+${rebuy.priceText} contribution · ${rebuy.stack.unitsText} chip units issued${
-              rebuy.reducedCoverage
-                ? ` · covers ${rebuy.reducedCoverage.achieved} of ${rebuy.reducedCoverage.required} blind payments`
-                : ''
-            }.`,
-          });
+          toast.show(`Rebuy issued for ${rebuy.playerName}`, { tone: 'confirmed' });
         }, 800);
       }}
       onCancelRebuy={() => {

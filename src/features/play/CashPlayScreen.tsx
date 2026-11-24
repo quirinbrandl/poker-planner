@@ -28,16 +28,16 @@ export function CashPlayScreen({ gameId }: { gameId: string }) {
   const [view, setView] = useState<'play' | 'bank'>('play');
   const [rebuy, setRebuy] = useState<OpenRebuy | null>(null);
   const [busy, setBusy] = useState(false);
-  const [feedback, setFeedback] = useState<IssueFeedback | null>(null);
 
   const backToPlay = useCallback(() => setView('play'), []);
   useSubViewBack(view === 'bank', backToPlay);
-  useIssueFeedback(gameId, setFeedback);
+  // Issued rebuys and entries are confirmed with the usual ✓ toast, not a line that stays on Play.
+  const showIssued = useCallback((issued: IssueFeedback) => toast.show(issued.title, { tone: 'confirmed' }), [toast]);
+  useIssueFeedback(gameId, showIssued);
 
   if (!workspace || !screen || !bank) return <Screen>{workspace?.actions}</Screen>;
 
   const openRebuy = (participantId: string) => {
-    setFeedback(null);
     // A new request starts fresh: an earlier "No rebuy issued" must not linger beside its outcome.
     toast.hide();
     const result = app.play.proposeRebuy(gameId, participantId);
@@ -57,7 +57,7 @@ export function CashPlayScreen({ gameId }: { gameId: string }) {
     setBusy(false);
     setRebuy(null);
     if (result.status === 'accepted') {
-      setFeedback(result.feedback);
+      showIssued(result.feedback);
       return;
     }
     toast.show(result.reason.message, { tone: 'error' });
@@ -83,7 +83,6 @@ export function CashPlayScreen({ gameId }: { gameId: string }) {
     <>
       <PlayView
         data={{ ...screen, context: workspace.context, backLabel: workspace.backLabel }}
-        feedback={feedback}
         rebuy={rebuy?.popup ?? null}
         rebuyBusy={busy}
         onRebuy={openRebuy}
@@ -94,10 +93,7 @@ export function CashPlayScreen({ gameId }: { gameId: string }) {
         }}
         onResult={(participantId) => router.push(countHref(gameId, participantId))}
         onOpenPlayer={(participantId) => router.push(playerHref(gameId, participantId))}
-        onAddPlayer={() => {
-          setFeedback(null);
-          router.push(addPlayerHref(gameId));
-        }}
+        onAddPlayer={() => router.push(addPlayerHref(gameId))}
         onViewBank={() => {
           setRebuy(null);
           setView('bank');
