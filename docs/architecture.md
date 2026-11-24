@@ -87,6 +87,7 @@ npm run lint           # expo lint
 npm test               # jest
 npm run web            # Expo web dev server, for quick visual checks in a browser
 npm run android        # development build on the Android emulator
+npm run phone          # release build onto the Android phone plugged in by USB (scripts/phone.mjs)
 ```
 
 Run typecheck, lint and the tests before calling work done.

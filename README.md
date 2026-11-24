@@ -9,6 +9,7 @@ Requires Node 22 or newer, and for device builds JDK 17 plus the Android SDK.
 ```sh
 npm install
 npm run android     # development build on a running Android emulator or device
+npm run phone       # release build onto the Android phone plugged in by USB (needs USB debugging)
 npm start           # Metro dev server for an installed development build
 npm run web         # browser preview for quick layout checks
 npm run typecheck
